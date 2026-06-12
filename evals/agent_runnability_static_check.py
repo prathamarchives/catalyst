@@ -2,9 +2,9 @@
 
 Static check over README.md, AGENTS.md, REPO-USE-PROMPT.md and
 prompts/00-start-here.md: the combined corpus must state the first
-action, ask for source material, name the output path, enforce small
-interview rounds, protect templates, require the generated skill, the
-before/after proof, and the feedback update loop.
+action, lead with discovery, ask for approved scan scope, name the
+output path, enforce small interview rounds, protect templates, require
+the generated skill, the before/after proof, and the feedback update loop.
 """
 from pathlib import Path
 
@@ -18,7 +18,9 @@ ENTRY_FILES = [
 # (requirement, marker phrases -- ANY must appear in the combined corpus)
 CORPUS_REQUIREMENTS = [
     ("clear first action", ["first action"]),
-    ("asks user for source material", ["where does your source material live", "where your source material", "where my source material"]),
+    ("discovers source locations first", ["discover where", "discovering candidate", "discover candidate", "discovered locations"]),
+    ("asks user to approve scan scope", ["approve", "approved scope", "which locations", "what you may scan"]),
+    ("does not tell user to hunt paths first", ["do not read file contents yet", "show me the discovered locations"]),
     ("tells agent where to create outputs", ["outputs/<name>/", "outputs/<user-or-project>/"]),
     ("small interview rounds", ["small rounds"]),
     ("never overwrite templates", ["never overwrite templates", "never overwrite anything in `templates/`", "never edit these masters"]),
@@ -30,7 +32,8 @@ CORPUS_REQUIREMENTS = [
 # The first-run file specifically must lead with the first action.
 START_FILE_REQUIREMENTS = [
     ("first action stated in prompts/00-start-here.md", ["first action"]),
-    ("00-start-here asks for sources before anything", ["where does your source material live"]),
+    ("00-start-here leads with discovery", ["discover, then ask", "discover where"]),
+    ("00-start-here gates reading on approval", ["approve", "approves", "approved scope"]),
 ]
 
 
@@ -55,6 +58,15 @@ def run(root: Path) -> list:
         for requirement, markers in START_FILE_REQUIREMENTS:
             if not any(m in start_lower for m in markers):
                 failures.append("missing: %s" % requirement)
+
+    stale_manual_first = [
+        "first ask me where my source material is",
+        "first ask me where my material lives",
+        "start by asking where my source material lives",
+    ]
+    for phrase in stale_manual_first:
+        if phrase in corpus:
+            failures.append('stale manual-first entrypoint phrase remains: "%s"' % phrase)
 
     return failures
 

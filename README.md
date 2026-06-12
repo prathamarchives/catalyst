@@ -2,7 +2,7 @@
 
 An open-source repo your agent can run to build your Creative Brain.
 
-Point Claude Code, Cursor, Hermes, or any agent at your exported sessions, notes, drafts, references, and feedback. It will extract how you talk, what you like, what you reject, your context, taste, standards, and feedback patterns — then write a skill your agent can use to keep improving as you use it.
+Paste it into Claude Code, Cursor, Hermes, or any agent. It discovers your past AI sessions, notes, and project workspaces across your machine — you don't hunt for files — then, with your approval of the scope, scans them and extracts how you talk, what you like, what you reject, your context, taste, standards, behavior, and feedback patterns. Then it writes a skill your agent loads to keep getting sharper every session you use it.
 
 > Your agent doesn't need another prompt. It needs your creative identity.
 
@@ -15,7 +15,8 @@ Everyone has access to the same intelligence now. Models keep getting stronger a
 `creative-identity` turns your messy context into agent-readable taste, memory, and judgment. It is:
 
 - **a protocol** ([AGENTS.md](AGENTS.md)) that any agent can execute
-- **a set of prompts** ([prompts/](prompts/)) that walk the agent through audit → interview → extraction → build → proof → feedback
+- **a set of prompts** ([prompts/](prompts/)) that walk the agent through discover → audit → interview → extraction → build → proof → feedback
+- **a discovery helper** ([tools/discover_sessions.py](tools/discover_sessions.py)) that finds your AI sessions and workspaces across the system, read-only
 - **templates** ([templates/](templates/)) for the ten Creative Brain files, a generated skill, and three workflows
 - **an eval harness** ([evals/](evals/)) that keeps the repo itself honest
 
@@ -39,27 +40,26 @@ The short version:
 
 ```
 Read README.md and AGENTS.md. Use this repo to build my Creative Brain.
-First ask me where my source material is. Do not generate final content yet.
-Audit my sources, interview me in small rounds, create files under outputs/<name>/,
+First discover where my AI sessions, notes, exports, and workspaces live.
+Do not read file contents yet. Show me the discovered locations and ask what you may scan.
+Audit only the approved scope, interview me in small rounds, create files under outputs/<name>/,
 write a creative-identity skill, run a before/after proof, then ask for feedback
-and update the system.
+and update the system so it compounds session to session.
 ```
 
-The agent's first action is always the same: ask you where your source material lives. It never starts by writing content.
+The agent's first action is always the same: discover where your AI sessions and workspaces live, show you the list, and ask which it may scan. It never starts by writing content.
 
-## What source material should I provide?
+## What source material does it use?
 
-Whatever you have. More contrast is better than more volume:
+The discovery step finds most of it for you. It looks across the system for:
 
-- exported Claude / ChatGPT conversations
-- Cursor or Hermes session logs
-- notes, docs, journals
-- tweets/posts, scripts, drafts
-- outputs you rejected and why
-- feedback you gave to AI ("too polished", "not me", "this is cringe")
-- references you love — and what specifically you love about them
+- Claude Code sessions (`~/.claude/projects`), Cursor / VS Code chat history, Codex / Copilot / Gemini CLI state
+- exported Claude / ChatGPT conversations in Downloads
+- notes (Obsidian vaults, Notion exports), docs, journals
+- project workspaces under Desktop / Documents — your real working folders
+- and from all of it: how you talk, what you reject, your behavior across sessions
 
-You point the agent at files and folders. It reads only what you give it. See [prompts/01-source-audit.md](prompts/01-source-audit.md) for the full checklist.
+It shows you everything it found and reads only the scope you approve. You can also point it at anything it missed. More contrast (rejected drafts, feedback) beats more volume. See [prompts/01-source-audit.md](prompts/01-source-audit.md) for the discovery + audit flow.
 
 ## What files does it create?
 
@@ -103,10 +103,11 @@ A worked example lives at [examples/pratham-mini/before-after.md](examples/prath
 ## What is local/private by default?
 
 - **local-first**: everything runs on your machine, in your files.
-- **you control the scan**: the agent reads only the files and folders you point it at. Nothing is collected automatically.
-- **no cloud upload by default**: this protocol makes no network calls and requires no API keys.
+- **you control the scan**: discovery finds candidate locations automatically, but the agent reads contents only inside the scope you approve — never beyond it. Discovery checks that paths exist; it reads nothing until you say yes.
+- **no cloud upload by default**: this protocol makes no network calls and requires no API keys. The discovery helper is read-only and offline.
 - **outputs are gitignored**: `outputs/**` is excluded by default, so your brain never lands in a public commit unless you deliberately choose to share it.
-- **your responsibility**: don't feed it secrets, tokens, client data, or private DMs unless you intend the brain to contain them. Review files before sharing.
+- **your responsibility**: don't approve scopes containing secrets, tokens, client data, or private DMs unless you intend the brain to contain them. Review files before sharing.
+- **agent/model caveat**: this repo itself makes no network calls, but the agent/model you use may send approved context to its provider. Check your tool's privacy policy before approving sensitive material.
 
 Full stance: [docs/privacy.md](docs/privacy.md).
 

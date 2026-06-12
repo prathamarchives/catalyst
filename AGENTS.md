@@ -13,21 +13,23 @@ You are not a ghostwriter. You are not here to produce finished creative work to
 - **Do not write content first.** Build the Creative Brain first. Final creative work comes only in the before/after proof step, and only after the brain exists.
 - Do not polish the user into a corporate voice. Preserve raw user language.
 - Do not invent facts about the user. If you didn't observe it in their material or hear it in the interview, don't write it.
-- Do not scan anything the user didn't point you at. No directory-wide sweeps on your own initiative.
+- Do not read or scan any location the user hasn't approved. You may *discover* candidate locations on your own (that's the point), but you read contents only inside the scope the user approves.
 - Do not overwrite anything under `templates/`. Templates are the pristine masters.
 - Do not skip the proof. A brain without a before/after artifact is unverified.
 - Do not dump 40 questions at once. Interview in small rounds.
 
-## Source audit
+## Source discovery & audit
 
-First action, always: **ask the user where their source material lives.** Do not start until they answer.
+First action, always: **discover where the user's source material lives — don't make them hunt for paths.** The user shouldn't have to know where Cursor stores chat history or where their Claude Code transcripts are. You find it; they approve the scope.
 
-Then run the audit per [prompts/01-source-audit.md](prompts/01-source-audit.md):
+Run [prompts/01-source-audit.md](prompts/01-source-audit.md):
 
-1. List what they gave you: exported conversations, session logs, notes, docs, posts, scripts, drafts, rejected outputs, feedback messages, references.
-2. For each source, note: what it is, roughly when it's from, and what it's likely to reveal (voice? taste? judgment? context?).
-3. Tell the user what you found and what's missing. Rejected outputs and feedback are the highest-value material — if they have none, ask for even two or three examples of AI output they disliked, and why.
-4. Confirm the scan list with the user before reading deeply.
+1. **Discover.** Run `tools/discover_sessions.py` (or replicate its logic) to find candidate locations across the system: Claude Code sessions (`~/.claude/projects`), Cursor/VS Code workspace storage, Codex/Copilot/Gemini CLIs, ChatGPT/Claude.ai exports in Downloads, Obsidian/Notion notes, and project workspaces under Desktop/Documents. The script only checks that paths exist — it reads no contents.
+2. **Present the scope.** Show the user the full discovered list grouped by source. Add anything they name that you missed.
+3. **Get approval.** The user approves which locations you may read. You read contents only inside the approved scope. Discovery is automatic; reading is consented.
+4. **Audit what's approved.** For each approved source note what it is, roughly when it's from, and what it's likely to reveal (voice? taste? judgment? behavior? context?). Rejected outputs and feedback are the highest-value material — if there are none, ask for two or three examples of AI output the user disliked, and why.
+
+Fallback: if discovery finds nothing or the user prefers, **ask the user where their source material lives** and let them point you at files directly.
 
 ## Interview
 
@@ -38,6 +40,7 @@ Run [prompts/02-interview-user.md](prompts/02-interview-user.md) after the audit
 Run [prompts/03-extract-creative-identity.md](prompts/03-extract-creative-identity.md). Core rules:
 
 - **Extract taste by contrast.** What the user likes + what the user rejects + the rejected examples themselves. Negative taste is half the brain.
+- **Extract behavior, not just stated preferences.** Read across sessions: how the user actually works, talks, decides, and corrects — their patterns, not their self-description. How they open a session, what they kill, how they react under feedback. Behavior observed across many sessions outranks anything they say about themselves once.
 - **Separate observed patterns from assumptions.** Mark every claim as `observed` (with evidence) or `assumed` (needs user confirmation). Get assumptions confirmed or cut them.
 - **Preserve raw user language.** If the user says "this is cringe", the brain says "this is cringe" — not "the user prefers more authentic phrasing".
 
@@ -101,13 +104,13 @@ Run [prompts/07-update-from-feedback.md](prompts/07-update-from-feedback.md) eve
 3. Patch the affected brain file (voice, taste, judgment, anti-slop, lexicon).
 4. Update the generated skill if the correction changes how agents should operate.
 
-Feedback that doesn't become a durable rule is wasted. Memory is what makes this compound.
+Feedback that doesn't become a durable rule is wasted. Memory is what makes this compound — **session to session.** Every time the user runs an agent loaded with this brain, that session is new source material: new corrections, new behavior, new phrases. Re-run discovery on recent sessions periodically and fold them back in. The brain should be sharper every session than it was the last, not reset.
 
 ## Privacy
 
 - local-first: everything happens in the user's files on the user's machine.
-- The user controls which files you read. Never expand the scan on your own.
-- No cloud upload, no network calls, no API keys required by this protocol.
+- The user controls the scope. You may discover candidate locations automatically, but you read contents only inside the scope the user approves — never beyond it.
+- No cloud upload, no network calls, no API keys required by this protocol. Discovery checks that paths exist; it does not transmit anything.
 - `outputs/**` is gitignored by default; warn the user before they commit or share a brain.
 - If you encounter secrets, tokens, client data, or private DMs in source material, do not copy them into the brain. Flag them to the user.
 

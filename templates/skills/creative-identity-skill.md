@@ -27,10 +27,20 @@ Use before writing, designing, editing, researching, ideating, replying, or plan
 
 - use the user's raw language as source, not decoration
 - preserve taste and judgment over generic fluency
+- act from observed behavior, not just stated preference — when they conflict, behavior wins
 - check rejected examples before finalizing anything
 - if output feels generic, stop and ask what context is missing — do not ship "averaging the internet"
 - after feedback, update feedback-memory.md and any affected brain file
 - when rules conflict, newer beats older; ask the user if it matters
+
+## compounding (session to session)
+
+This brain is not static. It should be sharper every session than the last:
+
+- every session the user runs with this brain loaded is new source material — new corrections, new phrases, new behavior
+- at the end of a working session, fold what you learned back into the brain: new feedback into feedback-memory.md, new patterns into voice/taste/judgment, new operating behavior into the relevant file
+- periodically re-discover recent sessions (tools/discover_sessions.py) and ingest them — the brain compounds from how the user keeps working, not just the one-time build
+- a correction given twice is a standing law; promote it
 
 ## this user specifically
 

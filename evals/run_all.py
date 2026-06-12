@@ -15,6 +15,7 @@ import protocol_completeness_check
 import privacy_check
 import example_proof_check
 import agent_runnability_static_check
+import vision_fit_check
 
 EVALS = [
     ("repo_structure_check", repo_structure_check),
@@ -23,6 +24,7 @@ EVALS = [
     ("privacy_check", privacy_check),
     ("example_proof_check", example_proof_check),
     ("agent_runnability_static_check", agent_runnability_static_check),
+    ("vision_fit_check", vision_fit_check),
 ]
 
 

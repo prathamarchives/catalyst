@@ -59,8 +59,11 @@ REQUIRED_FILES = [
     "evals/privacy_check.py",
     "evals/example_proof_check.py",
     "evals/agent_runnability_static_check.py",
+    "evals/vision_fit_check.py",
     "evals/rubrics/agent_runnability.md",
     "evals/rubrics/taste_quality.md",
+    "evals/rubrics/vision_fit.md",
+    "tools/discover_sessions.py",
 ]
 
 # Directories whose markdown files must contain real content, not stubs.

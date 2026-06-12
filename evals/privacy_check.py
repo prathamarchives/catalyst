@@ -36,6 +36,15 @@ CONTRADICTIONS = [
     "automatically scans all your private sessions",
     "connects to every account",
     "scans everything automatically",
+    "reads everything automatically",
+    "silent collection",
+]
+
+CONSENT_MARKERS = [
+    "approve",
+    "approved scope",
+    "reads only",
+    "reads contents only",
 ]
 
 
@@ -65,16 +74,24 @@ def run(root: Path) -> list:
             if required not in lines:
                 failures.append(".gitignore missing required line: %s" % required)
 
-    for rel in ["README.md", "AGENTS.md", "docs/privacy.md", "docs/philosophy.md", "docs/roadmap.md"]:
+    privacy_corpus = []
+    for rel in ["README.md", "AGENTS.md", "REPO-USE-PROMPT.md", "prompts/00-start-here.md", "prompts/01-source-audit.md", "docs/privacy.md", "docs/philosophy.md", "docs/roadmap.md"]:
         path = root / rel
         if not path.is_file():
             continue
         lower = path.read_text(encoding="utf-8").lower()
+        privacy_corpus.append(lower)
         for phrase in CONTRADICTIONS:
             if phrase in lower:
                 failures.append(
                     'privacy contradiction in %s: claims "%s"' % (rel, phrase)
                 )
+
+    joined = "\n".join(privacy_corpus)
+    if "discover" in joined and not all(marker in joined for marker in ["approve", "reads only"]):
+        failures.append("auto-discovery is described without clear approval + reads-only scope language")
+    if "discover" in joined and not all(marker in joined for marker in ["path metadata", "provider"]):
+        failures.append("auto-discovery privacy lacks path-metadata + hosted-provider caveat")
 
     return failures
 

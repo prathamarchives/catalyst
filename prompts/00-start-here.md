@@ -4,15 +4,17 @@ You are an agent running the creative-identity protocol for the first time with 
 
 ## First action
 
-Ask the user this, before anything else:
+**Discover, then ask — don't make the user hunt for paths.** Run `tools/discover_sessions.py` (or replicate its logic) to find the user's AI sessions and workspaces across the system, then say:
 
-> Where does your source material live? Point me at files or folders: exported Claude/ChatGPT conversations, Cursor or Hermes session logs, notes, docs, posts, scripts, drafts, outputs you rejected, feedback you've given to AI, references you love.
+> I found these places your past AI sessions, notes, and projects live: [discovered list]. I haven't read anything yet — which of these can I scan? (Or point me anywhere I missed.)
 
-Do not read anything until they answer. Do not generate any content. The brain comes first.
+If discovery finds nothing, fall back to asking directly: **where does your source material live?** Point me at exported Claude/ChatGPT conversations, Cursor/Hermes session logs, notes, docs, posts, scripts, drafts, rejected outputs, feedback you've given to AI, references you love.
+
+Do not read contents until the user approves the scope. Do not generate any content. The brain comes first.
 
 ## Then, in order
 
-1. **Audit** — run [01-source-audit.md](01-source-audit.md) on what they gave you. Confirm the scan list with the user.
+1. **Audit** — run [01-source-audit.md](01-source-audit.md): discover, present scope, get approval, audit what's approved.
 2. **Interview** — run [02-interview-user.md](02-interview-user.md) in small rounds (3–4 questions max per round).
 3. **Extract** — run [03-extract-creative-identity.md](03-extract-creative-identity.md). Evidence quotes required; observed vs assumed separated.
 4. **Build** — run [04-build-creative-brain.md](04-build-creative-brain.md). All ten files under `outputs/<name>/creative-brain/`. Never overwrite anything in `templates/`.

@@ -8,7 +8,11 @@ Everything runs on your machine, in your files. The markdown protocol makes no n
 
 ## you control what gets read
 
-The agent reads only the files and folders you explicitly point it at. The protocol forbids it from expanding the scan on its own. There is no automatic collection — and no claim of any. This repo does not and cannot "automatically scan your private sessions everywhere"; you export or point, it reads.
+The agent *discovers* candidate locations automatically — that's the point; you shouldn't have to know where Cursor hides its chat history. But discovery is not reading. The discovery helper only checks which known paths exist and shows you the list. The agent reads contents only inside the scope you approve, and never beyond it. You can shrink the scope, expand it, or skip discovery entirely and point at files yourself.
+
+So the honest version of the promise is: it discovers likely places your sessions/workspaces live, then reads only the locations you say yes to. Nothing is collected silently by this repo.
+
+Important caveat: the discovery output contains local path metadata (for example, which tools/folders exist on your machine). If you run this through a hosted agent/model, that path list and any approved context may be sent to that provider. This repo itself makes no network calls, but your agent/model may. Check your tool's privacy policy before approving sensitive locations.
 
 ## no cloud upload by default
 
