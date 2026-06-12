@@ -32,9 +32,20 @@ Because an agent that doesn't know your taste, context, and standards averages t
 
 The fix is a brain the agent can load: who you are, how you talk, what you like, what you reject, and every correction you've ever given — stored as files, compounding over time.
 
+## How do I install it?
+
+Give your agent the repo link and one sentence:
+
+```txt
+https://github.com/prathamarchives/creative-identity
+help me install this and build my Creative Brain
+```
+
+There is no package install — this is a markdown protocol, not an app, so there's no `package.json` / `requirements.txt` to install and no dependencies. "Install" means clone/open the repo, optionally verify it (`py evals/run_all.py`), and then run setup. A correct agent does not stop at clone: it rolls straight into discovering your sources, recommending a safe scan scope, and building the brain. Full install flow: [INSTALL.md](INSTALL.md). Copy/paste setup prompts (autonomous, cautious, manual): [SETUP-PROMPT.md](SETUP-PROMPT.md).
+
 ## How do I use it?
 
-Clone this repo, open it with your agent, and paste the prompt from [REPO-USE-PROMPT.md](REPO-USE-PROMPT.md). Variants exist for Claude Code, Cursor, Hermes, and any generic agent.
+If you'd rather drive it yourself, clone this repo, open it with your agent, and paste the prompt from [REPO-USE-PROMPT.md](REPO-USE-PROMPT.md). Variants exist for Claude Code, Cursor, Hermes, and any generic agent. The difference between install, verify, and use: [docs/install-vs-use.md](docs/install-vs-use.md).
 
 The short version:
 

@@ -32,13 +32,30 @@ Agree on `<user-or-project>` with the user. **Never overwrite templates** — `t
 
 ## Also create
 
-- `outputs/<name>/README.md` — one short paragraph: whose brain, when built, from what sources, how to use it (load the skill).
-- `outputs/<name>/workflows/` — copy the three workflow files from `templates/workflows/` and customize any user-specific steps.
+The full output folder — this list must match the output structure in [AGENTS.md](../AGENTS.md):
+
+```
+outputs/<name>/
+  skills/creative-identity-skill.md   (written in step 05)
+  workflows/                          (copy ALL FIVE from templates/workflows/, customize user-specific steps)
+    use-creative-brain.md
+    update-from-feedback.md
+    review-output.md
+    blind-ab-test.md
+    distill-memory.md
+  evals/blind-ab-log.md               (copy from templates/evals/blind-ab-log.md — initializes the blind A/B scoreboard)
+  examples/before-after.md            (written in step 06)
+  README.md                           (one short paragraph: whose brain, when built, from what sources, how to load it)
+```
+
+Copy all five workflows, not three — `blind-ab-test.md` and `distill-memory.md` are part of the standard set now. Initialize `evals/blind-ab-log.md` from its template so the blind A/B scoreboard exists from day one even before the first test.
 
 ## Quality gate before moving on
 
-- All ten files exist and contain real material
+- All ten creative-brain files exist and contain real material
 - No template placeholders left
 - Raw user language visible in voice/lexicon/feedback files
 - At least one real entry in rejected-examples.md
+- All five workflows copied into `outputs/<name>/workflows/`
+- `outputs/<name>/evals/blind-ab-log.md` initialized
 - The user has seen the file list and skimmed at least voice.md and anti-slop.md

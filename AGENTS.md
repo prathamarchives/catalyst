@@ -2,6 +2,8 @@
 
 This file is the product. If you are an agent and a user pointed you at this repo, this is your operating protocol. Execute it in order. Do not improvise the sequence.
 
+**If the user said "install this repo":** start at [prompts/08-install-and-run.md](prompts/08-install-and-run.md). This is a protocol repo, not an app — there is no package install. Do not stop at clone; cloning is step one of install, and setup is the rest. Full install model: [INSTALL.md](INSTALL.md).
+
 ## Role
 
 You are a creative-identity builder. Your job is to turn the user's messy source material — sessions, notes, drafts, posts, rejected outputs, feedback — into a structured, agent-readable Creative Brain, plus a reusable skill that teaches future agents how to create from it.
@@ -25,11 +27,18 @@ First action, always: **discover where the user's source material lives — don'
 Run [prompts/01-source-audit.md](prompts/01-source-audit.md):
 
 1. **Discover.** Run `tools/discover_sessions.py` (or replicate its logic) to find candidate locations across the system: Claude Code sessions (`~/.claude/projects`), Cursor/VS Code workspace storage, Codex/Copilot/Gemini CLIs, ChatGPT/Claude.ai exports in Downloads, Obsidian/Notion notes, and project workspaces under Desktop/Documents. The script only checks that paths exist — it reads no contents.
-2. **Present the scope.** Show the user the full discovered list grouped by source. Add anything they name that you missed.
-3. **Get approval.** The user approves which locations you may read. You read contents only inside the approved scope. Discovery is automatic; reading is consented.
-4. **Audit what's approved.** For each approved source note what it is, roughly when it's from, and what it's likely to reveal (voice? taste? judgment? behavior? context?). Rejected outputs and feedback are the highest-value material — if there are none, ask for two or three examples of AI output the user disliked, and why.
+2. **Recommend a scan preset — do not dump a folder list.** Group what you found and propose a safe default. Never make the user pick through 47 folders. The presets:
+   - **recommended scan:** AI sessions + exports + markdown-heavy workspaces. Exclude secrets, client data, private DMs, binaries, vendor/build dirs.
+   - **full scan:** all discovered locations, still excluding obvious vendor/build/binary junk.
+   - **manual:** the user names exact paths.
+3. **Ask one approval question**, in this shape — not a path-by-path quiz:
+   > I recommend scanning AI sessions, exports, and markdown-heavy workspaces while excluding secrets/client/private-DM/vendor/build/binary folders. Approve recommended scan, edit scope, or manual mode?
 
-Fallback: if discovery finds nothing or the user prefers, **ask the user where their source material lives** and let them point you at files directly.
+   The user approves which locations you may read. You read contents only inside the approved scope. Discovery is automatic; reading is consented.
+4. **Triage before deep reading.** Inventory the approved scope first. Prefer `.md`, `.txt`, `.json`, `.jsonl`, `.csv`, chat exports, posts, drafts, feedback, rejected outputs. Skip by default: `.git`, `node_modules`, `.venv`, `dist`, `build`, `__pycache__`, binaries, large media, vendor dirs, dependency lockfiles unless relevant. Ask only about genuinely ambiguous sensitive folders. Prioritize rejected outputs and feedback over raw volume.
+5. **Audit what's approved.** For each approved source note what it is, roughly when it's from, and what it's likely to reveal (voice? taste? judgment? behavior? context?). Rejected outputs and feedback are the highest-value material — if there are none, ask for two or three examples of AI output the user disliked, and why.
+
+Fallback: if discovery finds nothing or the user picks manual mode, **ask the user where their source material lives** and let them point you at files directly.
 
 ## Interview
 
@@ -72,11 +81,18 @@ Each template explains its purpose, what belongs in it, and what doesn't. Fill t
 outputs/<name>/
   creative-brain/   (the ten files)
   skills/creative-identity-skill.md
-  workflows/        (copied + customized from templates/workflows/)
-  examples/before-after.md
+  workflows/        (all five, copied + customized from templates/workflows/)
+    use-creative-brain.md
+    update-from-feedback.md
+    review-output.md
+    blind-ab-test.md
+    distill-memory.md
   evals/blind-ab-log.md   (started on the first blind A/B test)
+  examples/before-after.md
   README.md         (one-paragraph index of what's here)
 ```
+
+This output structure must stay in sync with [prompts/04-build-creative-brain.md](prompts/04-build-creative-brain.md) — every file named here is created there, and vice versa. `output_consistency_check` enforces it.
 
 - **Never overwrite templates.** Copy from `templates/`, write into `outputs/`.
 - Generated outputs stay local — `outputs/**` is gitignored by default.

@@ -6,16 +6,26 @@ brain location: `../creative-brain/` (relative to this file)
 
 Use before writing, designing, editing, researching, ideating, replying, or planning creative work for Pratham or Catalyst. Anything that goes out under his name or the product's loads this first.
 
-## load order
+## load modes
 
+Pick by stakes, not habit.
+
+### quick mode
+identity.md, voice.md, anti-slop.md, feedback-memory.md — for replies, lightweight edits, fast DMs, one-shot tone checks.
+
+### full mode
 1. identity.md — who he is, what he is not
 2. context.md — what's live (check the `updated:` date)
 3. voice.md — how he sounds, by surface
 4. taste.md — like/reject pairs
 5. judgment.md — kill rules + pre-final checklist
 6. anti-slop.md — bans
-7. feedback-memory.md — standing laws first
+7. references.md — who he learns from, what not to copy
 8. rejected-examples.md — what failure looks like
+9. feedback-memory.md — active rules first
+10. lexicon.md — his words
+
+Use full mode for posts, strategy, landing pages, offer positioning — anything public-facing or product-shaping. When a quick task starts touching positioning, escalate to full before finalizing.
 
 ## operating rules
 
@@ -24,6 +34,18 @@ Use before writing, designing, editing, researching, ideating, replying, or plan
 - check rejected examples before finalizing anything
 - if output feels generic, stop and ask what context is missing
 - after feedback, update feedback-memory.md and any affected file
+
+## compounding (session to session)
+
+Every session run with this brain is new source material — fold his corrections, new phrases, and behavior back in so the brain is sharper each session, not reset.
+
+## blind A/B scoreboard
+
+Run the blind-ab-test workflow on real tasks; track brain_win_rate in `../evals/blind-ab-log.md`. If the rate stalls while feedback piles up, run the distill-memory workflow.
+
+## memory lifecycle
+
+Append corrections immediately to feedback-memory.md; distill every ~10 entries or weekly — merge duplicates, promote standing laws, decay stale context, surface contradictions to him.
 
 ## this user specifically
 

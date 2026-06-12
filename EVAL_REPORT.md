@@ -14,10 +14,23 @@ environment: Windows 11, Python via `py` launcher, no external dependencies
 | privacy_check | PASS | local-first / user-controls-files / no-cloud-upload / outputs-gitignored / secrets-client-data-DM warnings present across docs/privacy.md, README, AGENTS.md; .gitignore carries `outputs/**` + `!outputs/.gitkeep`; no scraping overclaims anywhere |
 | example_proof_check | PASS | examples/pratham-mini/before-after.md has all six sections (task, generic output, creative brain output, what changed, user feedback, feedback memory update) and the two outputs are non-identical |
 | proof_quality_check | PASS | the proof loop is honest: no strawman demo phrases in the worked before/after; blind A/B protocol present (hidden/shuffled labels, brain_win_rate, no-strawman rule, effectiveness beyond preference); memory lifecycle present (distillation, decay, stale handling, merge duplicates, contradiction review); skill template carries quick + full load modes; rejected-examples-outrank-banned-words stated in AGENTS.md, both templates, and prompts/03 |
+| install_protocol_check | PASS | install/setup corpus establishes the autonomous flow (repo-link/clone, no-package-install, optional eval verification, permission-block handling, do-not-stop-at-clone, recommended scan preset, one approval question, scan-only-approved-scope, provider caveat, minimal-burden); install docs assert no stale patterns (negated anti-patterns exempt) |
+| output_consistency_check | PASS | AGENTS output structure ≡ prompt 04 build list (five workflows + blind-ab-log); prompt 05 has quick/full modes; feedback-memory template has active-rules/raw-log/retired/distillation-log; example skill has load modes; README + REPO-USE-PROMPT carry the install-from-link path |
 | agent_runnability_static_check | PASS | entry files establish: first action, discovery-first flow, approved scan scope, output path, small interview rounds, template protection, skill generation, before/after proof, feedback updates |
 | vision_fit_check | PASS | protocol delivers the cross-system vision: discovery step + named locations (Claude Code/Cursor/exports) + consent-gated scope + discovery helper exists + behavior extraction + session-to-session compounding + paste-and-go (added 2026-06-12 auto-research loop) |
 
-Final run exit code: 0 — `RESULT: ALL PASS` (8/8).
+Final run exit code: 0 — `RESULT: ALL PASS` (10/10).
+
+## 2026-06-12 — autonomous install + setup protocol
+
+The real-world failure that prompted this: a user said "install this repo," the agent cloned it, saw no `package.json`/`requirements.txt`, concluded "nothing to install," and stopped — pushing all the actual work back onto the user. The repo now teaches agents that this is a protocol repo where install = clone + verify + run setup, and that setup is almost entirely the agent's job.
+
+- **install entrypoints**: `INSTALL.md` (impossible-to-miss "no package install"; clone→verify→setup flow; permission-block handling; the required "protocol install is complete…" line), `SETUP-PROMPT.md` (autonomous / cautious / manual copy-paste), `prompts/08-install-and-run.md` (the operating procedure with hard rules: do not stop at clone, do not say "no package.json, done", do not make the user manage paths), `docs/install-vs-use.md`, `docs/permission-model.md` (action/risk/approval/fallback table).
+- **scan autonomy**: AGENTS.md + prompts/01 now use scan presets (recommended / full / manual), a single approval question ("Approve recommended scan, edit scope, or manual mode?"), and triage rules (inventory before deep reading; prefer text/exports; skip vendor/build/binary; prioritize rejected outputs + feedback). The user is reduced to one decision, not a 47-folder quiz.
+- **output consistency**: AGENTS output structure and prompt 04 now name the identical generated set (five workflows + `evals/blind-ab-log.md`); prompt 05 requires quick/full load modes + blind-A/B scoreboard + memory-lifecycle sections; the `feedback-memory.md` template carries the four lifecycle sections (active rules / raw feedback log / retired / distillation log); the worked example was de-staled (skill load modes, four-section memory, five workflows, blind-ab-log).
+- **two new ratchets**: `install_protocol_check.py` (autonomous-install markers + a negation-aware bad-pattern guard so install docs can quote stale patterns only as anti-patterns) and `output_consistency_check.py` (cross-file output-shape lockstep).
+- **eval honesty (negative-tested)**: install check on a bad root that *asserts* the five stale patterns and omits markers → 26 failures (5/5 bad-pattern hits, 14 missing markers); on the real repo → 0. Consistency check on a bad root (AGENTS names blind A/B but prompt 04 copies only three workflows, prompt 05 has no modes, feedback-memory is append-only, README/REPO-USE lack the install path) → 13 failures hitting every targeted condition; on the real repo → 0. Both discriminate.
+- **fresh-agent simulation**: traced from only the public entrypoints (README → INSTALL → SETUP-PROMPT → REPO-USE-PROMPT → AGENTS → prompts/08). All ten checks (not-an-app, no-stop-at-clone, evals-optional, discover-before-asking, recommend-scope, one-approval, exact-outputs, skill+workflows, init blind-A/B + distillation, post-feedback) resolve cleanly. The one-line prompt `help me install this and build my Creative Brain` now has a complete, unambiguous path.
 
 ## 2026-06-12 — honest proof + memory lifecycle (v0.1 quality patch)
 
@@ -80,7 +93,7 @@ One real failure: this report didn't exist yet (it's written from real results, 
 
 ## final status
 
-All 8 script evals PASS (exit code 0). Manual rubrics documented, live-agent run pending. Repo committed only after the green run.
+All 10 script evals PASS (exit code 0). Manual rubrics documented, live-agent run pending. Repo committed only after the green run.
 
 ## raw output (final run)
 
@@ -91,6 +104,8 @@ PASS protocol_completeness_check
 PASS privacy_check
 PASS example_proof_check
 PASS proof_quality_check
+PASS install_protocol_check
+PASS output_consistency_check
 PASS agent_runnability_static_check
 PASS vision_fit_check
 

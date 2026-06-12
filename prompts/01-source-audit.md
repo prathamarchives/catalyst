@@ -15,17 +15,34 @@ Locations it covers:
 - **Notes** — Obsidian vaults, Notion exports
 - **Workspaces / projects** — markdown-heavy folders under `~/Desktop` and `~/Documents`
 
-## Step 2 — present the scope
+## Step 2 — recommend a scan preset (don't dump paths)
 
-Show the user the full discovered list, grouped by source. Add anything they name that discovery missed (a niche tool, an external drive, a pasted export). This list is the proposed scan scope.
+Group what you found and propose a **safe default**, not a list of every folder. Making the user choose among 47 locations is the burden this step exists to remove. Offer three presets:
 
-## Step 3 — get approval
+- **recommended scan:** AI sessions + exports + markdown-heavy workspaces. Exclude secrets, client data, private DMs, binaries, vendor/build dirs.
+- **full scan:** all discovered locations, still excluding obvious vendor/build/binary junk.
+- **manual:** the user names exact paths.
 
-The user approves which locations you may read. Default to proposing all of them, but read only what they confirm. **Discovery is automatic; reading is consented.** If they'd rather just point you at files manually, that's fine — let them.
+Add anything the user names that discovery missed (a niche tool, an external drive, a pasted export).
 
-## Step 4 — audit the approved scope
+## Step 3 — get approval (one question)
 
-For each approved source, record:
+Ask exactly one question, in this shape — not a path-by-path quiz:
+
+> I recommend scanning AI sessions, exports, and markdown-heavy workspaces while excluding secrets/client/private-DM/vendor/build/binary folders. Approve recommended scan, edit scope, or manual mode?
+
+The user approves which locations you may read. Read only what they confirm. **Discovery is automatic; reading is consented.** If they pick manual mode, let them point you at files directly.
+
+## Step 4 — triage, then audit the approved scope
+
+**Inventory before deep reading.** Within the approved scope:
+
+- Prefer `.md`, `.txt`, `.json`, `.jsonl`, `.csv`, chat exports, posts, drafts, feedback, rejected outputs.
+- Skip by default: `.git`, `node_modules`, `.venv`, `dist`, `build`, `__pycache__`, binaries, large media, vendor dirs, dependency lockfiles unless relevant.
+- Ask only about genuinely ambiguous sensitive folders.
+- Prioritize rejected outputs and feedback over raw volume.
+
+Then, for each approved source, record:
 
 ```
 source: <path>
@@ -36,7 +53,7 @@ likely yields: <voice / taste / judgment / behavior / context / lexicon / anti-s
 
 ## Rules
 
-- Discover widely; read only the approved scope. Never read beyond it.
+- Discover widely; read only the approved scope. Never read beyond it. Never scan everything automatically without approval.
 - If you hit secrets, tokens, client data, or private DMs: skip them, flag to the user, do not copy into any output.
 - Rank sources by contrast value: rejected outputs and feedback first, then the user's own writing and session behavior, then references, then generic notes.
 - Past agent sessions are the richest behavior source — they show how the user actually talks, corrects, and decides, not just what they say about themselves.

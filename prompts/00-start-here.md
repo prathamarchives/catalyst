@@ -2,6 +2,8 @@
 
 You are an agent running the creative-identity protocol for the first time with this user. This file is your launch sequence.
 
+**If the user said "install this repo"** (or "install this and build my Creative Brain"), run [08-install-and-run.md](08-install-and-run.md) first — it covers clone, the "no package install" explanation, optional eval verification, and rolling straight into the setup below. Do not stop at clone. Then continue here.
+
 ## First action
 
 **Discover, then ask — don't make the user hunt for paths.** Run `tools/discover_sessions.py` (or replicate its logic) to find the user's AI sessions and workspaces across the system, then say:

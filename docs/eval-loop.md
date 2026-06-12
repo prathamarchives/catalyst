@@ -25,6 +25,8 @@ This repo was built with the loop it preaches. This doc explains how to run it �
 | privacy_check | privacy commitments stay present and uncontradicted |
 | example_proof_check | the worked example keeps a real, complete before/after proof |
 | proof_quality_check | the proof stays honest: competent baseline with no strawman demo phrases, blind A/B protocol with hidden labels + brain_win_rate + effectiveness, memory distillation/decay/contradiction-review, quick + full load modes, rejected examples outrank banned-word lists |
+| install_protocol_check | the repo teaches autonomous install→setup: repo-link/clone flow, "no package install", optional eval verification, permission-block handling, do-not-stop-at-clone, recommended scan preset, one approval question, scan-only-approved-scope, provider caveat, minimal-burden language; and the install docs never ASSERT stale patterns ("no package.json, done", "scan everything automatically") — quoting them as negated anti-patterns is exempt |
+| output_consistency_check | AGENTS output structure and prompt 04 name the same generated files (five workflows + blind-ab-log); prompt 05 has quick/full modes; the feedback-memory template has the lifecycle sections; the example skill has load modes; README + REPO-USE-PROMPT carry the install-from-link path |
 | agent_runnability_static_check | a fresh agent can still find its first action, the output path, and the full loop |
 
 Two manual rubrics (`evals/rubrics/`) cover what scripts can't: live agent-runnability and taste quality. Score them by hand after substantive changes.

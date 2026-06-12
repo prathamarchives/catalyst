@@ -2,6 +2,17 @@
 
 Open this repo with your agent, then paste the variant that matches your setup. Every variant carries the same core instruction: discover first, ask for approval, then build the Creative Brain.
 
+## Install from a link (start here)
+
+If you're starting from scratch, the shortest path is to give your agent the repo link and one line:
+
+```txt
+https://github.com/prathamarchives/creative-identity
+help me install this and build my Creative Brain
+```
+
+This is a protocol repo, not an app — there is no package install, and a correct agent does not stop at clone. It clones/opens, confirms no package step is needed, then runs setup: discover sources → recommend a safe scan scope → one approval question → build the brain. See [INSTALL.md](INSTALL.md) for the full flow and [SETUP-PROMPT.md](SETUP-PROMPT.md) for autonomous / cautious / manual copy-paste versions. The variants below are for driving individual agents directly.
+
 ## Core prompt (any agent)
 
 ```txt
