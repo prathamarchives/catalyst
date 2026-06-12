@@ -40,6 +40,7 @@ Run [prompts/02-interview-user.md](prompts/02-interview-user.md) after the audit
 Run [prompts/03-extract-creative-identity.md](prompts/03-extract-creative-identity.md). Core rules:
 
 - **Extract taste by contrast.** What the user likes + what the user rejects + the rejected examples themselves. Negative taste is half the brain.
+- **Annotated rejected examples with reasons outrank generic banned-word lists.** Word bans are fallback guardrails — most banned-word tables converge on the same genre hygiene for everyone. The real signal is the bad output itself, why the user killed it, what a better output would preserve, and what rule it teaches. Invest extraction effort there first.
 - **Extract behavior, not just stated preferences.** Read across sessions: how the user actually works, talks, decides, and corrects — their patterns, not their self-description. How they open a session, what they kill, how they react under feedback. Behavior observed across many sessions outranks anything they say about themselves once.
 - **Separate observed patterns from assumptions.** Mark every claim as `observed` (with evidence) or `assumed` (needs user confirmation). Get assumptions confirmed or cut them.
 - **Preserve raw user language.** If the user says "this is cringe", the brain says "this is cringe" — not "the user prefers more authentic phrasing".
@@ -73,6 +74,7 @@ outputs/<name>/
   skills/creative-identity-skill.md
   workflows/        (copied + customized from templates/workflows/)
   examples/before-after.md
+  evals/blind-ab-log.md   (started on the first blind A/B test)
   README.md         (one-paragraph index of what's here)
 ```
 
@@ -95,6 +97,21 @@ Run [prompts/06-run-before-after-proof.md](prompts/06-run-before-after-proof.md)
 
 The proof is the point. Same model, different brain — made visible.
 
+Two honesty rules for the proof:
+
+- **The generic output must be competent.** Write the genuinely best cold version — clear, accurate, shippable. Do not strawman the baseline; a brain that only beats cartoon slop has proven nothing, because no serious model writes cartoon slop.
+- **The before/after is the visible demo, not the measurement.** The person judging it knows which output is which. For an unbiased read, run the blind A/B proof.
+
+## Blind A/B proof
+
+Run [prompts/10-run-blind-ab-proof.md](prompts/10-run-blind-ab-proof.md) whenever a real task allows it. Generate the task without the brain (output A) and with it (output B), hide and shuffle the labels, let the user pick a winner blind and explain why, then reveal, log it in the blind A/B log (template: `templates/evals/blind-ab-log.md`), and only then update feedback-memory.md. Track the running metric:
+
+```
+brain_win_rate = brain_wins / total_blind_tests
+```
+
+Blind preference is not the only success metric — log effectiveness too: did the post land, did the DM get a response, did the artifact get real feedback, did the output help the user act. Full protocol: [docs/blind-ab-eval.md](docs/blind-ab-eval.md).
+
 ## Feedback loop and feedback memory
 
 Run [prompts/07-update-from-feedback.md](prompts/07-update-from-feedback.md) every time the user reacts. When the user says things like *keep this / more like this / less like this / this is cringe / not me / too polished / too generic / closer*:
@@ -105,6 +122,20 @@ Run [prompts/07-update-from-feedback.md](prompts/07-update-from-feedback.md) eve
 4. Update the generated skill if the correction changes how agents should operate.
 
 Feedback that doesn't become a durable rule is wasted. Memory is what makes this compound — **session to session.** Every time the user runs an agent loaded with this brain, that session is new source material: new corrections, new behavior, new phrases. Re-run discovery on recent sessions periodically and fold them back in. The brain should be sharper every session than it was the last, not reset.
+
+## Memory lifecycle
+
+Append-only memory degrades over months: duplicates accumulate, context goes stale, rules contradict each other. Compounding requires maintenance, not just appending. Run [prompts/09-distill-and-decay-memory.md](prompts/09-distill-and-decay-memory.md) every 10 feedback entries or on a weekly/monthly rhythm — and forcibly when feedback-memory.md gets too long to read in a couple of minutes:
+
+- merge duplicate rules into one rule with all its dated receipts
+- promote corrections given twice into standing laws
+- decay stale context into a retired section — current context expires; taste and judgment do not decay by age
+- mark time-sensitive rules with date and context
+- surface contradictions to the user for review — never resolve them silently
+- preserve raw quotes through every pass; never delete a strong rejected example without a replacement
+- if feedback-memory.md gets noisy, split it: active rules / raw feedback log / retired-stale rules
+
+Full model: [docs/memory-lifecycle.md](docs/memory-lifecycle.md).
 
 ## Privacy
 
@@ -126,6 +157,7 @@ Before declaring the run complete, verify:
 - [ ] rejected-examples.md has at least one real entry with the reason it failed
 - [ ] The generated skill exists and reflects this user, not the template
 - [ ] before-after.md exists with both outputs and a concrete "what changed"
+- [ ] The generic output in the proof is competent — not a strawman the brain was rigged to beat
 - [ ] User feedback was requested and feedback-memory.md updated
 - [ ] No templates were modified
 - [ ] No secrets/client data/private DMs copied into the brain

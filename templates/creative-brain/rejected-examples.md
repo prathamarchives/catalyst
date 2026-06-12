@@ -4,6 +4,8 @@
 
 The gold file. Actual outputs the user killed, stored verbatim, with the real reason they died. Positive guidance tells an agent what to aim for; this file tells it what failure looks like in this user's world — which is the faster way to learn taste. This file is allowed to contain slop: that's what it's for.
 
+Annotated rejected examples with reasons outrank generic banned-word lists. A ban on "unlock" is genre hygiene anyone could write; a killed draft with the user's raw reaction, what a better version would have kept, and the rule it teaches is identity. When in doubt about where to invest extraction effort, it's here, not in growing the word table in anti-slop.md.
+
 ## what belongs here
 
 - the rejected output itself, verbatim (or the failing excerpt)

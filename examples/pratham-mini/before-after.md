@@ -6,13 +6,13 @@ Write a short X post announcing creative-identity: an open-source repo that lets
 
 ## generic output
 
-> 🚀 Excited to announce creative-identity — an open-source tool that helps AI agents truly understand YOU!
+> I open-sourced creative-identity: a repo you hand to an AI agent to build a "Creative Brain" from your past sessions, notes, drafts, and feedback.
 >
-> ✨ Analyzes your notes, drafts & feedback
-> ✨ Builds a personalized "Creative Brain"
-> ✨ Makes every AI output sound authentically you
+> Most AI output sounds generic because the model doesn't know your style. This maps your voice, taste, and corrections into files your agent loads before it writes anything.
 >
-> The future of personalized AI is here. Check it out and let me know what you think! 👇
+> Local-first, markdown only, MIT licensed. Link below if you want to try it.
+
+Note: this baseline is competent — clear, accurate, technically correct, and shippable. That is deliberate. A proof that beats cartoon slop proves nothing; no frontier model writes that way. The baseline here is what a good model produces cold, and it loses on specificity and ownership, not on quality.
 
 ## creative brain output
 
@@ -24,18 +24,24 @@ Write a short X post announcing creative-identity: an open-source repo that lets
 
 ## what changed
 
-- **opening**: generic version opens with announcement enthusiasm; brain version opens with the contradiction (smarter models vs agent that doesn't know you) — voice.md's documented opening pattern
-- **vocabulary**: "doesn't know a damn about you", "creative brain", "same model. different brain." pulled from lexicon.md; emoji and "excited to announce" killed by anti-slop.md (enthusiasm performance, banned vibes)
-- **structure**: feature checklist (✨ bullets) replaced with one mechanism stated plainly — judgment.md kill rule: never explain via listicle cadence
-- **claims**: "makes every AI output sound authentically you" cut as an overclaim with no receipt; replaced with what the repo literally does — feedback-memory standing law: claims need receipts
-- **ending**: corporate CTA ("Check it out and let me know!") replaced with flat "repo below" — anti-slop.md banned corporate CTA endings
+- **stance**: the generic version describes a tool; the brain version takes a position (people keep upgrading models instead of context). voice.md's documented opening pattern: start from the contradiction, plainly stated
+- **opening**: generic opens with "I open-sourced X:" — a product description. brain opens with the thing that's wrong, then arrives at the repo as the fix
+- **vocabulary**: "creative brain", "same model. different brain." pulled from lexicon.md; "compounding from your corrections" names the mechanism instead of summarizing it
+- **specificity**: generic says "maps your voice, taste, and corrections" — true but abstract. brain names the actual source material (old sessions, drafts, rejected outputs, feedback), which is the part a reader can picture
+- **ending**: "Link below if you want to try it" is a polite ask; "repo below" assumes the reader decides — judgment.md: don't perform the invitation
+- **what didn't change**: length, claims, structure count. the generic version has no failure to fix — the difference is ownership. nothing in it could only have come from this user
 
 ## user feedback
 
-raw: "second one is actually me. first one i would delete on sight. 'compounding from your corrections' is a keeper line. maybe even shorter next time — the middle paragraph can lose a clause."
+raw: "ngl the first one is fine, i'd just never post it. second is me except 'so i open-sourced the fix' — 'the fix' is a claim with no receipt, the repo link has to earn that. and the middle para lists four things, cut one. 'same model. different brain.' stays."
+
+what improved: the brain version got the opening and the ending right on the first try; both would have needed rewrites cold.
+
+what still feels off: "the fix" overclaims before the artifact is shown; the middle paragraph over-enumerates. the brain didn't catch its own receipts law — the rule existed and the output violated it anyway.
 
 ## feedback memory update
 
-- entry added to feedback-memory.md (2026-06-12): raw quote above; rule: middle paragraphs can over-enumerate — when listing what the brain holds, cap at 3-4 items
-- lexicon.md: added "compounding from your corrections" as a live phrase (user-confirmed keeper)
-- no new bans: existing rules caught everything in the generic version
+- entry added to feedback-memory.md (2026-06-12): raw quote above; recurrence of the 2026-06-10 standing law "claims need receipts" — "the fix"-grade claims get softened or carry the artifact in the same breath; strengthened in judgment.md (kill rules)
+- second rule: when listing what the brain holds, cap at 3 items; patched voice.md (rhythm)
+- judgment.md note added: the bar is beating a competent baseline on ownership and specificity, not beating bad output on quality
+- lexicon.md: "same model. different brain." confirmed as a keeper line (user-confirmed)

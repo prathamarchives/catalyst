@@ -17,7 +17,7 @@ Everyone has access to the same intelligence now. Models keep getting stronger a
 - **a protocol** ([AGENTS.md](AGENTS.md)) that any agent can execute
 - **a set of prompts** ([prompts/](prompts/)) that walk the agent through discover → audit → interview → extraction → build → proof → feedback
 - **a discovery helper** ([tools/discover_sessions.py](tools/discover_sessions.py)) that finds your AI sessions and workspaces across the system, read-only
-- **templates** ([templates/](templates/)) for the ten Creative Brain files, a generated skill, and three workflows
+- **templates** ([templates/](templates/)) for the ten Creative Brain files, a generated skill, five workflows, and a blind A/B log
 - **an eval harness** ([evals/](evals/)) that keeps the repo itself honest
 
 It is not a web app. There are no accounts, no hosted service, no analytics UI, no required API keys. It is a repo-as-product: markdown-first, local-first, agent-runnable.
@@ -84,6 +84,10 @@ outputs/<name>/
     use-creative-brain.md
     update-from-feedback.md
     review-output.md
+    blind-ab-test.md
+    distill-memory.md
+  evals/
+    blind-ab-log.md      blind preference results + running win-rate
   examples/
     before-after.md      the proof artifact
 ```
@@ -94,11 +98,13 @@ Templates are never overwritten — they stay pristine in `templates/` so you ca
 
 Every correction you give ("keep this", "less like this", "too polished", "not me") becomes a durable rule in `feedback-memory.md`, and the affected brain file gets patched. The generated skill tells future agents to load that memory before any creative work — so the system gets sharper with use instead of resetting. See [prompts/07-update-from-feedback.md](prompts/07-update-from-feedback.md).
 
+Memory is maintained, not just appended: append-only memory rots over months. A periodic distillation pass merges duplicate rules, promotes recurring corrections to standing laws, decays stale context, and surfaces contradictions for your review. See [docs/memory-lifecycle.md](docs/memory-lifecycle.md) and [prompts/09-distill-and-decay-memory.md](prompts/09-distill-and-decay-memory.md).
+
 ## How do I run the before/after proof?
 
 Ask the agent to run [prompts/06-run-before-after-proof.md](prompts/06-run-before-after-proof.md). It takes one real task, produces a generic baseline without the Creative Brain, then the same task with the brain loaded, and writes `before-after.md` documenting the task, both outputs, what changed, your feedback, and the memory update. That artifact is the point: same model, different brain, visible difference.
 
-A worked example lives at [examples/pratham-mini/before-after.md](examples/pratham-mini/before-after.md).
+A worked example lives at [examples/pratham-mini/before-after.md](examples/pratham-mini/before-after.md). Two honesty rules: the generic baseline must be competent — the best cold version, not a strawman — and the before/after is the demo, not the measurement. For an unbiased measurement, run the blind A/B proof ([prompts/10-run-blind-ab-proof.md](prompts/10-run-blind-ab-proof.md)): labels hidden and shuffled, you pick a winner blind, and the result feeds a running `brain_win_rate` plus an effectiveness log (did the post land, did the DM get a response). See [docs/blind-ab-eval.md](docs/blind-ab-eval.md).
 
 ## What is local/private by default?
 

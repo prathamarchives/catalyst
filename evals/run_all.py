@@ -14,6 +14,7 @@ import content_slop_check
 import protocol_completeness_check
 import privacy_check
 import example_proof_check
+import proof_quality_check
 import agent_runnability_static_check
 import vision_fit_check
 
@@ -23,6 +24,7 @@ EVALS = [
     ("protocol_completeness_check", protocol_completeness_check),
     ("privacy_check", privacy_check),
     ("example_proof_check", example_proof_check),
+    ("proof_quality_check", proof_quality_check),
     ("agent_runnability_static_check", agent_runnability_static_check),
     ("vision_fit_check", vision_fit_check),
 ]

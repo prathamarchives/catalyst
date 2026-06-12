@@ -4,6 +4,10 @@
 
 Everything banned: words, phrases, structures, cadences, vibes, formats. This file exists so the agent can kill failure modes *before* the user has to. It is allowed — required — to contain the banned phrases themselves; that's its job.
 
+## signal hierarchy
+
+**Annotated rejected examples with reasons outrank generic banned-word lists.** Everyone bans the same startup-vapor words now; a word list says little about *this* user. Banned words are fallback guardrails — the real signal lives in rejected-examples.md: the bad output itself, why the user killed it, what a better output would preserve, and what rule it teaches. When this file and a rejected example disagree about what's slop for this user, the example wins. Keep the word table, but spend the effort on the examples.
+
 ## what belongs here
 
 - banned words and phrases, listed plainly in a table

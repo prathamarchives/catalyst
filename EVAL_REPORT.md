@@ -13,10 +13,23 @@ environment: Windows 11, Python via `py` launcher, no external dependencies
 | protocol_completeness_check | PASS | AGENTS.md contains all 14 required protocol sections (role, do-not-write-content-first, source audit, interview, extraction, evidence/quotes, creative brain, output path, never-overwrite-templates, skill writing, before/after proof, feedback memory, privacy, quality checklist) |
 | privacy_check | PASS | local-first / user-controls-files / no-cloud-upload / outputs-gitignored / secrets-client-data-DM warnings present across docs/privacy.md, README, AGENTS.md; .gitignore carries `outputs/**` + `!outputs/.gitkeep`; no scraping overclaims anywhere |
 | example_proof_check | PASS | examples/pratham-mini/before-after.md has all six sections (task, generic output, creative brain output, what changed, user feedback, feedback memory update) and the two outputs are non-identical |
+| proof_quality_check | PASS | the proof loop is honest: no strawman demo phrases in the worked before/after; blind A/B protocol present (hidden/shuffled labels, brain_win_rate, no-strawman rule, effectiveness beyond preference); memory lifecycle present (distillation, decay, stale handling, merge duplicates, contradiction review); skill template carries quick + full load modes; rejected-examples-outrank-banned-words stated in AGENTS.md, both templates, and prompts/03 |
 | agent_runnability_static_check | PASS | entry files establish: first action, discovery-first flow, approved scan scope, output path, small interview rounds, template protection, skill generation, before/after proof, feedback updates |
 | vision_fit_check | PASS | protocol delivers the cross-system vision: discovery step + named locations (Claude Code/Cursor/exports) + consent-gated scope + discovery helper exists + behavior extraction + session-to-session compounding + paste-and-go (added 2026-06-12 auto-research loop) |
 
-Final run exit code: 0 — `RESULT: ALL PASS` (7/7).
+Final run exit code: 0 — `RESULT: ALL PASS` (8/8).
+
+## 2026-06-12 — honest proof + memory lifecycle (v0.1 quality patch)
+
+External feedback called out four weaknesses: the worked example beat a strawman baseline no frontier model would write; evals checked structure, not whether the brain improves output; memory was append-only and would rot; the skill always loaded the full brain. Patched in one pass:
+
+- **honest baseline**: examples/pratham-mini/before-after.md regenerated — the generic output is now competent (clear, accurate, shippable) and loses on specificity and ownership, not on quality. The user-feedback section was rewritten to be earned: it includes what improved, what still feels off (the brain output violated its own receipts law), and the rules updated.
+- **blind A/B protocol**: docs/blind-ab-eval.md, prompts/10-run-blind-ab-proof.md, templates/workflows/blind-ab-test.md, templates/evals/blind-ab-log.md. Labels hidden and shuffled, user picks blind, memory updates only after the reveal, `brain_win_rate = brain_wins / total_blind_tests` tracked over time, plus effectiveness beyond preference (did the post land / DM get a response / artifact get feedback / output help the user act).
+- **memory lifecycle**: docs/memory-lifecycle.md, prompts/09-distill-and-decay-memory.md, templates/workflows/distill-memory.md. Append fast, distill every 10 entries or weekly/monthly, merge duplicates, promote standing laws, decay stale context (taste never decays by age), contradictions trigger user review, split noisy files into active rules / raw log / retired.
+- **load modes**: skill template now has quick mode (identity, voice, anti-slop, feedback-memory) for replies/edits/DMs and full mode (all ten) for posts, strategy, positioning.
+- **signal hierarchy**: "annotated rejected examples with reasons outrank generic banned-word lists" added to AGENTS.md, anti-slop + rejected-examples templates, and prompts/03.
+- **ratchet**: evals/proof_quality_check.py enforces all of the above and bans strawman demo phrases (rocket emoji, "future is here", "10x", and friends) from the proof file — anti-slop.md / rejected-examples.md files exempt, same rule as the slop check.
+- **eval honesty**: negative-tested against a planted bad root (strawman-laden before-after, no blind A/B or lifecycle docs): 29 failures — 7/7 strawman phrases flagged, 8 missing files, all 14 requirement markers caught. On the patched repo: 0 failures. It discriminates; it isn't vacuously passing.
 
 ## 2026-06-12 — auto-research loop (vision-fit)
 
@@ -67,7 +80,7 @@ One real failure: this report didn't exist yet (it's written from real results, 
 
 ## final status
 
-All 7 script evals PASS (exit code 0). Manual rubrics documented, live-agent run pending. Repo committed only after the green run.
+All 8 script evals PASS (exit code 0). Manual rubrics documented, live-agent run pending. Repo committed only after the green run.
 
 ## raw output (final run)
 
@@ -77,6 +90,7 @@ PASS content_slop_check
 PASS protocol_completeness_check
 PASS privacy_check
 PASS example_proof_check
+PASS proof_quality_check
 PASS agent_runnability_static_check
 PASS vision_fit_check
 

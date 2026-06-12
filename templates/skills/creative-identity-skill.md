@@ -12,7 +12,18 @@ brain location: `../creative-brain/` (relative to this file)
 
 Use before writing, designing, editing, researching, ideating, replying, or planning creative work for <user/project>. If the task touches anything the user will put their name on, load the brain first.
 
-## load order
+## load modes
+
+Loading the full brain for a two-line reply is waste; loading the lite set for a landing page is malpractice. Pick the mode by stakes, not by habit.
+
+**quick mode** — the minimum that keeps output recognizably theirs:
+
+1. identity.md
+2. voice.md
+3. anti-slop.md
+4. feedback-memory.md
+
+**full mode** — the whole brain, in order:
 
 1. identity.md — who they are, what they are not
 2. context.md — what's live right now (check the `updated:` date)
@@ -20,8 +31,16 @@ Use before writing, designing, editing, researching, ideating, replying, or plan
 4. taste.md — what they like, by contrast
 5. judgment.md — how they decide
 6. anti-slop.md — what is banned
-7. feedback-memory.md — standing laws + recent corrections
+7. references.md — who they learn from, what not to copy
 8. rejected-examples.md — what failure looks like
+9. feedback-memory.md — standing laws + recent corrections
+10. lexicon.md — their words
+
+**use quick mode for:** short replies, lightweight edits, fast DMs, one-shot tone checks.
+
+**use full mode for:** strategy, public posts, landing pages, deep writing, offer positioning — anything that affects public identity or product direction.
+
+When unsure, or when a quick task starts touching positioning mid-stream, escalate to full mode before finalizing.
 
 ## operating rules
 
@@ -41,6 +60,8 @@ This brain is not static. It should be sharper every session than the last:
 - at the end of a working session, fold what you learned back into the brain: new feedback into feedback-memory.md, new patterns into voice/taste/judgment, new operating behavior into the relevant file
 - periodically re-discover recent sessions (tools/discover_sessions.py) and ingest them — the brain compounds from how the user keeps working, not just the one-time build
 - a correction given twice is a standing law; promote it
+- memory has a lifecycle, not just an append: when feedback-memory.md gets long or contradictory, run the distill-memory workflow — merge duplicates, promote standing laws, decay stale context, surface contradictions to the user
+- the honest scoreboard is the blind A/B log — run the blind-ab-test workflow on real tasks and watch brain_win_rate over time
 
 ## this user specifically
 

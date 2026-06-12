@@ -24,6 +24,7 @@ This repo was built with the loop it preaches. This doc explains how to run it â
 | protocol_completeness_check | AGENTS.md keeps every required protocol section as the repo evolves |
 | privacy_check | privacy commitments stay present and uncontradicted |
 | example_proof_check | the worked example keeps a real, complete before/after proof |
+| proof_quality_check | the proof stays honest: competent baseline with no strawman demo phrases, blind A/B protocol with hidden labels + brain_win_rate + effectiveness, memory distillation/decay/contradiction-review, quick + full load modes, rejected examples outrank banned-word lists |
 | agent_runnability_static_check | a fresh agent can still find its first action, the output path, and the full loop |
 
 Two manual rubrics (`evals/rubrics/`) cover what scripts can't: live agent-runnability and taste quality. Score them by hand after substantive changes.

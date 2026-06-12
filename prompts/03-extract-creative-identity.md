@@ -41,6 +41,8 @@ Mark every finding:
 
 Likes alone are weak signal. For every "likes X", hunt for the matching "rejects Y". The pairs are the taste. Rejected examples with reasons are worth more than any amount of positive description.
 
+**Annotated rejected examples with reasons outrank generic banned-word lists.** Banned-word tables converge on the same genre hygiene for everyone; they are fallback guardrails, not identity. The high-signal extraction is the killed output itself, why the user killed it, what a better output would have preserved, and what rule it teaches. Given an hour, spend fifty minutes on rejected-examples.md and ten on the word table.
+
 ## Extract behavior from sessions, not just statements
 
 Past AI sessions and workspaces are a behavior record. Mine them for how the user *actually operates*, which is often different from how they describe themselves:
