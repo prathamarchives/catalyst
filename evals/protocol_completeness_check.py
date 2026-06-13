@@ -15,7 +15,7 @@ REQUIREMENTS = [
     ("creative brain", ["creative brain"]),
     ("output path (outputs/<name>/)", ["outputs/<user-or-project>/", "outputs/<name>/"]),
     ("never overwrite templates", ["never overwrite templates", "do not overwrite anything under `templates/`"]),
-    ("skill writing", ["creative-identity-skill", "write a reusable skill"]),
+    ("skill writing", ["catalyst-skill", "write a reusable skill"]),
     ("before/after proof", ["before/after proof", "before/after"]),
     ("feedback memory", ["feedback-memory", "feedback memory"]),
     ("privacy", ["## privacy", "privacy rules"]),

@@ -24,7 +24,7 @@ CORPUS_REQUIREMENTS = [
     ("tells agent where to create outputs", ["outputs/<name>/", "outputs/<user-or-project>/"]),
     ("small interview rounds", ["small rounds"]),
     ("never overwrite templates", ["never overwrite templates", "never overwrite anything in `templates/`", "never edit these masters"]),
-    ("write the generated skill", ["creative-identity-skill"]),
+    ("write the generated skill", ["catalyst-skill"]),
     ("run before/after proof", ["before/after proof", "before/after"]),
     ("update from feedback", ["update-from-feedback", "update feedback-memory", "update the system"]),
 ]

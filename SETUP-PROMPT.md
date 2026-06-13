@@ -5,7 +5,7 @@ Three versions. Pick the one that matches how much you trust your agent and how 
 If you only remember one sentence, it's this:
 
 ```txt
-https://github.com/prathamarchives/creative-identity
+https://github.com/prathamarchives/catalyst
 help me install this and build my Creative Brain
 ```
 
@@ -13,39 +13,48 @@ A correctly-behaving agent does the rest, pausing only for scope approval and ta
 
 ---
 
-## 1. Full autonomous (local agent, can run code)
+## 1. Autonomous authorized mode (local agent, can run code)
 
-For Claude Code, Cursor, Hermes, or any agent that can run Python and read/write files on your machine.
+For Claude Code, Cursor, Hermes, or any agent that can run Python and read/write files on your machine. This prompt **pre-authorizes the safe scan**, so the agent runs start to finish without stopping to ask a second approval question.
 
 ```txt
-Clone/open this repo: https://github.com/prathamarchives/creative-identity
+https://github.com/prathamarchives/catalyst
+install this and build my Creative Brain.
+You may discover and scan my local AI sessions, agent memories, workspaces, markdown notes, and project files using the recommended safe scope.
+Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and anything sensitive.
+Build everything locally, write the personalized skill/workflows/evals, run a before/after proof, then ask me for taste feedback and update the brain.
+```
+
+That single prompt is enough. If your agent wants the explicit checklist, this is what it should do — without asking the approval question again, because you already authorized it above:
+
+```txt
 Read INSTALL.md, README.md, AGENTS.md, and REPO-USE-PROMPT.md.
 Confirm no package install is needed — this is a protocol repo, not an app. Do not stop at clone.
 Run the evals if allowed (py evals/run_all.py); if blocked, say so and continue — verification is optional.
-Then follow prompts/08-install-and-run.md:
+Then follow prompts/08-install-and-run.md in autonomous authorized mode:
 - Discover candidate source locations with tools/discover_sessions.py (read-only).
-- Recommend a safe scan scope. Do not dump a folder list at me.
-- Ask me ONE approval question: approve recommended scan / edit scope / manual mode.
-- Scan only the approved scope. Inventory before deep reading. Prioritize rejected outputs and feedback.
+- Recommend the safe scan scope and state the exclusions in one line. Do not dump a folder list at me.
+- I already authorized the recommended safe scan — proceed without asking the approval question again. Only stop if you hit something genuinely sensitive that the exclusions didn't catch.
+- Scan only the recommended safe scope. Inventory before deep reading. Prioritize rejected outputs and feedback.
 - Build my Creative Brain under outputs/<name>/ (ten creative-brain files).
-- Write my customized creative-identity-skill.md.
+- Write my customized catalyst-skill.md.
 - Copy all five workflows into outputs/<name>/workflows/.
 - Initialize outputs/<name>/evals/blind-ab-log.md.
 - Run the before/after proof (prompts/06). Run the blind A/B proof (prompts/10) when possible.
 - Ask me for feedback, then update feedback-memory.md, the affected brain files, and the skill.
 - Set up a memory distillation cadence (prompts/09).
 - Hand off with exact instructions for how I load the brain next time.
-Only interrupt me for: scan-scope approval, small interview gaps, taste feedback, and any destructive or external action.
+Only interrupt me for: small interview gaps, taste feedback, anything sensitive outside the authorized scope, and any destructive or external action.
 ```
 
 ---
 
-## 2. Cautious, permission-gated (review each major step)
+## 2. Cautious approval mode (review each major step)
 
 For when you want to approve actions as they happen, or your agent runs in a restricted environment.
 
 ```txt
-Clone/open https://github.com/prathamarchives/creative-identity and read INSTALL.md + AGENTS.md.
+Clone/open https://github.com/prathamarchives/catalyst and read INSTALL.md + AGENTS.md.
 This is a protocol repo — confirm no package install is needed, but do not stop at clone.
 Work through prompts/08-install-and-run.md and pause for my OK before each of these:
 1. running any code (evals, discovery helper)
@@ -78,8 +87,8 @@ Don't write my content before the brain exists. Ask me in small rounds, not all 
 ## what to expect either way
 
 1. Agent clones/opens the repo and tells you install is complete (no package step).
-2. Agent discovers source locations and recommends a safe scan scope — one approval question.
-3. You approve (or edit, or go manual). It reads only what you approved.
+2. Agent discovers source locations and recommends a safe scan scope. In autonomous authorized mode it proceeds (you already authorized it); in cautious approval mode it asks one approval question.
+3. It reads only what you authorized — never beyond the recommended safe scope unless you widen it.
 4. It builds `outputs/<name>/` — brain, skill, workflows, blind A/B log.
 5. It runs one real task twice (without and with your brain) and shows you both.
 6. You react. It turns reactions into durable memory and patches the brain + skill.

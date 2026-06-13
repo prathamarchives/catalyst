@@ -1,10 +1,10 @@
-# creative-identity skill — template
+# catalyst skill — template
 
-This is the master template for the generated skill. Agents: copy and customize into `outputs/<name>/skills/creative-identity-skill.md`. A generated skill that still reads like this template is a failed generation — the "this user specifically" and "red flags" sections must be filled with the actual user's rules.
+This is the master template for the generated skill. Agents: copy and customize into `outputs/<name>/skills/catalyst-skill.md`. A generated skill that still reads like this template is a failed generation — the "this user specifically" and "red flags" sections must be filled with the actual user's rules.
 
 ---
 
-# <User/Project> Creative Identity Skill
+# <User/Project> Catalyst Skill
 
 brain location: `../creative-brain/` (relative to this file)
 
@@ -44,13 +44,17 @@ When unsure, or when a quick task starts touching positioning mid-stream, escala
 
 ## operating rules
 
+- this is situated judgment, not just brand voice — apply the brain to creative, coding, workflow, and strategy tasks alike. Taste decides what to ship; judgment decides what to build and how.
 - use the user's raw language as source, not decoration
 - preserve taste and judgment over generic fluency
 - act from observed behavior, not just stated preference — when they conflict, behavior wins
+- ask fewer, better questions: load the brain first and answer from it; only ask when the brain genuinely can't settle it. Small rounds, never a wall.
+- answer in the user's style without caricaturing them — match register, don't perform a parody of their tics
+- review every output against the user's standards before showing it — run it past anti-slop.md and rejected-examples.md, kill what they'd reject
 - check rejected examples before finalizing anything
 - if output feels generic, stop and ask what context is missing — do not ship "averaging the internet"
 - after feedback, update feedback-memory.md and any affected brain file
-- when rules conflict, newer beats older; ask the user if it matters
+- when rules conflict, newer beats older, and surface stale or contradictory memory instead of guessing
 
 ## compounding (session to session)
 

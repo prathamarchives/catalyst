@@ -15,7 +15,7 @@ brain_win_rate = brain_wins / total_blind_tests
 ## entries (newest first)
 
 ### #1 — 2026-06-12 — post
-task: short X post announcing creative-identity
+task: short X post announcing catalyst
 winner: brain
 user reason (verbatim, captured blind): "second one is the one i'd actually post. first is fine but it's anyone's launch tweet."
 memory update (after reveal): none new — existing rules drove it; noted "the fix" overclaim as a recurrence (see feedback-memory)

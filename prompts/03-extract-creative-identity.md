@@ -12,8 +12,9 @@ For each target, collect patterns **with evidence quotes** from the user's actua
 | context | live projects, goals, audience, offers, constraints, current priorities |
 | voice | rhythm, openings, sentence length, casing, slang, how they argue, how they joke |
 | taste | what they praise, what they return to, what they notice first, quality markers |
-| judgment | their decision rules: what makes something good / weak / too safe / too much |
+| judgment | their decision rules: what makes something good / weak / too safe / too much — applied across creative, coding, workflow, and strategy work, not just content |
 | behavior | how they actually work across sessions: how they open, what they kill, how they react to feedback, their operating patterns — observed, not self-described |
+| craft / workflow | coding and workflow preferences, tools and conventions they reach for, how they like to drive an agent (terse vs detailed, plan-first vs ship-first), what they delegate vs control |
 | anti-slop | words, structures, vibes, formats they reject or mock |
 | references | who/what they admire — with "what to learn" and "what not to copy" per reference |
 | rejected examples | actual outputs they killed, verbatim, with the failure reason |

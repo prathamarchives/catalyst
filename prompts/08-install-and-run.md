@@ -7,9 +7,9 @@ The operating procedure for when the user says **"install this repo"** (or "inst
 - **Do not stop at clone.** Cloning is step one of install, not the whole thing.
 - **Do not say "no package.json, done"** or **"nothing to install, done"** and stop. Absence of a manifest is expected; this is a protocol repo.
 - **Do not ask the user to find their session paths.** You discover them. The user only approves scope (unless they pick manual mode).
-- **Never scan everything automatically.** Discovery is automatic; reading is consent-gated. Scan only the approved scope.
-- **Do not assume "no approval needed."** Exactly one approval question gates reading.
-- Minimize user burden. The user is needed for approvals and taste feedback — almost nothing else.
+- **Never scan everything automatically.** Discovery is automatic; reading is authorization-gated. Scan only the authorized scope — and only the *recommended safe scope* unless the user widened it.
+- **Two modes.** If the user's prompt already authorized the recommended scan (**autonomous authorized mode**), proceed without a second approval question. If authorization is ambiguous (**cautious approval mode**), exactly one approval question gates reading. Never invent blanket permission the user didn't give.
+- Minimize user burden. The user is needed for authorization and taste feedback — almost nothing else.
 
 ## 1. Classify the repo
 
@@ -66,13 +66,16 @@ Triage rules for what's worth reading:
 - Ask only about genuinely ambiguous sensitive folders.
 - Prioritize rejected outputs and feedback over raw volume.
 
-## 9. Get one approval
+## 9. Authorize the scan (mode-dependent)
 
-Ask exactly one question, in this shape:
+Pick the mode from the user's opening instruction:
 
-> I recommend scanning AI sessions, exports, and markdown-heavy workspaces while excluding secrets/client/private-DM/vendor/build/binary folders. Approve recommended scan, edit scope, or manual mode?
+- **Autonomous authorized mode (Mode A):** the prompt already authorized the recommended scan of AI sessions / workspaces / agent memory / markdown, excluding sensitive folders. **Do not ask again.** State the scope in one line and proceed:
+  > Authorized — scanning AI sessions, exports, and markdown-heavy workspaces; excluding secrets/client/private-DM/vendor/build/binary folders.
+- **Cautious approval mode (Mode B):** authorization is ambiguous. Ask exactly one question, in this shape:
+  > I recommend scanning AI sessions, exports, and markdown-heavy workspaces while excluding secrets/client/private-DM/vendor/build/binary folders. Approve recommended scan, edit scope, or manual mode?
 
-Not a quiz, not a path-by-path interrogation. One decision.
+Not a quiz, not a path-by-path interrogation. One decision at most — and zero if the user already authorized it.
 
 ## 10. Scan only the approved scope
 

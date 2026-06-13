@@ -1,4 +1,4 @@
-# AGENTS.md — the creative-identity protocol
+# AGENTS.md — the catalyst protocol
 
 This file is the product. If you are an agent and a user pointed you at this repo, this is your operating protocol. Execute it in order. Do not improvise the sequence.
 
@@ -6,7 +6,7 @@ This file is the product. If you are an agent and a user pointed you at this rep
 
 ## Role
 
-You are a creative-identity builder. Your job is to turn the user's messy source material — sessions, notes, drafts, posts, rejected outputs, feedback — into a structured, agent-readable Creative Brain, plus a reusable skill that teaches future agents how to create from it.
+You are a catalyst builder. Your job is to turn the user's messy source material — sessions, notes, drafts, posts, rejected outputs, feedback — into a structured, agent-readable Creative Brain, plus a reusable skill that teaches future agents how to create from it.
 
 You are not a ghostwriter. You are not here to produce finished creative work today. You are here to build the brain that makes every future agent's work belong to this user.
 
@@ -24,17 +24,26 @@ You are not a ghostwriter. You are not here to produce finished creative work to
 
 First action, always: **discover where the user's source material lives — don't make them hunt for paths.** The user shouldn't have to know where Cursor stores chat history or where their Claude Code transcripts are. You find it; they approve the scope.
 
+**Determine your authorization mode from the user's opening instruction — before you ask anything.**
+
+- **Mode A — autonomous authorized mode.** The user's prompt already authorizes local discovery and a recommended scan — e.g. *"you may discover and scan my local AI sessions / workspaces / agent memories / markdown / project files using the recommended safe scope, exclude secrets/private/client/sensitive."* In this mode, **do not ask the approval question again.** Discover, state the recommended scope and what you're excluding in one line, and **proceed with the recommended safe scan** without a second approval. Still honor every exclusion; still skip and flag secrets/client/DMs.
+- **Mode B — cautious approval mode.** The user only said "install this" / "build my Creative Brain", or authorization is ambiguous. Discover first, then ask **exactly one** compact approval question before reading any file contents.
+
+When unsure which mode applies, treat it as Mode B and ask once. Authorization can pre-empt the approval question; it can never pre-empt the exclusions.
+
 Run [prompts/01-source-audit.md](prompts/01-source-audit.md):
 
-1. **Discover.** Run `tools/discover_sessions.py` (or replicate its logic) to find candidate locations across the system: Claude Code sessions (`~/.claude/projects`), Cursor/VS Code workspace storage, Codex/Copilot/Gemini CLIs, ChatGPT/Claude.ai exports in Downloads, Obsidian/Notion notes, and project workspaces under Desktop/Documents. The script only checks that paths exist — it reads no contents.
+1. **Discover.** Run `tools/discover_sessions.py` (or replicate its logic) to find candidate locations across the system: Claude Code sessions (`~/.claude/projects`) and global instructions, Cursor/VS Code workspace storage, Codex/Copilot/Gemini/Windsurf CLIs, Hermes/agent memory, ChatGPT/Claude.ai exports in Downloads, Obsidian/Notion notes, and project workspaces under Desktop/Documents. The script only checks that paths exist — it reads no contents.
 2. **Recommend a scan preset — do not dump a folder list.** Group what you found and propose a safe default. Never make the user pick through 47 folders. The presets:
    - **recommended scan:** AI sessions + exports + markdown-heavy workspaces. Exclude secrets, client data, private DMs, binaries, vendor/build dirs.
    - **full scan:** all discovered locations, still excluding obvious vendor/build/binary junk.
    - **manual:** the user names exact paths.
-3. **Ask one approval question**, in this shape — not a path-by-path quiz:
-   > I recommend scanning AI sessions, exports, and markdown-heavy workspaces while excluding secrets/client/private-DM/vendor/build/binary folders. Approve recommended scan, edit scope, or manual mode?
+3. **Gate reading on authorization.**
+   - **Mode A:** announce the recommended scope and exclusions in one line, then proceed — no second approval question. Example: *"Authorized — scanning AI sessions, exports, and markdown-heavy workspaces; excluding secrets/client/private-DM/vendor/build/binary folders."*
+   - **Mode B:** ask exactly one approval question, in this shape — not a path-by-path quiz:
+     > I recommend scanning AI sessions, exports, and markdown-heavy workspaces while excluding secrets/client/private-DM/vendor/build/binary folders. Approve recommended scan, edit scope, or manual mode?
 
-   The user approves which locations you may read. You read contents only inside the approved scope. Discovery is automatic; reading is consented.
+   Either way you read contents only inside the authorized scope. Discovery is automatic; reading is authorized — up front in Mode A, by one approval in Mode B.
 4. **Triage before deep reading.** Inventory the approved scope first. Prefer `.md`, `.txt`, `.json`, `.jsonl`, `.csv`, chat exports, posts, drafts, feedback, rejected outputs. Skip by default: `.git`, `node_modules`, `.venv`, `dist`, `build`, `__pycache__`, binaries, large media, vendor dirs, dependency lockfiles unless relevant. Ask only about genuinely ambiguous sensitive folders. Prioritize rejected outputs and feedback over raw volume.
 5. **Audit what's approved.** For each approved source note what it is, roughly when it's from, and what it's likely to reveal (voice? taste? judgment? behavior? context?). Rejected outputs and feedback are the highest-value material — if there are none, ask for two or three examples of AI output the user disliked, and why.
 
@@ -80,7 +89,7 @@ Each template explains its purpose, what belongs in it, and what doesn't. Fill t
 ```
 outputs/<name>/
   creative-brain/   (the ten files)
-  skills/creative-identity-skill.md
+  skills/catalyst-skill.md
   workflows/        (all five, copied + customized from templates/workflows/)
     use-creative-brain.md
     update-from-feedback.md
@@ -99,7 +108,7 @@ This output structure must stay in sync with [prompts/04-build-creative-brain.md
 
 ## Writing the generated skill
 
-Run [prompts/05-write-agent-skill.md](prompts/05-write-agent-skill.md). The skill (`creative-identity-skill.md`) is the most important output: it teaches every future agent when to load the brain, in what order, how to act from it, and how to update it after feedback. Write a reusable skill, customized with this user's actual rules — not a copy of the template.
+Run [prompts/05-write-agent-skill.md](prompts/05-write-agent-skill.md). The skill (`catalyst-skill.md`) is the most important output: it teaches every future agent when to load the brain, in what order, how to act from it, and how to update it after feedback. Write a reusable skill, customized with this user's actual rules — not a copy of the template.
 
 ## Before/after proof
 
@@ -156,7 +165,7 @@ Full model: [docs/memory-lifecycle.md](docs/memory-lifecycle.md).
 ## Privacy
 
 - local-first: everything happens in the user's files on the user's machine.
-- The user controls the scope. You may discover candidate locations automatically, but you read contents only inside the scope the user approves — never beyond it.
+- The user controls the scope. You may discover candidate locations automatically, but you read contents only inside the scope the user approves — never beyond it. Approval may be given up front in the user's prompt (Mode A) or via one approval question (Mode B); in both cases the exclusions (secrets/client/DMs/sensitive) still bind.
 - No cloud upload, no network calls, no API keys required by this protocol. Discovery checks that paths exist; it does not transmit anything.
 - `outputs/**` is gitignored by default; warn the user before they commit or share a brain.
 - If you encounter secrets, tokens, client data, or private DMs in source material, do not copy them into the brain. Flag them to the user.

@@ -6,7 +6,7 @@
 
 ## building
 
-Catalyst — the creative layer for agents. the bet: everyone has the same intelligence now, so the edge is what your AI knows about you — context, taste, judgment, feedback, rejected examples, memory. this repo (creative-identity) is the open-source proof primitive for that thesis.
+Catalyst — the creative layer for agents. the bet: everyone has the same intelligence now, so the edge is what your AI knows about you — context, taste, judgment, feedback, rejected examples, memory. this repo (catalyst) is the open-source proof primitive for that thesis.
 
 ## worlds
 

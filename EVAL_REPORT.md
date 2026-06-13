@@ -1,8 +1,10 @@
 # EVAL_REPORT
 
-date: 2026-06-12
+date: 2026-06-13
 command: `py evals/run_all.py` (Windows launcher; `python evals/run_all.py` on systems with python on PATH)
 environment: Windows 11, Python via `py` launcher, no external dependencies
+
+> Repo renamed `creative-identity` → **catalyst** on 2026-06-13. The generated skill is now `catalyst-skill.md`. Public URL shape: `https://github.com/prathamarchives/catalyst` (local repo prepared for the rename; rename the remote to match before publishing). The output artifact is still called the **Creative Brain**.
 
 ## results (final run)
 
@@ -14,14 +16,26 @@ environment: Windows 11, Python via `py` launcher, no external dependencies
 | privacy_check | PASS | local-first / user-controls-files / no-cloud-upload / outputs-gitignored / secrets-client-data-DM warnings present across docs/privacy.md, README, AGENTS.md; .gitignore carries `outputs/**` + `!outputs/.gitkeep`; no scraping overclaims anywhere |
 | example_proof_check | PASS | examples/pratham-mini/before-after.md has all six sections (task, generic output, creative brain output, what changed, user feedback, feedback memory update) and the two outputs are non-identical |
 | proof_quality_check | PASS | the proof loop is honest: no strawman demo phrases in the worked before/after; blind A/B protocol present (hidden/shuffled labels, brain_win_rate, no-strawman rule, effectiveness beyond preference); memory lifecycle present (distillation, decay, stale handling, merge duplicates, contradiction review); skill template carries quick + full load modes; rejected-examples-outrank-banned-words stated in AGENTS.md, both templates, and prompts/03 |
-| install_protocol_check | PASS | install/setup corpus establishes the autonomous flow (repo-link/clone, no-package-install, optional eval verification, permission-block handling, do-not-stop-at-clone, recommended scan preset, one approval question, scan-only-approved-scope, provider caveat, minimal-burden); install docs assert no stale patterns (negated anti-patterns exempt) |
+| install_protocol_check | PASS | install/setup corpus establishes the autonomous flow (repo-link/clone, no-package-install, optional eval verification, permission-block handling, do-not-stop-at-clone, recommended scan preset, one approval question, scan-only-authorized-scope, provider caveat, minimal-burden) **plus the two-mode authorization model** (autonomous authorized mode + cautious approval mode documented, authorization-skips-second-approval, the one-shot autonomous prompt present, exclusions-still-bind); install docs assert no stale patterns (negated anti-patterns exempt) |
 | output_consistency_check | PASS | AGENTS output structure ≡ prompt 04 build list (five workflows + blind-ab-log); prompt 05 has quick/full modes; feedback-memory template has active-rules/raw-log/retired/distillation-log; example skill has load modes; README + REPO-USE-PROMPT carry the install-from-link path |
 | agent_runnability_static_check | PASS | entry files establish: first action, discovery-first flow, approved scan scope, output path, small interview rounds, template protection, skill generation, before/after proof, feedback updates |
 | vision_fit_check | PASS | protocol delivers the cross-system vision: discovery step + named locations (Claude Code/Cursor/exports) + consent-gated scope + discovery helper exists + behavior extraction + session-to-session compounding + paste-and-go (added 2026-06-12 auto-research loop) |
 
 Final run exit code: 0 — `RESULT: ALL PASS` (10/10).
 
-## 2026-06-12 — autonomous install + setup protocol
+## 2026-06-13 — rename to Catalyst + two-mode authorization
+
+Rebranded the repo/product from `creative-identity` to **catalyst**, and resolved the "fewer interruptions vs. consent" tension with an explicit two-mode authorization model.
+
+- **rename**: product/protocol name, URLs (`prathamarchives/catalyst`), and the generated skill filename (`creative-identity-skill.md` → `catalyst-skill.md`) updated across docs, prompts, templates, examples, and the eval markers that key off the skill name. The "Creative Brain" artifact name is unchanged. The single prompt-step filename `prompts/03-extract-creative-identity.md` was kept (it names the *action* — extracting the user's creative identity — not the brand).
+- **autonomous authorized mode (Mode A)**: when the user's opening prompt pre-authorizes discovery + the recommended safe scan (excluding sensitive folders), the agent proceeds without asking the approval question again. A prominent one-shot copy/paste prompt unlocks it (featured in README, INSTALL, SETUP-PROMPT, REPO-USE-PROMPT).
+- **cautious approval mode (Mode B)**: unchanged behavior — discover first, then exactly one compact approval question before reading. Default when authorization is ambiguous.
+- **privacy preserved**: discovery stays automatic + read-only; *reading* is authorization-gated (up front in Mode A, by one question in Mode B); exclusions bind in both modes. The privacy and slop evals still pass, so the autonomous framing avoided overclaim ("reads everything automatically" / "silent collection" remain banned/contradiction phrases the prose dodges).
+- **situated judgment, not just voice**: extraction (prompts/03) and the generated skill now explicitly cover coding, workflow, and strategy preferences and operating-style-with-agents, plus "ask fewer/better questions", "answer without caricaturing", and "review every output against the user's standards".
+- **discovery scope strengthened**: `tools/discover_sessions.py` added agent-memory (global `CLAUDE.md`, generated skills, Hermes), Windsurf/Codeium, and generic CLI-agent config — still stdlib-only, read-only, offline.
+- **ratchet**: `install_protocol_check.py` gained five requirements — autonomous-authorized-mode documented, cautious-approval-mode documented, authorization-skips-second-approval, one-shot-prompt-present, exclusions-still-bind. All pass on the real repo; removing the mode docs would fail them.
+
+
 
 The real-world failure that prompted this: a user said "install this repo," the agent cloned it, saw no `package.json`/`requirements.txt`, concluded "nothing to install," and stopped — pushing all the actual work back onto the user. The repo now teaches agents that this is a protocol repo where install = clone + verify + run setup, and that setup is almost entirely the agent's job.
 

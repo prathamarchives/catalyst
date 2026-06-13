@@ -36,7 +36,7 @@ The full output folder — this list must match the output structure in [AGENTS.
 
 ```
 outputs/<name>/
-  skills/creative-identity-skill.md   (written in step 05)
+  skills/catalyst-skill.md   (written in step 05)
   workflows/                          (copy ALL FIVE from templates/workflows/, customize user-specific steps)
     use-creative-brain.md
     update-from-feedback.md

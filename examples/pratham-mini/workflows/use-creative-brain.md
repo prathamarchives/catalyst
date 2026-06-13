@@ -4,7 +4,7 @@ Customized copy of the master workflow for this brain.
 
 ## steps
 
-1. Load `../skills/creative-identity-skill.md` — it carries the user-specific rules and load order.
+1. Load `../skills/catalyst-skill.md` — it carries the user-specific rules and load order.
 2. Load the brain in order; check `context.md`'s `updated:` date first — his phase moves fast and stale context produces off-target work.
 3. Restate the task: which surface? personal account (raw founder/operator) vs Catalyst account (precise product thesis) vs docs — the register differs hard.
 4. Draft from his world: lexicon phrases, contradiction-first openings, one receipt minimum.

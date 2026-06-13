@@ -25,13 +25,16 @@ Group what you found and propose a **safe default**, not a list of every folder.
 
 Add anything the user names that discovery missed (a niche tool, an external drive, a pasted export).
 
-## Step 3 — get approval (one question)
+## Step 3 — gate reading on authorization
 
-Ask exactly one question, in this shape — not a path-by-path quiz:
+First read the user's opening instruction to pick a mode:
 
-> I recommend scanning AI sessions, exports, and markdown-heavy workspaces while excluding secrets/client/private-DM/vendor/build/binary folders. Approve recommended scan, edit scope, or manual mode?
+- **Mode A — autonomous authorized mode.** The prompt already says you may discover and scan the recommended safe scope (excluding secrets/client/DMs/sensitive). **Do not ask the approval question again.** State the scope and exclusions in one line and proceed:
+  > Authorized — scanning AI sessions, exports, and markdown-heavy workspaces; excluding secrets/client/private-DM/vendor/build/binary folders.
+- **Mode B — cautious approval mode.** The prompt is just "install this" / "build my brain", or authorization is unclear. Ask exactly one question, in this shape — not a path-by-path quiz:
+  > I recommend scanning AI sessions, exports, and markdown-heavy workspaces while excluding secrets/client/private-DM/vendor/build/binary folders. Approve recommended scan, edit scope, or manual mode?
 
-The user approves which locations you may read. Read only what they confirm. **Discovery is automatic; reading is consented.** If they pick manual mode, let them point you at files directly.
+When unsure which mode, default to Mode B and ask once. Read only inside the authorized scope. **Discovery is automatic; reading is authorized — up front in Mode A, by one approval in Mode B.** If the user picks manual mode, let them point you at files directly. The exclusions bind in both modes.
 
 ## Step 4 — triage, then audit the approved scope
 

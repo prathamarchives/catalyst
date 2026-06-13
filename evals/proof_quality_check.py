@@ -24,7 +24,7 @@ INSPECTED_FILES = [
     "docs/memory-lifecycle.md",
     "templates/workflows/blind-ab-test.md",
     "templates/workflows/distill-memory.md",
-    "templates/skills/creative-identity-skill.md",
+    "templates/skills/catalyst-skill.md",
     "AGENTS.md",
     "prompts/09-distill-and-decay-memory.md",
     "prompts/10-run-blind-ab-proof.md",
@@ -90,12 +90,12 @@ REQUIREMENTS = [
     ),
     (
         "quick load mode",
-        ["templates/skills/creative-identity-skill.md"],
+        ["templates/skills/catalyst-skill.md"],
         ["quick mode"],
     ),
     (
         "full load mode",
-        ["templates/skills/creative-identity-skill.md"],
+        ["templates/skills/catalyst-skill.md"],
         ["full mode"],
     ),
     (

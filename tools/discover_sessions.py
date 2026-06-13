@@ -46,14 +46,20 @@ def _candidates():
         ("claude-code", HOME / ".claude" / "history.jsonl", "Claude Code command history"),
         ("claude-code", HOME / ".claude.json", "Claude Code config + recent project list"),
         ("claude-code", HOME / ".claude" / "todos", "Claude Code todo state"),
+        # --- Agent memory / global instructions / generated skills ---
+        ("agent-memory", HOME / ".claude" / "CLAUDE.md", "Claude Code global instructions (how you operate)"),
+        ("agent-memory", HOME / ".claude" / "skills", "Claude Code generated/installed skills"),
+        ("agent-memory", HOME / ".hermes", "Hermes agent sessions / memory (if present)"),
+        ("agent-memory", HOME / ".config" / "agent", "generic CLI-agent config/memory (if present)"),
         # --- Cursor ---
         ("cursor", appdata / "Cursor" / "User" / "workspaceStorage", "Cursor per-workspace state (incl. chat)"),
         ("cursor", appdata / "Cursor" / "User" / "globalStorage", "Cursor global state"),
-        ("cursor", HOME / ".cursor", "Cursor home config"),
-        # --- Codex / Copilot / Gemini / other CLIs ---
+        ("cursor", HOME / ".cursor", "Cursor home config (incl. .cursorrules referenced per-repo)"),
+        # --- Codex / Copilot / Gemini / Windsurf / other CLIs ---
         ("codex", HOME / ".codex", "Codex CLI sessions/config"),
         ("copilot", HOME / ".copilot", "Copilot CLI state"),
         ("gemini", HOME / ".gemini", "Gemini CLI state"),
+        ("windsurf", HOME / ".codeium" / "windsurf", "Windsurf / Codeium agent state"),
         ("ollama", HOME / ".ollama", "Local Ollama data"),
         # --- ChatGPT / Claude.ai exports (manual data exports usually land here) ---
         ("chatgpt-export", downloads, "look for ChatGPT export zip / conversations.json"),
@@ -105,7 +111,7 @@ def run(root=None):
 
 def main():
     result = discover()
-    print("# creative-identity - discovered source locations (read-only)\n")
+    print("# catalyst - discovered source locations (read-only)\n")
     if not result["found"]:
         print("No known AI-session/workspace locations found in default paths.")
         print("Point the agent at your files manually (see prompts/01-source-audit.md).")

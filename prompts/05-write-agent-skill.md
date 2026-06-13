@@ -1,19 +1,19 @@
 # 05 — write the agent skill
 
-Goal: generate `outputs/<name>/skills/creative-identity-skill.md` — the reusable skill that teaches any future agent to create from this user's brain and keep improving it.
+Goal: generate `outputs/<name>/skills/catalyst-skill.md` — the reusable skill that teaches any future agent to create from this user's brain and keep improving it.
 
 This is the most important output of the whole protocol. The brain is data; the skill is the behavior.
 
 ## Use the template as the skeleton
 
-Start from `templates/skills/creative-identity-skill.md` (do not modify the template itself). Customize every section with this user's actual rules — a skill that could belong to anyone is a failed skill.
+Start from `templates/skills/catalyst-skill.md` (do not modify the template itself). Customize every section with this user's actual rules — a skill that could belong to anyone is a failed skill.
 
 ## Required sections
 
 The generated skill must include all of these — `output_consistency_check` enforces the load-mode sections specifically:
 
 ```md
-# <User/Project> Creative Identity Skill
+# <User/Project> Catalyst Skill
 
 ## when to use
 Use before writing, designing, editing, researching, ideating, replying,
@@ -33,11 +33,14 @@ rejected-examples, feedback-memory, lexicon (full load order)
 positioning — anything that affects public identity or product direction.
 
 ## operating rules
+- situated judgment, not just voice — apply to creative, coding, workflow, and strategy tasks
 - use the user's raw language as source, not decoration
 - preserve taste and judgment over generic fluency
-- check rejected examples before finalizing anything
+- ask fewer, better questions — answer from the brain first; only ask what it can't settle
+- answer in the user's style without caricaturing them
+- review every output against anti-slop.md and rejected-examples.md before showing it
 - if output feels generic, stop and ask what context is missing
-- after feedback, update feedback-memory.md and any affected file
+- after feedback, update feedback-memory.md and any affected file; surface stale/contradictory memory
 
 ## compounding (session to session)
 Every session run with this brain is new source material; fold corrections,

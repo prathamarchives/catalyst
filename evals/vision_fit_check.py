@@ -26,7 +26,7 @@ def run(root: Path) -> list:
     audit = _read(root, "prompts/01-source-audit.md")
     start = _read(root, "prompts/00-start-here.md")
     extract = _read(root, "prompts/03-extract-creative-identity.md")
-    skill = _read(root, "templates/skills/creative-identity-skill.md")
+    skill = _read(root, "templates/skills/catalyst-skill.md")
     readme = _read(root, "README.md")
     use_prompt = _read(root, "REPO-USE-PROMPT.md")
     discovery_corpus = agents + "\n" + audit + "\n" + start

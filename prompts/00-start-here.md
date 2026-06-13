@@ -1,6 +1,6 @@
 # 00 — start here (first-run protocol)
 
-You are an agent running the creative-identity protocol for the first time with this user. This file is your launch sequence.
+You are an agent running the catalyst protocol for the first time with this user. This file is your launch sequence.
 
 **If the user said "install this repo"** (or "install this and build my Creative Brain"), run [08-install-and-run.md](08-install-and-run.md) first — it covers clone, the "no package install" explanation, optional eval verification, and rolling straight into the setup below. Do not stop at clone. Then continue here.
 
@@ -20,7 +20,7 @@ Do not read contents until the user approves the scope. Do not generate any cont
 2. **Interview** — run [02-interview-user.md](02-interview-user.md) in small rounds (3–4 questions max per round).
 3. **Extract** — run [03-extract-creative-identity.md](03-extract-creative-identity.md). Evidence quotes required; observed vs assumed separated.
 4. **Build** — run [04-build-creative-brain.md](04-build-creative-brain.md). All ten files under `outputs/<name>/creative-brain/`. Never overwrite anything in `templates/`.
-5. **Skill** — run [05-write-agent-skill.md](05-write-agent-skill.md). Write the generated skill to `outputs/<name>/skills/creative-identity-skill.md`.
+5. **Skill** — run [05-write-agent-skill.md](05-write-agent-skill.md). Write the generated skill to `outputs/<name>/skills/catalyst-skill.md`.
 6. **Proof** — run [06-run-before-after-proof.md](06-run-before-after-proof.md). One real task, generic vs brain-loaded, documented.
 7. **Feedback** — run [07-update-from-feedback.md](07-update-from-feedback.md). Turn the user's reactions into durable memory.
 

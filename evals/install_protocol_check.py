@@ -52,9 +52,33 @@ REQUIREMENTS = [
     ("recommended scan preset", ["recommended scan"], "any"),
     ("edit + manual scan modes", ["edit scope", "manual mode"], "all"),
     ("one approval question", ["approve recommended scan"], "any"),
-    ("scan only the approved scope", ["approved scope"], "any"),
+    ("scan only the approved scope", ["approved scope", "authorized scope"], "any"),
     ("model/provider caveat", ["provider"], "any"),
     ("minimal user-burden language", ["user burden", "minimal burden", "almost no"], "any"),
+    # --- two-mode authorization model ---
+    ("autonomous authorized mode documented", ["autonomous authorized mode"], "any"),
+    ("cautious approval mode documented", ["cautious approval mode"], "any"),
+    (
+        "authorization can skip the second approval question",
+        [
+            "do not ask the approval question again",
+            "without asking the approval question again",
+            "without a second approval",
+            "no second approval",
+            "without asking again",
+        ],
+        "any",
+    ),
+    (
+        "one-shot autonomous install prompt is present",
+        ["you may discover and scan my local ai sessions"],
+        "any",
+    ),
+    (
+        "exclusions still bind under authorization",
+        ["exclusions still bind", "exclusions always bind", "exclusions bind", "still honor every exclusion"],
+        "any",
+    ),
 ]
 
 # Stale/bad patterns that must never be ASSERTED as instructions.

@@ -1,4 +1,4 @@
-# creative-identity
+# catalyst
 
 An open-source repo your agent can run to build your Creative Brain.
 
@@ -12,13 +12,15 @@ Same model. Different brain.
 
 Everyone has access to the same intelligence now. Models keep getting stronger and cheaper. Output is abundant. The edge is not the model — it is the context, taste, judgment, feedback, rejected examples, and memory around the model.
 
-`creative-identity` turns your messy context into agent-readable taste, memory, and judgment. It is:
+`catalyst` turns your messy context into agent-readable taste, memory, and judgment. It is:
 
 - **a protocol** ([AGENTS.md](AGENTS.md)) that any agent can execute
 - **a set of prompts** ([prompts/](prompts/)) that walk the agent through discover → audit → interview → extraction → build → proof → feedback
 - **a discovery helper** ([tools/discover_sessions.py](tools/discover_sessions.py)) that finds your AI sessions and workspaces across the system, read-only
 - **templates** ([templates/](templates/)) for the ten Creative Brain files, a generated skill, five workflows, and a blind A/B log
 - **an eval harness** ([evals/](evals/)) that keeps the repo itself honest
+
+It is not generic AI memory. Memory is the backend ingredient; the visible value is **situated judgment** — agents that know what you would approve, reject, and never ship, across creative, coding, workflow, and strategy work. Not a folder of memories: your taste, context, standards, and judgment, in a form an agent can act on.
 
 It is not a web app. There are no accounts, no hosted service, no analytics UI, no required API keys. It is a repo-as-product: markdown-first, local-first, agent-runnable.
 
@@ -34,14 +36,28 @@ The fix is a brain the agent can load: who you are, how you talk, what you like,
 
 ## How do I install it?
 
-Give your agent the repo link and one sentence:
+**The one-shot prompt (autonomous authorized mode).** Paste this into an agent that can read your files and run code (Claude Code, Cursor, Hermes). It pre-authorizes the safe scan, so the agent goes start to finish without stopping to ask a second approval question:
 
 ```txt
-https://github.com/prathamarchives/creative-identity
+https://github.com/prathamarchives/catalyst
+install this and build my Creative Brain.
+You may discover and scan my local AI sessions, agent memories, workspaces, markdown notes, and project files using the recommended safe scope.
+Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and anything sensitive.
+Build everything locally, write the personalized skill/workflows/evals, run a before/after proof, then ask me for taste feedback and update the brain.
+```
+
+**The cautious one-liner (approval mode).** If you'd rather review the scope before anything is read:
+
+```txt
+https://github.com/prathamarchives/catalyst
 help me install this and build my Creative Brain
 ```
 
-There is no package install — this is a markdown protocol, not an app, so there's no `package.json` / `requirements.txt` to install and no dependencies. "Install" means clone/open the repo, optionally verify it (`py evals/run_all.py`), and then run setup. A correct agent does not stop at clone: it rolls straight into discovering your sources, recommending a safe scan scope, and building the brain. Full install flow: [INSTALL.md](INSTALL.md). Copy/paste setup prompts (autonomous, cautious, manual): [SETUP-PROMPT.md](SETUP-PROMPT.md).
+The agent discovers your sources, then asks **one** compact approval question before reading anything.
+
+**Two modes, one rule.** Discovery (checking which locations exist) is always automatic and read-only. Reading file *contents* needs authorization — either given up front in the one-shot prompt (**autonomous authorized mode**), or via one approval question when permission is ambiguous (**cautious approval mode**). The agent never reads beyond the scope you authorized.
+
+There is no package install — this is a markdown protocol, not an app, so there's no `package.json` / `requirements.txt` to install and no dependencies. "Install" means clone/open the repo, optionally verify it (`py evals/run_all.py`), and then run setup. A correct agent does not stop at clone: it rolls straight into discovering your sources, scanning the authorized scope, and building the brain. Full install flow: [INSTALL.md](INSTALL.md). Copy/paste setup prompts (autonomous, cautious, manual): [SETUP-PROMPT.md](SETUP-PROMPT.md).
 
 ## How do I use it?
 
@@ -54,7 +70,7 @@ Read README.md and AGENTS.md. Use this repo to build my Creative Brain.
 First discover where my AI sessions, notes, exports, and workspaces live.
 Do not read file contents yet. Show me the discovered locations and ask what you may scan.
 Audit only the approved scope, interview me in small rounds, create files under outputs/<name>/,
-write a creative-identity skill, run a before/after proof, then ask for feedback
+write a catalyst skill, run a before/after proof, then ask for feedback
 and update the system so it compounds session to session.
 ```
 
@@ -64,11 +80,12 @@ The agent's first action is always the same: discover where your AI sessions and
 
 The discovery step finds most of it for you. It looks across the system for:
 
-- Claude Code sessions (`~/.claude/projects`), Cursor / VS Code chat history, Codex / Copilot / Gemini CLI state
+- Claude Code sessions (`~/.claude/projects`) and global instructions (`CLAUDE.md`), Cursor / VS Code chat history, Codex / Copilot / Gemini / Windsurf CLI state
+- agent memory: Hermes sessions, global instruction files, generated skills, repo-local `AGENTS.md` / `.cursorrules` / memory docs
 - exported Claude / ChatGPT conversations in Downloads
 - notes (Obsidian vaults, Notion exports), docs, journals
-- project workspaces under Desktop / Documents — your real working folders
-- and from all of it: how you talk, what you reject, your behavior across sessions
+- project workspaces under Desktop / Documents — your real working folders, where coding and workflow behavior lives
+- and from all of it: how you talk, what you reject, how you decide, your behavior across sessions
 
 It shows you everything it found and reads only the scope you approve. You can also point it at anything it missed. More contrast (rejected drafts, feedback) beats more volume. See [prompts/01-source-audit.md](prompts/01-source-audit.md) for the discovery + audit flow.
 
@@ -90,7 +107,7 @@ outputs/<name>/
     feedback-memory.md   every correction, distilled into durable rules
     lexicon.md           your words, phrases, shorthand, mission lines
   skills/
-    creative-identity-skill.md   the reusable skill future agents load
+    catalyst-skill.md   the reusable skill future agents load
   workflows/
     use-creative-brain.md
     update-from-feedback.md
@@ -146,11 +163,11 @@ It checks structure, banned-phrase hygiene, protocol completeness, privacy langu
 
 ## Roadmap
 
-- **v0** — this repo: markdown protocol + eval harness
+- **v0** — this repo: the Catalyst protocol + eval harness
 - **v0.1** — stronger worked examples
 - **v0.2** — export guides for Claude / ChatGPT / Cursor / Hermes sessions
 - **v1** — optional tiny local CLI (scaffold outputs, run checks)
-- **v2** — Catalyst product layer, only after repeated manual proof
+- **v2** — a product layer on top of this protocol, only after repeated manual proof
 
 Details: [docs/roadmap.md](docs/roadmap.md).
 

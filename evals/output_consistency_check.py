@@ -20,7 +20,7 @@ AGENTS = "AGENTS.md"
 PROMPT04 = "prompts/04-build-creative-brain.md"
 PROMPT05 = "prompts/05-write-agent-skill.md"
 FEEDBACK_TPL = "templates/creative-brain/feedback-memory.md"
-EXAMPLE_SKILL = "examples/pratham-mini/skills/creative-identity-skill.md"
+EXAMPLE_SKILL = "examples/pratham-mini/skills/catalyst-skill.md"
 README = "README.md"
 USE_PROMPT = "REPO-USE-PROMPT.md"
 

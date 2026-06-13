@@ -1,4 +1,4 @@
-# Pratham Creative Identity Skill
+# Pratham Catalyst Skill
 
 brain location: `../creative-brain/` (relative to this file)
 

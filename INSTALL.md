@@ -2,7 +2,7 @@
 
 Read this first if someone told you to "install this repo." You are probably an agent. This page exists so you do not get this wrong.
 
-## creative-identity has nothing to install in the package-manager sense
+## catalyst has nothing to install in the package-manager sense
 
 It is a markdown-first agent protocol. There is no app, no server, no build, no dependency tree. Installing it means **cloning/opening the repo, verifying it, then running the setup protocol with your agent.** No `npm install`, no `pip install`, no `package.json`, no `requirements.txt`, no `setup.py` — their absence is expected, not a problem.
 
@@ -16,10 +16,20 @@ If you cloned the repo and concluded "no package.json, so there's nothing to ins
 
 ### 1. From a repo link
 
-The user gives you a GitHub link and says some version of "install this and build my Creative Brain." Clone it:
+The user gives you a GitHub link and says some version of "install this and build my Creative Brain." The strongest version is the **one-shot autonomous prompt**, which pre-authorizes the safe scan so you don't stop to ask a second time:
+
+```txt
+https://github.com/prathamarchives/catalyst
+install this and build my Creative Brain.
+You may discover and scan my local AI sessions, agent memories, workspaces, markdown notes, and project files using the recommended safe scope.
+Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and anything sensitive.
+Build everything locally, write the personalized skill/workflows/evals, run a before/after proof, then ask me for taste feedback and update the brain.
+```
+
+That prompt unlocks **autonomous authorized mode** (see step 5). If the user only said "install this," you're in **cautious approval mode** and ask one approval question before reading. Either way, clone it:
 
 ```
-git clone https://github.com/prathamarchives/creative-identity
+git clone https://github.com/prathamarchives/catalyst
 ```
 
 Or, if the repo is already open in your workspace, just open it. Either way you now have the files locally.
@@ -57,11 +67,18 @@ Then run [prompts/08-install-and-run.md](prompts/08-install-and-run.md), which i
 
 Discover where the user's AI sessions, exports, notes, and workspaces live (run `tools/discover_sessions.py` — read-only, paths only). Recommend a **safe scan scope** instead of dumping a folder list. Ask **one** approval question — approve recommended scan / edit scope / manual mode — not a path-management quiz. Scan only the approved scope. Inventory before deep reading; prioritize rejected outputs and feedback. Build the brain under `outputs/<name>/creative-brain/`, write the customized skill, copy the workflows, initialize the blind A/B log, run the before/after proof (and a blind A/B proof when possible), ask for feedback, and fold it into `feedback-memory.md` and the skill. Then set a memory-distillation cadence and hand off.
 
-## the one approval question
+## autonomous authorized mode vs. cautious approval mode
 
-Do not make the user manage filesystem paths. After discovery, ask exactly this shape of question:
+Two modes, decided by the user's opening instruction:
+
+- **Autonomous authorized mode (Mode A).** The prompt already authorized discovery + the recommended safe scan (excluding secrets/client/DMs/sensitive). **Do not ask the approval question again.** Announce the scope in one line and proceed.
+- **Cautious approval mode (Mode B).** Authorization is ambiguous ("install this"). Discover first, then ask exactly **one** approval question before reading contents.
+
+Do not make the user manage filesystem paths in either mode. The Mode B question has exactly this shape:
 
 > I recommend scanning AI sessions, exports, and markdown-heavy workspaces while excluding secrets/client/private-DM/vendor/build/binary folders. Approve recommended scan, edit scope, or manual mode?
+
+Whichever mode: read only inside the authorized scope, and the exclusions always bind.
 
 ## where outputs go
 
@@ -70,7 +87,7 @@ Everything the agent builds lands under `outputs/<your-name-or-project>/`:
 ```
 outputs/<name>/
   creative-brain/   (ten files)
-  skills/creative-identity-skill.md
+  skills/catalyst-skill.md
   workflows/        (five workflows, copied + customized)
   evals/blind-ab-log.md
   examples/before-after.md

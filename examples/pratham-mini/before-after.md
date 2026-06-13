@@ -2,11 +2,11 @@
 
 ## task
 
-Write a short X post announcing creative-identity: an open-source repo that lets any agent build your Creative Brain from your sessions, notes, drafts, and feedback.
+Write a short X post announcing catalyst: an open-source repo that lets any agent build your Creative Brain from your sessions, notes, drafts, and feedback.
 
 ## generic output
 
-> I open-sourced creative-identity: a repo you hand to an AI agent to build a "Creative Brain" from your past sessions, notes, drafts, and feedback.
+> I open-sourced catalyst: a repo you hand to an AI agent to build a "Creative Brain" from your past sessions, notes, drafts, and feedback.
 >
 > Most AI output sounds generic because the model doesn't know your style. This maps your voice, taste, and corrections into files your agent loads before it writes anything.
 >

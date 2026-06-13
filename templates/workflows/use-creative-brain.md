@@ -4,7 +4,7 @@ For any agent about to do creative work for this user. This is the default opera
 
 ## steps
 
-1. **Load the skill** — `skills/creative-identity-skill.md`. It sets the load modes and the user-specific rules.
+1. **Load the skill** — `skills/catalyst-skill.md`. It sets the load modes and the user-specific rules.
 2. **Pick a load mode and load the brain.** Quick mode (identity, voice, anti-slop, feedback-memory) for replies, edits, fast DMs, tone checks. Full mode (the whole brain, in order) for posts, strategy, landing pages, positioning — anything public-facing. Check context.md's `updated:` date; if stale, confirm what's live before proceeding. When a quick task starts touching positioning, escalate to full mode.
 3. **Restate the task** through the brain: who is this for, what surface, which voice register applies.
 4. **Draft** from the user's world — their phrases (lexicon), their openings (voice), their quality bar (judgment).

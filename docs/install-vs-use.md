@@ -18,7 +18,7 @@ There is no package manager step. Cloning or opening the repo *is* the install. 
 
 ## use — run the protocol
 
-This is the actual work and where almost all the value is: discover the user's source locations, recommend a safe scan scope, get one approval, scan only that scope, build `outputs/<name>/`, write the skill, run the proof, and compound from feedback. Driven by [prompts/08-install-and-run.md](../prompts/08-install-and-run.md) and the rest of `prompts/`.
+This is the actual work and where almost all the value is: discover the user's source locations, recommend a safe scan scope, get authorization (already given in the prompt under autonomous authorized mode, or one approval question under cautious approval mode), scan only that scope, build `outputs/<name>/`, write the skill, run the proof, and compound from feedback. Driven by [prompts/08-install-and-run.md](../prompts/08-install-and-run.md) and the rest of `prompts/`.
 
 ## bad / good
 
