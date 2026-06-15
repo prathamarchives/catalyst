@@ -10,7 +10,7 @@ Not voice cloning. Not a content pipeline. Not a hosted memory app.
 source material → Catalyst Brain → task routing → standards review → feedback capture → brain/skill/eval update → sharper next task
 ```
 
-The goal is not “AI writes like you.” The goal is: the agent knows who it represents, what standard the work must meet, how to judge outputs, what the user rejects, and how to improve from every task instead of resetting every session.
+The goal is: the agent knows who it represents, what standard the work must meet, how to judge outputs, what the user rejects, and how to improve from every task instead of resetting every session.
 
 ## Start here
 
