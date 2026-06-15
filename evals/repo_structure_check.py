@@ -22,9 +22,16 @@ def run(root: Path) -> list:
     if not outputs.is_dir():
         failures.append("missing outputs/")
     else:
-        extras = [p.name for p in outputs.iterdir() if p.name != ".gitkeep"]
-        if extras:
-            failures.append("outputs/ must contain only .gitkeep")
+        for child in outputs.iterdir():
+            if child.name == ".gitkeep":
+                continue
+            if not child.is_dir():
+                failures.append(f"unexpected file in outputs/: {child.name}")
+                continue
+            required_output_dirs = ["catalyst-brain", "skills", "workflows", "evals"]
+            missing = [name for name in required_output_dirs if not (child / name).is_dir()]
+            if missing:
+                failures.append(f"outputs/{child.name} is not a complete Catalyst Brain output; missing: {', '.join(missing)}")
     return failures
 
 if __name__ == "__main__":
