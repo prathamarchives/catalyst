@@ -1,67 +1,32 @@
-# 01 — source discovery & audit
+# 01 — source audit
 
-Goal: find where the user's material lives across the whole system, present the scope, get approval, then audit what's approved — all before reading anything deeply. The user should not have to hunt for paths; that's your job.
+Goal: find high-signal material and route it into the right Catalyst Brain files.
 
-## Step 1 — discover (automatic)
+## Discover first
 
-Run `tools/discover_sessions.py` (or replicate its logic). It checks known locations across the system and prints the ones that exist. It reads no contents — discovery is not reading.
+Check candidate locations for `.claude`, Claude Code projects, Cursor/VS Code state, Hermes memory, ChatGPT exports, Claude exports, Notion/Obsidian exports, markdown notes, and workspaces. Discovery only checks paths; it does not read contents.
 
-Locations it covers:
+## Authorization
 
-- **Claude Code** — `~/.claude/projects` (per-project session transcripts), `~/.claude.json`, `~/.claude/history.jsonl`
-- **Cursor / VS Code** — workspace storage under `%APPDATA%/Cursor` and `%APPDATA%/Code` (chat + composer history)
-- **Codex / Copilot / Gemini CLIs** — `~/.codex`, `~/.copilot`, `~/.gemini`
-- **ChatGPT / Claude.ai exports** — `~/Downloads` (export zips, `conversations.json`)
-- **Notes** — Obsidian vaults, Notion exports
-- **Workspaces / projects** — markdown-heavy folders under `~/Desktop` and `~/Documents`
+Recommended scan: AI sessions + exports + agent memories + markdown-heavy workspaces. Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and anything sensitive.
 
-## Step 2 — recommend a scan preset (don't dump paths)
+## Audit dimensions
 
-Group what you found and propose a **safe default**, not a list of every folder. Making the user choose among 47 locations is the burden this step exists to remove. Offer three presets:
+For each approved source, extract candidate evidence for:
 
-- **recommended scan:** AI sessions + exports + markdown-heavy workspaces. Exclude secrets, client data, private DMs, binaries, vendor/build dirs.
-- **full scan:** all discovered locations, still excluding obvious vendor/build/binary junk.
-- **manual:** the user names exact paths.
+- identity: who/what the agent represents
+- context: current work, people, projects, constraints
+- goals: desired outcomes and priorities
+- constraints: limits, boundaries, non-negotiables
+- standards: quality bar and success/failure criteria
+- judgment: decision rules, approvals/rejections, pushback patterns
+- taste: examples, references, cultural standards
+- voice: language, rhythm, phrases, not the whole product
+- anti-slop: repeated weak patterns
+- rejected examples: killed outputs and why
+- decision-rules: when to choose, wait, push, cut, ship
+- task-patterns: recurring task types and expected handling
+- feedback-memory: corrections and their durable rules
+- open-questions: uncertain assumptions
 
-Add anything the user names that discovery missed (a niche tool, an external drive, a pasted export).
-
-## Step 3 — gate reading on authorization
-
-First read the user's opening instruction to pick a mode:
-
-- **Mode A — autonomous authorized mode.** The prompt already says you may discover and scan the recommended safe scope (excluding secrets/client/DMs/sensitive). **Do not ask the approval question again.** State the scope and exclusions in one line and proceed:
-  > Authorized — scanning AI sessions, exports, and markdown-heavy workspaces; excluding secrets/client/private-DM/vendor/build/binary folders.
-- **Mode B — cautious approval mode.** The prompt is just "install this" / "build my brain", or authorization is unclear. Ask exactly one question, in this shape — not a path-by-path quiz:
-  > I recommend scanning AI sessions, exports, and markdown-heavy workspaces while excluding secrets/client/private-DM/vendor/build/binary folders. Approve recommended scan, edit scope, or manual mode?
-
-When unsure which mode, default to Mode B and ask once. Read only inside the authorized scope. **Discovery is automatic; reading is authorized — up front in Mode A, by one approval in Mode B.** If the user picks manual mode, let them point you at files directly. The exclusions bind in both modes.
-
-## Step 4 — triage, then audit the approved scope
-
-**Inventory before deep reading.** Within the approved scope:
-
-- Prefer `.md`, `.txt`, `.json`, `.jsonl`, `.csv`, chat exports, posts, drafts, feedback, rejected outputs.
-- Skip by default: `.git`, `node_modules`, `.venv`, `dist`, `build`, `__pycache__`, binaries, large media, vendor dirs, dependency lockfiles unless relevant.
-- Ask only about genuinely ambiguous sensitive folders.
-- Prioritize rejected outputs and feedback over raw volume.
-
-Then, for each approved source, record:
-
-```
-source: <path>
-type: <session transcript / export / notes / workspace / posts / drafts / rejected / feedback>
-era: <roughly when>
-likely yields: <voice / taste / judgment / behavior / context / lexicon / anti-slop>
-```
-
-## Rules
-
-- Discover widely; read only the approved scope. Never read beyond it. Never scan everything automatically without approval.
-- If you hit secrets, tokens, client data, or private DMs: skip them, flag to the user, do not copy into any output.
-- Rank sources by contrast value: rejected outputs and feedback first, then the user's own writing and session behavior, then references, then generic notes.
-- Past agent sessions are the richest behavior source — they show how the user actually talks, corrects, and decides, not just what they say about themselves.
-- If discovery and the user together yield zero rejected outputs or feedback, ask for two or three examples of AI output they disliked and one sentence each on why. That alone seeds judgment.md and anti-slop.md.
-
-## Output of this step
-
-A short audit summary: the discovered + approved scope, what each source will likely yield, what's missing, and the confirmed scan list. **Get approval before deep reading.**
+Rejected examples and corrections outrank generic banned-word lists because they show the standard by contrast.

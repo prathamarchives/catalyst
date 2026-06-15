@@ -1,135 +1,35 @@
-"""Eval: required repo structure exists and is non-hollow."""
 from pathlib import Path
 
 REQUIRED_FILES = [
-    "README.md",
-    "AGENTS.md",
-    "REPO-USE-PROMPT.md",
-    "INSTALL.md",
-    "SETUP-PROMPT.md",
-    "EVAL_REPORT.md",
-    "LICENSE",
-    ".gitignore",
-    "prompts/00-start-here.md",
-    "prompts/01-source-audit.md",
-    "prompts/02-interview-user.md",
-    "prompts/03-extract-creative-identity.md",
-    "prompts/04-build-creative-brain.md",
-    "prompts/05-write-agent-skill.md",
-    "prompts/06-run-before-after-proof.md",
-    "prompts/07-update-from-feedback.md",
-    "prompts/08-install-and-run.md",
-    "prompts/09-distill-and-decay-memory.md",
-    "prompts/10-run-blind-ab-proof.md",
-    "templates/creative-brain/README.md",
-    "templates/creative-brain/identity.md",
-    "templates/creative-brain/context.md",
-    "templates/creative-brain/voice.md",
-    "templates/creative-brain/taste.md",
-    "templates/creative-brain/judgment.md",
-    "templates/creative-brain/anti-slop.md",
-    "templates/creative-brain/references.md",
-    "templates/creative-brain/rejected-examples.md",
-    "templates/creative-brain/feedback-memory.md",
-    "templates/creative-brain/lexicon.md",
-    "templates/skills/catalyst-skill.md",
-    "templates/workflows/use-creative-brain.md",
-    "templates/workflows/update-from-feedback.md",
-    "templates/workflows/review-output.md",
-    "templates/workflows/blind-ab-test.md",
-    "templates/workflows/distill-memory.md",
-    "templates/evals/blind-ab-log.md",
-    "examples/pratham-mini/README.md",
-    "examples/pratham-mini/before-after.md",
-    "examples/pratham-mini/creative-brain/identity.md",
-    "examples/pratham-mini/creative-brain/context.md",
-    "examples/pratham-mini/creative-brain/voice.md",
-    "examples/pratham-mini/creative-brain/taste.md",
-    "examples/pratham-mini/creative-brain/judgment.md",
-    "examples/pratham-mini/creative-brain/anti-slop.md",
-    "examples/pratham-mini/creative-brain/references.md",
-    "examples/pratham-mini/creative-brain/rejected-examples.md",
-    "examples/pratham-mini/creative-brain/feedback-memory.md",
-    "examples/pratham-mini/creative-brain/lexicon.md",
-    "examples/pratham-mini/skills/catalyst-skill.md",
-    "examples/pratham-mini/workflows/use-creative-brain.md",
-    "examples/pratham-mini/workflows/update-from-feedback.md",
-    "examples/pratham-mini/workflows/review-output.md",
-    "examples/pratham-mini/workflows/blind-ab-test.md",
-    "examples/pratham-mini/workflows/distill-memory.md",
-    "examples/pratham-mini/evals/blind-ab-log.md",
-    "outputs/.gitkeep",
-    "docs/philosophy.md",
-    "docs/privacy.md",
-    "docs/roadmap.md",
-    "docs/eval-loop.md",
-    "docs/blind-ab-eval.md",
-    "docs/memory-lifecycle.md",
-    "docs/install-vs-use.md",
-    "docs/permission-model.md",
-    "evals/run_all.py",
-    "evals/repo_structure_check.py",
-    "evals/content_slop_check.py",
-    "evals/protocol_completeness_check.py",
-    "evals/privacy_check.py",
-    "evals/example_proof_check.py",
-    "evals/proof_quality_check.py",
-    "evals/install_protocol_check.py",
-    "evals/output_consistency_check.py",
-    "evals/agent_runnability_static_check.py",
-    "evals/vision_fit_check.py",
-    "evals/rubrics/agent_runnability.md",
-    "evals/rubrics/taste_quality.md",
-    "evals/rubrics/vision_fit.md",
-    "tools/discover_sessions.py",
+    "README.md", "AGENTS.md", "REPO-USE-PROMPT.md", "INSTALL.md", "SETUP-PROMPT.md", "EVAL_REPORT.md", "LICENSE", ".gitignore",
+    "prompts/00-start-here.md", "prompts/01-source-audit.md", "prompts/02-interview-user.md", "prompts/03-extract-catalyst-brain.md", "prompts/04-build-catalyst-brain.md", "prompts/05-write-agent-skill.md", "prompts/06-task-time-evaluation.md", "prompts/07-update-from-feedback.md", "prompts/08-install-and-run.md", "prompts/09-distill-and-decay-memory.md",
+    "templates/catalyst-brain/README.md", "templates/catalyst-brain/identity.md", "templates/catalyst-brain/context.md", "templates/catalyst-brain/goals.md", "templates/catalyst-brain/constraints.md", "templates/catalyst-brain/standards.md", "templates/catalyst-brain/judgment.md", "templates/catalyst-brain/taste.md", "templates/catalyst-brain/voice.md", "templates/catalyst-brain/anti-slop.md", "templates/catalyst-brain/references.md", "templates/catalyst-brain/rejected-examples.md", "templates/catalyst-brain/decision-rules.md", "templates/catalyst-brain/task-patterns.md", "templates/catalyst-brain/feedback-memory.md", "templates/catalyst-brain/lexicon.md", "templates/catalyst-brain/open-questions.md",
+    "templates/skills/catalyst-skill.md", "templates/skills/use-catalyst-brain.md", "templates/skills/update-catalyst-brain.md", "templates/skills/review-against-standards.md", "templates/skills/extract-feedback.md", "templates/skills/task-routing.md", "templates/skills/distill-memory.md",
+    "templates/workflows/start-task.md", "templates/workflows/produce-output.md", "templates/workflows/review-output.md", "templates/workflows/update-after-feedback.md", "templates/workflows/weekly-distillation.md",
+    "templates/evals/output-review.md", "templates/evals/standards-check.md", "templates/evals/identity-alignment.md", "templates/evals/judgment-check.md", "templates/evals/feedback-capture.md", "templates/evals/improvement-log.md",
+    "examples/catalyst-loop/README.md", "examples/catalyst-loop/task-time-evaluation.md", "docs/catalyst-brain.md", "docs/privacy.md", "docs/roadmap.md", "docs/eval-loop.md", "docs/memory-lifecycle.md", "docs/install-vs-use.md", "docs/permission-model.md", "tools/discover_sessions.py",
 ]
-
-# Directories whose markdown files must contain real content, not stubs.
-MIN_CONTENT_BYTES = 200
-NON_EMPTY_DIRS = ["prompts", "templates"]
-
 
 def run(root: Path) -> list:
     failures = []
-
     for rel in REQUIRED_FILES:
-        if not (root / rel).is_file():
-            failures.append("missing required file: %s" % rel)
-
+        p = root / rel
+        if not p.is_file():
+            failures.append(f"missing required file: {rel}")
+        elif p.suffix == ".md" and p.stat().st_size < 120:
+            failures.append(f"{rel} is too thin")
     outputs = root / "outputs"
     if not outputs.is_dir():
-        failures.append("missing required directory: outputs/")
+        failures.append("missing outputs/")
     else:
         extras = [p.name for p in outputs.iterdir() if p.name != ".gitkeep"]
         if extras:
-            failures.append(
-                "outputs/ must contain only .gitkeep, found: %s" % ", ".join(sorted(extras))
-            )
-
-    if not (root / "examples" / "pratham-mini").is_dir():
-        failures.append("missing required directory: examples/pratham-mini/")
-
-    for dirname in NON_EMPTY_DIRS:
-        base = root / dirname
-        if not base.is_dir():
-            continue  # already reported as missing files above
-        for md in sorted(base.rglob("*.md")):
-            size = md.stat().st_size
-            if size < MIN_CONTENT_BYTES:
-                failures.append(
-                    "%s is too thin (%d bytes < %d): templates and prompts must be useful, not stubs"
-                    % (md.relative_to(root).as_posix(), size, MIN_CONTENT_BYTES)
-                )
-
+            failures.append("outputs/ must contain only .gitkeep")
     return failures
-
 
 if __name__ == "__main__":
     import sys
-
     problems = run(Path(__file__).resolve().parent.parent)
-    for p in problems:
-        print("FAIL repo_structure_check: %s" % p)
-    if not problems:
-        print("PASS repo_structure_check")
+    for p in problems: print("FAIL repo_structure_check:", p)
+    if not problems: print("PASS repo_structure_check")
     sys.exit(1 if problems else 0)

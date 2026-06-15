@@ -1,25 +1,21 @@
 # roadmap
 
-## v0 — markdown protocol + eval harness (this release)
+## v0 — Catalyst Brain protocol
 
-The agent-runnable protocol: prompts, templates, worked example, before/after proof procedure, and the deterministic eval harness that keeps the repo honest. Repo-as-product; no app, no service, no dependencies.
+Markdown-first local protocol: discovery, permission, audit, extraction, Catalyst Brain, skills, task-time evaluation, feedback update, and memory lifecycle.
 
-## v0.1 — stronger examples
+## v0.1 — stronger generated skills
 
-More worked examples beyond pratham-mini: different user types (a designer, a newsletter writer, an agency operator), each with a real before/after proof. Examples are the best documentation this protocol can have.
+Better task routing, quick/full modes, standards review, feedback capture, and file-specific update rules.
 
 ## v0.2 — export guides
 
-Step-by-step guides for getting source material out of the tools people actually use: Claude (claude.ai export + Claude Code sessions), ChatGPT data export, Cursor history, Hermes logs. The biggest current friction is "where do I even get my sessions?" — this version kills it.
+Clear guides for Claude Code, ChatGPT exports, Cursor, Hermes, and other agent sources.
 
-## v1 — optional tiny CLI
+## v0.3 — first-dollar install kit
 
-A small local command-line helper, only if usage proves the need: collect source files into a staging folder, scaffold `outputs/<name>/`, run the eval checks against a generated brain. Strictly optional — the markdown protocol remains the product and must keep working with zero tooling.
+Manual paid install offer around building a user's Catalyst Brain and making their AI stop resetting across sessions.
 
-## v2 — Catalyst product layer
+## later
 
-A product layer on top of the open protocol — only after repeated manual proof with real users and real feedback. The open-source repo stays open and local-first regardless; v2 is for the people who want the loop run for them, not a paywall on the protocol.
-
-## non-goals (any version)
-
-No accounts, no analytics UI, no scraping of private platforms, no "connects to everything" integrations promised before they exist. Scope grows only where proof demands it.
+Only after repeated manual proof: optional CLI or product layer. No visual control panel/API/MCP fantasy before demand.
