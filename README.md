@@ -149,7 +149,17 @@ py apps/control-panel/server.py
 python apps/control-panel/server.py
 ```
 
-Then open `http://127.0.0.1:8765`. It binds localhost only and operates on the real markdown under `outputs/<name>/`. Screens: brain status, guided onboarding, read-only source discovery + approval, brain explorer/editor, proof/standards review, BYOK settings, and an export tab that hands the same brain to Claude Code / Hermes / Cursor / Codex without the UI. The panel is a control surface, not the product. See [apps/control-panel/README.md](apps/control-panel/README.md) and [docs/control-panel.md](docs/control-panel.md).
+Then open `http://127.0.0.1:8765`. It binds localhost only and operates on the real markdown under `outputs/<name>/`. The panel is a staged setup journey, not a tab grid:
+
+```txt
+Start → Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents (MCP)
+```
+
+It deliberately **connects an AI/agent first** — Catalyst needs a worker to synthesize, evaluate, and update the brain; without one it can only copy empty templates. Mock/offline and manual-prompt modes always work; OpenRouter BYOK and detected CLIs (Claude Code, Codex, Hermes) are offered honestly by status. The panel is a control surface, not the product. See [apps/control-panel/README.md](apps/control-panel/README.md) and [docs/control-panel.md](docs/control-panel.md).
+
+## Multi-agent access (MCP)
+
+`tools/mcp_server.py` is a dependency-free, local-only MCP scaffold (JSON-RPC over stdio) that lets many agents `list_brain_sections`, `read_brain_section`, `review_output_against_brain`, `append_feedback`, and `propose_brain_update` — without raw filesystem access, and without ever silently overwriting the brain. It is an honest scaffold, not a certified MCP build. See [docs/mcp.md](docs/mcp.md).
 
 ## BYOK is optional
 

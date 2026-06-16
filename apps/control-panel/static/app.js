@@ -1,184 +1,238 @@
-// Catalyst control panel — vanilla JS, talks to the local allowlisted API.
+// Catalyst control panel — staged journey. Vanilla JS, local API only.
 const App = (() => {
-  let state = { brains: [], byok: {}, currentBrain: null, currentFile: null };
+  const STAGES = [
+    ["start", "Start"], ["connect", "Connect AI"], ["identity", "Identity"],
+    ["context", "Context"], ["permission", "Permission"], ["build", "Build"],
+    ["explorer", "Explore"], ["proof", "Proof"], ["mcp", "Agents"],
+  ];
+  const state = { name: "", answers: { using_for: "writing" }, mode: "mock",
+                  modes: [], furthest: 0, brains: [], currentBrain: null, currentFile: null };
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const api = async (path, opts) => {
-    const r = await fetch(path, opts);
-    return r.json();
-  };
+  const api = async (p, o) => (await fetch(p, o)).json();
   const esc = (s) => (s || "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  const idx = (name) => STAGES.findIndex((s) => s[0] === name);
 
-  function go(view) {
-    $$(".nav button").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
-    $$(".view").forEach((v) => v.classList.toggle("active", v.id === "view-" + view));
-    if (view === "sources") {} // discovery on demand
-    if (view === "export") loadExport();
+  // ---- rail / navigation ----
+  function renderSteps() {
+    const cur = idx(currentStage());
+    $("#steps").innerHTML = STAGES.map(([id, label], i) => {
+      const cls = i === cur ? "active" : (i <= state.furthest ? "done" : "");
+      const inner = (i < cur || (i <= state.furthest && i !== cur)) ? "✓" : (i + 1);
+      return `<button class="step ${cls}" onclick="App.go('${id}')"><span class="num">${i <= state.furthest && i !== cur ? "✓" : i + 1}</span>${label}</button>`;
+    }).join("");
+  }
+  function currentStage() {
+    const el = $(".stage.active");
+    return el ? el.dataset.stage : "start";
+  }
+  function go(id) {
+    $$(".stage").forEach((s) => s.classList.toggle("active", s.dataset.stage === id));
+    state.furthest = Math.max(state.furthest, idx(id));
+    renderSteps();
+    $("main").scrollTo({ top: 0, behavior: "smooth" });
+    const init = { connect: initConnect, permission: () => {}, build: initBuild,
+                   explorer: initExplorer, proof: initProof, mcp: initMcp, context: initContext }[id];
+    if (init) init();
+  }
+  function next() { const n = idx(currentStage()) + 1; if (n < STAGES.length) go(STAGES[n][0]); }
+
+  // ---- 0 start ----
+  async function initStart() {
+    const s = await api("/api/status");
+    const repo = (s.repo_root || "").split(/[\\/]/).pop();
+    $("#localStatus").textContent = `local · ${repo}`;
+    state.brains = s.brains || [];
+    $("#installState").innerHTML = `Control panel running locally at <span class="kbd">127.0.0.1</span>. Repo <b>${esc(repo)}</b>. ${state.brains.length ? state.brains.length + " brain(s) on disk." : "No brain yet."} No account, no database.`;
   }
 
-  async function refresh() {
+  // ---- 1 connect ----
+  async function initConnect() {
+    const r = await api("/api/agents/status");
+    state.modes = r.modes;
+    if (!r.any_live) state.mode = "mock";
+    else if (r.byok_has_key) state.mode = "byok";
+    renderModes();
+    $("#connectMsg").textContent = r.any_live ? "" : "No live model connected — mock/manual mode. Real synthesis needs BYOK or a manual LLM paste.";
+  }
+  function renderModes() {
+    $("#agentModes").innerHTML = state.modes.map((m) => {
+      const tag = m.live ? `<span class="tagdot live">live</span>`
+        : m.status === "detected" ? `<span class="tagdot">detected</span>`
+        : m.status === "needs_key" ? `<span class="tagdot off">needs key</span>`
+        : m.status === "not_installed" ? `<span class="tagdot off">not installed</span>`
+        : `<span class="tagdot">demo</span>`;
+      return `<button class="opt ${state.mode === m.id ? "sel" : ""}" onclick="App.pickMode('${m.id}')">
+        <span class="mark"></span>
+        <span class="body"><span class="t">${esc(m.label)} ${tag}</span>
+        <span class="d">${esc(m.detail)}</span>
+        <span class="set">${esc(m.setup)}</span></span></button>`;
+    }).join("");
+  }
+  function pickMode(id) { state.mode = id; renderModes(); }
+
+  // ---- 2 identity ----
+  const JOBS = ["coding", "writing", "research", "business", "creative", "operations", "other"];
+  function initIdentity() {
+    $("#jobChips").innerHTML = JOBS.map((j) =>
+      `<span class="chip ${state.answers.using_for === j ? "sel" : ""}" onclick="App.pickJob('${j}')">${j}</span>`).join("");
+  }
+  function pickJob(j) {
+    state.answers.using_for = j;
+    $("#idForm [name=using_for]").value = j;
+    initIdentity();
+  }
+  function saveIdentity() {
+    const fd = new FormData($("#idForm"));
+    const a = Object.fromEntries(fd.entries());
+    if (!a.name || !a.name.trim()) { $("#idMsg").textContent = "name is required"; return; }
+    state.name = a.name.trim();
+    state.answers = { ...state.answers, ...a, using_for: state.answers.using_for };
+    next();
+  }
+
+  // ---- 3 context ----
+  const CONNECTORS = [
+    ["Notion", "Export pages as Markdown/CSV, then paste or drop them here.", "export / drop"],
+    ["Slack", "Export or paste the channel / customer / team context that matters.", "export / paste"],
+    ["Discord", "Export or paste the relevant server / channel context.", "export / paste"],
+    ["Local workspace", "Add a folder path above; approve it at the scan step.", "path + approval"],
+  ];
+  function initContext() {
+    $("#connectors").innerHTML = CONNECTORS.map(([t, d, tag]) =>
+      `<div class="opt" style="cursor:default"><span class="body"><span class="t">${t} <span class="tagdot off">${tag}</span></span><span class="d">${d}</span></span></div>`).join("");
+  }
+  async function copyPrompt() {
+    const r = await api("/api/extraction-prompt");
+    await navigator.clipboard?.writeText(r.prompt || "");
+    $("#promptMsg").textContent = "copied ✓";
+  }
+  async function saveContext() {
+    if (!state.name) { $("#ctxMsg").textContent = "set a name in step 2 first"; return; }
+    const paths = $("#ctxPaths").value.split("\n").map((s) => s.trim()).filter(Boolean);
+    const r = await api("/api/context/save", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: state.name, text: $("#ctxText").value, packet: $("#ctxPacket").value, paths }) });
+    $("#ctxMsg").textContent = r.ok ? `saved ${r.written.length} file(s) → outputs/${r.slug}/sources/` : "error: " + (r.error || "?");
+    if (r.ok) setTimeout(next, 500);
+  }
+
+  // ---- 4 permission ----
+  let scanChoice = "recommended";
+  function renderScan() {
+    const opts = [["recommended", "Approve recommended scan", "AI sessions, notes, markdown workspaces. Safe exclusions on."],
+      ["edit", "Edit scope", "Choose categories/paths before any read."],
+      ["skip", "Skip scan", "Build from typed + imported context only."]];
+    $("#scanChoice").innerHTML = opts.map(([id, t, d]) =>
+      `<button class="opt ${scanChoice === id ? "sel" : ""}" onclick="App.pickScan('${id}')"><span class="mark"></span><span class="body"><span class="t">${t}</span><span class="d">${d}</span></span></button>`).join("");
+  }
+  function pickScan(id) { scanChoice = id; renderScan(); }
+  async function discover() {
+    $("#discoverOut").innerHTML = `<p class="section-note">discovering (read-only)…</p>`;
+    const r = await api("/api/discover");
+    const cats = (r.categories || []).map((c) => `<span class="filetag">${esc(c.category)} · ${c.count}</span>`).join(" ");
+    $("#discoverOut").innerHTML = `<div class="filetags">${cats || "<span class='section-note'>No known locations in default paths.</span>"}</div><p class="priv" style="margin-top:12px">${esc(r.note || "")}</p>`;
+    renderScan();
+  }
+
+  // ---- 5 build ----
+  function initBuild() {
+    const live = state.mode === "byok" && (state.modes.find((m) => m.id === "byok") || {}).live;
+    $("#buildMode").innerHTML = live
+      ? `Mode: <b>live (BYOK)</b>. Synthesis can use your connected model on approved text.`
+      : `Mode: <b>${esc(state.mode)} — mock / no-key seed</b>. The brain is seeded from your typed + imported context. Connect BYOK or use the manual prompt for deeper synthesis.`;
+  }
+  async function build() {
+    if (!state.name) { go("identity"); return; }
+    $("#buildStages").innerHTML = `<p class="section-note">building locally…</p>`;
+    const r = await api("/api/build", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: state.name, mode: state.mode, answers: state.answers }) });
+    state.brains = r.brains || state.brains;
+    $("#buildStages").innerHTML = (r.stages || []).map((s) =>
+      `<div class="bstage ${s.status === "done" ? "done" : s.status === "skipped" ? "skipped" : ""}">
+        <span class="ic">${s.status === "done" ? "✓" : s.status === "skipped" ? "–" : "•"}</span>
+        <span><span class="bn">${esc(s.name)}</span><span class="bd">${esc(s.detail)} · ${esc(s.status)}</span></span></div>`).join("");
+    $("#buildNext").style.display = "flex";
+  }
+
+  // ---- 6 explorer ----
+  async function initExplorer() {
     const s = await api("/api/status");
     state.brains = s.brains || [];
-    state.byok = s.byok || {};
-    $("#repo").textContent = (s.repo_root || "").split(/[\\/]/).slice(-1)[0] || "repo";
-    renderStatus(s);
-    renderBrainSelect();
-    renderByok();
-  }
-
-  function renderStatus(s) {
-    const el = $("#statusCards");
-    const b = state.brains;
-    const cards = [];
-    cards.push(card("Catalyst Brains", `<div class="big">${b.length}</div><div class="muted">under outputs/</div>`));
-    if (b.length) {
-      const first = b[0];
-      const present = first.brain_present.length;
-      const total = present + first.brain_missing.length;
-      cards.push(card("Key files (" + first.name + ")",
-        `<div class="big">${present}/${total}</div>` +
-        (first.brain_missing.length ? `<div class="pill miss">missing: ${first.brain_missing.slice(0,3).join(", ")}${first.brain_missing.length>3?"…":""}</div>` : `<div class="pill ok">complete</div>`)));
-      cards.push(card("Proof / feedback log", first.last_proof_log
-        ? `<span class="pill ok">present</span><div class="muted">evals/improvement-log.md</div>`
-        : `<span class="pill warn">none yet</span><div class="muted">run a proof task</div>`));
-    } else {
-      cards.push(card("No brain yet", `<div class="muted">Start onboarding to build one locally.</div>`));
-    }
-    cards.push(card("BYOK", `<span class="pill ${state.byok.mock_mode ? "warn" : "ok"}">${state.byok.mock_mode ? "mock (no key)" : esc(state.byok.effective_provider)}</span><div class="muted">${state.byok.mock_mode ? "core works without a key" : esc(state.byok.model || "")}</div>`));
-    el.innerHTML = cards.join("");
-  }
-
-  const card = (title, body) => `<div class="card"><h3>${title}</h3>${body}</div>`;
-
-  function renderBrainSelect() {
     const sel = $("#brainSelect");
-    if (!sel) return;
-    sel.innerHTML = state.brains.map((b) => `<option value="${esc(b.name)}">${esc(b.name)}</option>`).join("") || `<option value="">no brain yet</option>`;
-    if (state.brains.length && !state.currentBrain) loadBrain(state.brains[0].name);
+    sel.innerHTML = state.brains.map((b) => `<option>${esc(b.name)}</option>`).join("") || `<option value="">no brain yet</option>`;
+    if (state.brains.length) loadBrain(state.brains[0].name);
   }
-
-  // ---- onboarding ----
-  $$("#scope label").forEach((l) =>
-    l.addEventListener("click", () => {
-      $$("#scope label").forEach((x) => x.classList.remove("sel"));
-      l.classList.add("sel");
-      l.querySelector("input").checked = true;
-    })
-  );
-
-  async function submitOnboarding(e) {
-    e.preventDefault();
-    const fd = new FormData($("#onboardForm"));
-    const answers = Object.fromEntries(fd.entries());
-    $("#onboardMsg").textContent = "building…";
-    const res = await api("/api/onboarding", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers }),
-    });
-    if (res.error) { $("#onboardMsg").textContent = "error: " + res.error; return; }
-    $("#onboardMsg").textContent = `built outputs/${res.slug}/ — open the Brain explorer.`;
-    await refresh();
-    setTimeout(() => go("brain"), 600);
-  }
-
-  // ---- sources ----
-  async function discover() {
-    $("#discoverOut").innerHTML = `<p class="muted">discovering (read-only)…</p>`;
-    const r = await api("/api/discover");
-    const cats = (r.categories || []).map((c) =>
-      `<div class="card spread"><div><b>${esc(c.category)}</b><div class="dim">${c.count} candidate location${c.count>1?"s":""}</div></div><span class="pill ok">found</span></div>`).join("");
-    $("#discoverOut").innerHTML =
-      `<div class="grid">${cats || `<div class="muted">No known locations found in default paths.</div>`}</div>` +
-      `<p class="dim" style="margin-top:10px">${esc(r.note || "")}</p>`;
-  }
-
-  // ---- brain explorer ----
   async function loadBrain(name) {
     if (!name) return;
     state.currentBrain = name;
-    $("#brainSelect").value = name;
     const r = await api("/api/brain?name=" + encodeURIComponent(name));
-    const files = r.files || [];
-    $("#brainFiles").innerHTML = files.map((f) =>
-      `<button data-file="${esc(f.file)}" onclick="App.openFile('${esc(f.file)}')">${esc(f.file)}</button>`).join("");
-    state._meta = Object.fromEntries(files.map((f) => [f.file, f.meta]));
-    if (files.length) openFile(files[0].file);
+    $("#exnav").innerHTML = (r.groups || []).map((g) =>
+      `<div class="exgroup"><h4>${esc(g.label)}</h4>` +
+      g.files.map((f) => `<button data-f="${esc(f.file)}" onclick="App.openFile('${esc(f.file)}')">${esc(f.file.replace(".md", ""))}</button>`).join("") +
+      `</div>`).join("");
+    state._meta = {};
+    (r.groups || []).forEach((g) => g.files.forEach((f) => (state._meta[f.file] = f.meta)));
+    const first = (r.groups || [])[0]?.files[0]?.file;
+    if (first) openFile(first);
   }
-
   async function openFile(file) {
-    const name = state.currentBrain;
     state.currentFile = file;
-    $$("#brainFiles button").forEach((b) => b.classList.toggle("active", b.dataset.file === file));
-    const r = await api(`/api/file?name=${encodeURIComponent(name)}&path=catalyst-brain/${encodeURIComponent(file)}`);
+    $$("#exnav button").forEach((b) => b.classList.toggle("active", b.dataset.f === file));
+    const r = await api(`/api/file?name=${encodeURIComponent(state.currentBrain)}&path=catalyst-brain/${encodeURIComponent(file)}`);
     const m = (state._meta && state._meta[file]) || {};
-    const metaHtml = ["purpose", "when to load", "tasks affected"].filter((k) => m[k]).map((k) =>
-      `<dt>${k}</dt><dd>${esc(m[k]).slice(0,400)}</dd>`).join("");
-    $("#brainEditor").innerHTML =
-      `<dl class="meta">${metaHtml || "<dd class='muted'>no metadata headers</dd>"}</dl>` +
+    const meta = m["purpose"] ? `${esc(m["purpose"])}` : "";
+    const when = m["when to load"] ? ` · loads for: ${esc(m["when to load"])}` : "";
+    $("#exmain").innerHTML =
+      `<div class="filehead"><div class="fn">${esc(file)}</div><div class="meta">${meta}${when}</div></div>` +
       `<textarea id="fileBody"></textarea>` +
-      `<div class="row" style="margin-top:10px"><button class="btn primary" onclick="App.saveFile()">Save to disk</button><span class="muted" id="saveMsg">catalyst-brain/${esc(file)}</span></div>`;
+      `<div class="btnrow"><button class="btn small" onclick="App.saveFile()">Save to disk</button><span class="inline-msg" id="saveMsg"></span></div>`;
     $("#fileBody").value = r.content || "";
   }
-
   async function saveFile() {
-    const res = await api("/api/file", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: state.currentBrain, path: "catalyst-brain/" + state.currentFile, content: $("#fileBody").value }),
-    });
-    $("#saveMsg").textContent = res.ok ? "saved ✓" : "error: " + (res.error || "?");
+    const r = await api("/api/file", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: state.currentBrain, path: "catalyst-brain/" + state.currentFile, content: $("#fileBody").value }) });
+    $("#saveMsg").textContent = r.ok ? "saved ✓" : "error: " + (r.error || "?");
   }
 
-  // ---- proof ----
+  // ---- 7 proof ----
+  function initProof() {
+    const live = state.mode === "byok" && (state.modes.find((m) => m.id === "byok") || {}).live;
+    $("#proofMode").textContent = live ? "live (BYOK)" : "preview (mock — not live AI)";
+  }
   async function runProof() {
-    const task = $("#proofTask").value;
-    const draft = $("#proofDraft").value;
     const brain = state.brains[0];
     const loaded = brain ? brain.brain_present.filter((f) => /standards|judgment|identity|rejected|taste|constraints|task-patterns/.test(f)) : [];
-    const material = `TASK: ${task}\n\nDRAFT:\n${draft || "(none)"}\n\nReview against: ${loaded.join(", ") || "no brain loaded"}.`;
-    $("#proofOut").innerHTML = `<p class="muted">reviewing…</p>`;
-    const r = await api("/api/synthesize", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ section: "standards/judgment review", material }),
-    });
+    const material = `TASK: ${$("#proofTask").value}\n\nDRAFT:\n${$("#proofDraft").value || "(none)"}\n\nReview against: ${loaded.join(", ") || "no brain"}.`;
+    $("#proofOut").innerHTML = `<p class="section-note">reviewing…</p>`;
+    const r = await api("/api/synthesize", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ section: "standards/judgment review", material }) });
+    const live = state.mode === "byok" && (state.modes.find((m) => m.id === "byok") || {}).live;
     $("#proofOut").innerHTML =
-      `<div class="card"><h3>Brain files this task loads</h3>${loaded.map((f) => `<span class="pill ok" style="margin:2px">${esc(f)}</span>`).join("") || "<span class='muted'>build a brain first</span>"}</div>` +
-      `<div class="card" style="margin-top:12px"><h3>Standards review ${state.byok.mock_mode ? "(mock)" : "(BYOK)"}</h3><pre class="out">${esc(r.text || r.error || "")}</pre></div>` +
-      `<div class="card" style="margin-top:12px"><h3>What feedback would update</h3><div class="muted">Your reaction routes to: feedback-memory.md, plus a patch to standards/judgment/taste, plus a new eval line. That's the compounding step.</div></div>`;
+      `<div class="panel"><h4>Brain files this task loads</h4><div class="filetags">${loaded.map((f) => `<span class="filetag">${esc(f)}</span>`).join("") || "<span class='section-note'>build a brain first</span>"}</div></div>` +
+      `<div class="panel"><h4>Standards review ${live ? "(live BYOK)" : "(mock preview)"}</h4><pre class="code">${esc(r.text || r.error || "")}</pre></div>` +
+      `<div class="panel"><h4>What feedback would update</h4><p class="section-note">Your reaction routes to feedback-memory.md, patches standards/judgment/taste, and adds an eval line. That compounding is the difference from a static context file.</p></div>`;
   }
 
-  // ---- byok ----
-  function renderByok() {
-    const b = state.byok;
-    $("#byokCards").innerHTML = [
-      card("Effective provider", `<div class="big">${esc(b.effective_provider || "mock")}</div>`),
-      card("Mode", b.mock_mode ? `<span class="pill warn">mock — no network</span>` : `<span class="pill ok">live — BYOK</span>`),
-      card("Model", `<div class="muted">${esc(b.model || "—")}</div>`),
-    ].join("");
-  }
-  async function testKey() {
-    $("#byokTest").style.display = "block";
-    $("#byokTest").textContent = "testing…";
-    const r = await api("/api/byok/test", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
-    $("#byokTest").textContent = `provider: ${r.provider}\nsent over network: ${r.sent_over_network}\n\n${r.text || r.error || ""}`;
-  }
-
-  // ---- export ----
-  async function loadExport() {
+  // ---- 8 mcp ----
+  const MCP_TOOLS = [
+    ["list_brain_sections", "List the brain's sections grouped by job."],
+    ["read_brain_section", "Read one brain file (read-only)."],
+    ["review_output_against_brain", "Return the standards checklist + loaded files."],
+    ["append_feedback", "Append a feedback rule (only write path)."],
+    ["propose_brain_update", "Write a proposal — never overwrites the brain."],
+  ];
+  async function initMcp() {
+    $("#mcpTools").innerHTML = MCP_TOOLS.map(([t, d]) =>
+      `<div class="opt" style="cursor:default"><span class="body"><span class="t" style="font-family:var(--mono);font-size:14px">${t}</span><span class="d">${d}</span></span></div>`).join("");
     const r = await api("/api/export");
-    $("#exportPath").textContent = r.brain_path || "outputs/<name>/catalyst-brain/";
-    $("#exportPrompt").textContent = r.agent_prompt || "";
+    $("#exportBlock").textContent = `${r.brain_path}\n\n${r.agent_prompt}`;
   }
-  function copy(id) {
-    navigator.clipboard?.writeText($("#" + id).textContent);
-  }
+  function copy(id) { navigator.clipboard?.writeText($("#" + id).textContent); }
 
-  // ---- wire up ----
-  $$("#nav button").forEach((b) => b.addEventListener("click", () => go(b.dataset.view)));
-  $("#onboardForm").addEventListener("submit", submitOnboarding);
-  refresh();
-
-  return { go, refresh, discover, loadBrain, openFile, saveFile, runProof, testKey, copy };
+  initStart();
+  initIdentity();
+  renderSteps();
+  return { go, next, pickMode, pickJob, saveIdentity, copyPrompt, saveContext,
+           discover, pickScan, build, loadBrain, openFile, saveFile, runProof, copy };
 })();

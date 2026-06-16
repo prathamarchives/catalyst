@@ -1,6 +1,20 @@
 # BYOK — bring your own key (optional)
 
-BYOK is optional and off by default. Catalyst's core never needs it.
+BYOK is optional and off by default. Catalyst's core never needs it. But note the
+honest trade-off: Catalyst's *real value* — synthesis, evaluation, and updates —
+needs a connected AI/agent. With no connection you get templates and a deterministic
+mock, not judgment. BYOK (or the manual-prompt path) is how you connect one.
+
+## Connection modes
+
+The control panel's first step is **Connect AI**, offered honestly by status:
+
+- **Mock / offline** — always available, no network, deterministic placeholder. Demo only; not live AI.
+- **OpenRouter BYOK** — real synthesis/evaluation on approved text. Key from env only.
+- **Claude Code / Codex / Hermes CLI** — detected via `shutil.which` (existence only — login state unknown; v0.3 detects, it does not run the CLI for you).
+- **Manual LLM prompt** — always available; copy a prompt into any LLM and paste the result back. The best no-key path to real synthesis.
+
+CLI detection never executes anything from user input. The UI must not present mock as if it were a live model.
 
 ## Works with no key
 

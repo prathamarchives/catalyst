@@ -13,6 +13,7 @@ import vision_fit_check
 import task_time_evaluation_check
 import positioning_check
 import local_first_ui_check
+import agent_native_check
 
 EVALS = [
     ("repo_structure_check", repo_structure_check),
@@ -26,6 +27,7 @@ EVALS = [
     ("task_time_evaluation_check", task_time_evaluation_check),
     ("positioning_check", positioning_check),
     ("local_first_ui_check", local_first_ui_check),
+    ("agent_native_check", agent_native_check),
 ]
 
 def main() -> int:

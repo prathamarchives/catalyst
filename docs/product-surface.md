@@ -6,6 +6,16 @@ This file is the canonical copy for a landing page or repo homepage. Keep it con
 
 Creed helps agents remember you. Catalyst teaches agents what you'd approve, reject, revise, and remember.
 
+Catalyst is your local judgment layer for agents. The product is the brain + loops; the UI is the onboarding/control surface.
+
+## The setup journey
+
+```txt
+Start → Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents (MCP)
+```
+
+Connect an AI first (it does the synthesis/evaluation), give five sharp answers, drop or extract context, approve any scan, build the brain locally, explore it grouped by job, prove it on a real task, then expose it to many agents over a local MCP scaffold.
+
 ## The 30-second version
 
 - **What it is:** a local-first, markdown-first judgment system for agents. It turns your messy source material — AI sessions, notes, drafts, rejected outputs, corrections — into a multi-file **Catalyst Brain** an agent loads before work, reviews against after work, and updates every time you correct it.

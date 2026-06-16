@@ -35,7 +35,7 @@ Setup can run as an agent following `AGENTS.md`, or through the optional local c
 py apps/control-panel/server.py
 ```
 
-It opens on `http://127.0.0.1:8765` and walks the same 5–7 question onboarding, read-only discovery, approval gate, brain build, and proof loop — operating on real files under `outputs/<name>/`. The panel is optional; the protocol installs fully without it. BYOK is also optional (mock mode needs no key). See [docs/local-onboarding.md](docs/local-onboarding.md), [docs/control-panel.md](docs/control-panel.md), and [docs/byok.md](docs/byok.md).
+It opens on `http://127.0.0.1:8765` as a staged journey (Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents/MCP), operating on real files under `outputs/<name>/`. It connects an AI/agent first because real synthesis/evaluation needs a worker; mock/manual modes always work and are never shown as live. The panel is optional; the protocol installs fully without it. BYOK is also optional (mock mode needs no key). For multi-agent access, `py tools/mcp_server.py` runs a local-only MCP scaffold. See [docs/local-onboarding.md](docs/local-onboarding.md), [docs/control-panel.md](docs/control-panel.md), [docs/byok.md](docs/byok.md), and [docs/mcp.md](docs/mcp.md).
 
 ## Privacy
 

@@ -61,6 +61,50 @@ BRAIN_FILE_ORDER = [
     "task-patterns.md", "feedback-memory.md", "lexicon.md", "open-questions.md",
 ]
 
+# Brain explorer grouping: section label -> ordered files + human meaning.
+BRAIN_GROUPS = [
+    ("Who / why", ["identity.md", "context.md", "goals.md", "constraints.md"]),
+    ("Taste / standards", ["standards.md", "judgment.md", "taste.md", "anti-slop.md", "rejected-examples.md"]),
+    ("Operating system", ["decision-rules.md", "task-patterns.md", "voice.md", "lexicon.md", "references.md"]),
+    ("Learning", ["feedback-memory.md", "open-questions.md"]),
+]
+
+# CLI binaries we may *detect* (existence only, never executed from user input).
+AGENT_CLIS = [
+    ("claude-code", "Claude Code CLI", "claude", "Install Claude Code and run `claude` once to log in."),
+    ("codex", "Codex CLI", "codex", "Install the Codex/OpenAI CLI and authenticate it."),
+    ("hermes", "Hermes CLI", "hermes", "Install/point to your Hermes CLI on PATH."),
+]
+
+# A copyable prompt the user can paste into ANY LLM to produce a context packet.
+EXTRACTION_PROMPT = """You are building a context packet for Catalyst, a local judgment layer for AI agents.
+Analyze the person / project / workspace / context I give you and extract what an agent
+would need to represent me, judge work to my standard, and improve from my corrections.
+
+Output structured markdown with EXACTLY these sections (leave a section empty if unknown,
+never invent facts):
+
+identity:
+goals:
+projects:
+constraints:
+standards:
+judgment rules:
+approved examples:
+rejected examples:
+voice/taste:
+workflows:
+recurring corrections:
+open questions:
+sources/evidence:
+
+Rules: be specific and concrete, prefer evidence/quotes over adjectives, mark uncertain
+items as "assumed", and never include secrets, tokens, private DMs, or client data.
+
+Context to analyze:
+<paste your context here>
+"""
+
 HOST = os.environ.get("CATALYST_HOST", "127.0.0.1")
 PORT = int(os.environ.get("CATALYST_PORT", "8765"))
 TOKEN = os.environ.get("CATALYST_TOKEN", "")
@@ -196,6 +240,107 @@ def _scaffold_brain(name: str, answers: dict) -> dict:
     return {"name": name, "slug": slug, "path": str(dest)}
 
 
+def _agent_status() -> dict:
+    """Report available AI/agent connection modes. Detection is existence-only
+    (shutil.which); nothing is executed. CLI 'detected' does not imply logged in."""
+    cfg = byok.get_config()
+    modes = []
+    # always-on modes
+    modes.append({
+        "id": "mock", "label": "Mock / offline", "kind": "mock", "status": "ready",
+        "live": False,
+        "detail": "Demo only. No network. Deterministic placeholder synthesis.",
+        "setup": "Always available. Use to explore the flow without a model.",
+    })
+    modes.append({
+        "id": "byok", "label": "OpenRouter (BYOK)", "kind": "byok",
+        "status": "ready" if cfg["has_key"] else "needs_key",
+        "live": bool(cfg["has_key"]),
+        "detail": "Real synthesis/evaluation. Sends only approved text to OpenRouter.",
+        "setup": "Set OPENROUTER_API_KEY in .env (env only, never committed), then restart.",
+    })
+    for mid, label, binary, setup in AGENT_CLIS:
+        found = shutil.which(binary) is not None
+        modes.append({
+            "id": mid, "label": label, "kind": "cli",
+            "status": "detected" if found else "not_installed",
+            "live": False,  # detection != execution in v0.3
+            "detail": ("Found on PATH (login state unknown). v0.3 detects only; "
+                       "it does not run the CLI for you yet.") if found
+                      else "Not found on PATH.",
+            "setup": setup,
+        })
+    modes.append({
+        "id": "manual", "label": "Manual LLM prompt", "kind": "manual", "status": "ready",
+        "live": False,
+        "detail": "Copy a prompt into any LLM (Claude/ChatGPT/Codex), paste the result back.",
+        "setup": "Always available. Best no-key path to real synthesis.",
+    })
+    any_live = any(m["live"] for m in modes)
+    return {"modes": modes, "any_live": any_live, "byok_has_key": cfg["has_key"]}
+
+
+def _sanitize_filename(name: str) -> str:
+    base = os.path.basename((name or "").replace("\\", "/"))
+    keep = [c if (c.isalnum() or c in "-_. ") else "-" for c in base]
+    s = "".join(keep).strip().strip(".") or "context"
+    return s[:80]
+
+
+def _save_context(name: str, payload: dict) -> dict:
+    """Save pasted context / packet / approved paths under outputs/<slug>/sources/.
+    Writes are confined to outputs/ only."""
+    slug = _slug(name)
+    base = _safe_path(f"outputs/{slug}/sources", WRITE_ROOTS)
+    if base is None:
+        return {"error": "invalid name"}
+    base.mkdir(parents=True, exist_ok=True)
+    written = []
+    text = (payload.get("text") or "").strip()
+    if text:
+        fn = _sanitize_filename(payload.get("filename") or "pasted-context.md")
+        if not fn.endswith((".md", ".txt", ".json", ".jsonl", ".csv")):
+            fn += ".md"
+        (base / fn).write_text(text, encoding="utf-8")
+        written.append(f"sources/{fn}")
+    packet = (payload.get("packet") or "").strip()
+    if packet:
+        (base / "context-packet.md").write_text(packet, encoding="utf-8")
+        written.append("sources/context-packet.md")
+    paths = payload.get("paths") or []
+    if isinstance(paths, list) and paths:
+        lines = ["# approved manual source paths", "",
+                 "These are paths the user named for later scanning. Not read yet.", ""]
+        lines += [f"- {str(p)}" for p in paths if str(p).strip()]
+        (base / "approved-paths.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        written.append("sources/approved-paths.md")
+    return {"ok": True, "slug": slug, "written": written}
+
+
+def _build_stages(name: str, mode: str) -> dict:
+    """Ensure the brain exists and return an honest staged build log. Synthesis is
+    NOT run over the network here; live synthesis stays an explicit BYOK action."""
+    slug = _slug(name)
+    dest = REPO_ROOT / "outputs" / slug
+    exists = (dest / "catalyst-brain").is_dir()
+    has_sources = (dest / "sources").is_dir()
+    live = mode == "byok" and byok.get_config()["has_key"]
+    seed_label = "live (BYOK)" if live else "mock / no-key seed"
+    stages = [
+        ("Preparing source packet", "done" if has_sources else "skipped",
+         "imported context found" if has_sources else "no imported context; using typed answers"),
+        ("Synthesizing identity / context", "done", seed_label),
+        ("Extracting standards / judgment", "done", seed_label),
+        ("Extracting rejected examples / anti-slop", "done", seed_label),
+        ("Writing skills / workflows / evals", "done" if exists else "pending",
+         "templates copied to outputs/" ),
+        ("Running first proof setup", "ready", "open the Proof step"),
+    ]
+    return {"slug": slug, "brain_exists": exists, "mode": mode, "live": live,
+            "seed_label": seed_label, "stages": [
+                {"name": n, "status": s, "detail": d} for n, s, d in stages]}
+
+
 # --- HTTP handler ------------------------------------------------------------
 class Handler(BaseHTTPRequestHandler):
     server_version = "Catalyst/0.2"
@@ -296,19 +441,33 @@ class Handler(BaseHTTPRequestHandler):
                 "missing_categories": res.get("missing_categories", []),
                 "note": "read-only path discovery. nothing was read. you approve any scan.",
             })
+        if path == "/api/agents/status":
+            return self._json(_agent_status())
+        if path == "/api/extraction-prompt":
+            return self._json({"prompt": EXTRACTION_PROMPT})
         if path == "/api/brain":
             name = (q.get("name") or [""])[0]
             brain = (REPO_ROOT / "outputs" / name / "catalyst-brain")
             if not _safe_path(f"outputs/{name}/catalyst-brain", READ_ROOTS) or not brain.is_dir():
                 return self._json({"error": "brain not found"}, 404)
-            files = []
+            files = {}
             for f in BRAIN_FILE_ORDER:
                 p = brain / f
                 if not p.is_file():
                     continue
-                meta = _parse_brain_meta(p.read_text(encoding="utf-8"))
-                files.append({"file": f, "meta": meta})
-            return self._json({"name": name, "files": files})
+                files[f] = _parse_brain_meta(p.read_text(encoding="utf-8"))
+            groups = []
+            for label, names in BRAIN_GROUPS:
+                items = [{"file": f, "meta": files[f]} for f in names if f in files]
+                if items:
+                    groups.append({"label": label, "files": items})
+            # any files not in a group (e.g. README) appended under "Index"
+            grouped = {f for _, ns in BRAIN_GROUPS for f in ns}
+            extra = [{"file": f, "meta": files[f]} for f in BRAIN_FILE_ORDER if f in files and f not in grouped]
+            if extra:
+                groups.insert(0, {"label": "Index", "files": extra})
+            return self._json({"name": name, "groups": groups,
+                               "files": [{"file": f, "meta": m} for f, m in files.items()]})
         if path == "/api/file":
             name = (q.get("name") or [""])[0]
             rel = (q.get("path") or [""])[0]
@@ -356,6 +515,24 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": "name is required"}, 400)
             result = _scaffold_brain(name, data.get("answers", {}) or {})
             return self._json({"ok": True, **result, "brains": _list_brains()})
+        if path == "/api/context/save":
+            name = data.get("name", "")
+            if not name.strip():
+                return self._json({"error": "name is required"}, 400)
+            res = _save_context(name, data)
+            code = 200 if res.get("ok") else 400
+            return self._json(res, code)
+        if path == "/api/build":
+            name = data.get("name", "")
+            if not name.strip():
+                return self._json({"error": "name is required"}, 400)
+            # ensure a brain exists (scaffold from answers if not yet built)
+            slug = _slug(name)
+            if not (REPO_ROOT / "outputs" / slug / "catalyst-brain").is_dir():
+                _scaffold_brain(name, data.get("answers", {}) or {})
+            result = _build_stages(name, data.get("mode", "mock"))
+            result["brains"] = _list_brains()
+            return self._json(result)
         if path == "/api/byok/test":
             provider = byok.get_provider()
             out = provider.complete(

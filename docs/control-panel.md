@@ -21,15 +21,23 @@ python apps/control-panel/server.py
 
 Open `http://127.0.0.1:8765`. It binds `127.0.0.1` only.
 
-## Screens
+## The journey
 
-1. **Status** — brain count, key files present/missing, whether a proof/feedback log exists, BYOK mode, and the visible loop. Quick actions: start onboarding, open brain, run proof, use without UI.
-2. **Onboarding** — the 5–7 questions, recommended/manual/skip scan choice, and the default exclusions shown before any read. Builds a seeded brain locally.
-3. **Sources** — read-only discovery shown as categories (not path dumps) and the one compact approval question. Supports cautious approval mode and autonomous authorized mode.
-4. **Brain explorer** — browse `outputs/<name>/catalyst-brain/*.md`, see each file's purpose / when to load / tasks affected, and edit + save straight to disk.
-5. **Proof** — pick a task, see which brain files load, run a standards/judgment review (BYOK or mock), and see what feedback would update.
-6. **BYOK** — provider/model/mode, a connection test, and exactly what data is sent if enabled.
-7. **Export** — the local brain path and a copy-paste prompt to hand the same brain to any agent without the UI.
+The panel is one staged setup flow with a progress rail, Apple-inspired black/white/minimal, one main idea per screen:
+
+```txt
+Start → Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents (MCP)
+```
+
+0. **Start** — what Catalyst is, local control-panel status, no account/database. One CTA: start setup.
+1. **Connect AI** — comes first on purpose. Catalyst needs a worker to synthesize/evaluate/update; without one it only copies empty templates. Modes: Mock/offline (always, no network), OpenRouter BYOK (env key), detected CLIs — Claude Code / Codex / Hermes (existence-only detection, login state unknown), and Manual LLM prompt (always). Each card shows real status; the UI never implies a live model exists when only mock is available.
+2. **Identity** — five sharp answers (name, agent jobs, goals/projects, never-ship, first proof task). Not an interview.
+3. **Context** — paste a context dump, name manual paths, copy the extraction prompt for any LLM and paste the structured packet back. Connector cards (Notion/Slack/Discord/workspace) are labeled honestly as export/drop/paths — not live OAuth. Saved under `outputs/<name>/sources/`.
+4. **Permission** — read-only discovery shown as category counts, the safe-scan explanation with exclusions, and approve / edit / skip. Content scanning stays consent-gated.
+5. **Build** — an honest staged build (prepare packet → synthesize identity/context → extract standards/judgment → extract rejected/anti-slop → write skills/workflows/evals → proof setup), labeled live (BYOK) or mock/no-key seed.
+6. **Explore** — the brain grouped by job (Who/why · Taste/standards · Operating system · Learning), each file showing what it controls and when agents load it. Edit + save to disk.
+7. **Proof** — "Memory tells the agent what exists. Judgment tells it what you would ship." Shows loaded files, mode, a standards review (live or clearly-marked mock preview), and what feedback would update.
+8. **Agents (MCP)** — the local MCP scaffold and connector instructions so multiple agents can use the brain. See [mcp.md](mcp.md).
 
 ## Security
 

@@ -100,6 +100,24 @@ def run(root: Path) -> list:
     if "byok is optional" not in readme:
         failures.append("README does not state BYOK is optional")
 
+    # --- no browser-stored keys ---
+    static = root / "apps" / "control-panel" / "static"
+    if static.is_dir():
+        for f in static.glob("*.js"):
+            js = _read(f).lower()
+            if "localstorage" in js or "sessionstorage" in js:
+                failures.append(f"{f.relative_to(root).as_posix()} uses browser storage (no keys may be stored client-side)")
+
+    # --- MCP scaffold safety ---
+    mcp = root / "tools" / "mcp_server.py"
+    if mcp.is_file():
+        m = _read(mcp)
+        for danger in ["os.system(", "subprocess.", "shell=True", "urllib.request", "socket.", "requests."]:
+            if danger in m:
+                failures.append(f"mcp_server.py exposes network/shell: {danger}")
+        if "outputs" not in m:
+            failures.append("mcp_server.py does not confine writes to outputs/")
+
     # --- gitignore ---
     gi = _read(root / ".gitignore")
     for need in [".env", ".catalyst/"]:

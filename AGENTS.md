@@ -160,8 +160,9 @@ This protocol runs from `AGENTS.md` with no UI and no API key. Two optional surf
 
 - **Local control panel** (`apps/control-panel/`): a zero-dependency Python-stdlib server + vanilla page that operates on the real markdown under `outputs/<name>/`. Localhost-only, allowlisted file ops (reads `outputs/templates/docs/prompts`; writes `outputs/` only, never `templates/`), no shell endpoint. Run with `py apps/control-panel/server.py`. See [docs/control-panel.md](docs/control-panel.md).
 - **BYOK** (`apps/control-panel/byok.py`): optional AI-assisted synthesis/review. Mock provider with no key makes no network call; a key (env only) enables a real provider. Never require BYOK for reading/editing the brain, running the panel, exporting prompts, or manual agent use. See [docs/byok.md](docs/byok.md).
+- **MCP scaffold** (`tools/mcp_server.py`): a dependency-free, local-only JSON-RPC stdio server so multiple agents can `list_brain_sections`, `read_brain_section`, `review_output_against_brain`, `append_feedback`, and `propose_brain_update`. Read access is limited to the brain; the only writes are feedback append and proposals (never silent overwrite). Honest scaffold, not a certified MCP build. See [docs/mcp.md](docs/mcp.md).
 
-Do not treat either surface as the product or as required infrastructure.
+The control panel connects an AI/agent **first** (mock/BYOK/detected-CLI/manual): real synthesis and evaluation need a worker, and mock is never presented as live. Do not treat any of these surfaces as the product or as required infrastructure.
 
 ## Quality checklist
 

@@ -24,3 +24,12 @@ The optional local control panel enforces the same model in code:
 - path traversal is rejected; every path is resolved and checked against the allowlisted roots
 - no shell or arbitrary-filesystem endpoint exists
 - the panel binds localhost only; a non-local bind requires a bearer token
+- pasted/imported context is written only under `outputs/<name>/sources/`; filenames are sanitized and confined to `outputs/`
+- agent detection is existence-only (`shutil.which`); no CLI is executed and no user input is run as a command
+
+## MCP server (`tools/mcp_server.py`)
+
+- local-only stdio JSON-RPC; no network
+- read access limited to `outputs/<name>/catalyst-brain/*.md`
+- the only write paths are `append_feedback` (→ `feedback-memory.md`) and `propose_brain_update` (→ `proposed-updates/`), confined to `outputs/`
+- the brain is never silently overwritten; updates land as proposals for review

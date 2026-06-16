@@ -2,6 +2,31 @@
 
 Optional local control surface for the Catalyst Brain. Zero dependencies — Python standard library plus a vanilla HTML/CSS/JS page. It operates on the real markdown under `outputs/<name>/`. It is not required: point any agent at the repo's `AGENTS.md` instead.
 
+It is a staged setup journey (Apple-inspired black/white), not a tab grid:
+
+```txt
+Start → Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents (MCP)
+```
+
+It connects an AI/agent **first** — real synthesis/evaluation needs a worker, and mock is never shown as live.
+
+## Local JSON API (allowlisted)
+
+| endpoint | method | purpose |
+|----------|--------|---------|
+| `/api/status` | GET | brains, key files, BYOK mode |
+| `/api/agents/status` | GET | connection modes + safe CLI detection (`shutil.which`) |
+| `/api/extraction-prompt` | GET | copyable context-extraction prompt |
+| `/api/discover` | GET | read-only source categories (no contents) |
+| `/api/brain?name=` | GET | brain files grouped by job |
+| `/api/file` | GET/POST | read / save a brain `.md` (writes: `outputs/` only) |
+| `/api/context/save` | POST | save pasted context / packet / paths under `outputs/<name>/sources/` |
+| `/api/build` | POST | scaffold + honest staged build log |
+| `/api/byok/test`, `/api/synthesize` | POST | optional provider call (mock with no key) |
+| `/api/export` | GET | brain path + agent prompt |
+
+No shell endpoint. No arbitrary filesystem access.
+
 ## Run
 
 ```txt

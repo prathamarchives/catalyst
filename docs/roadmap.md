@@ -20,7 +20,17 @@ Make the protocol understandable and operable without losing local-first:
 
 The control panel is an optional surface, not the product. The markdown protocol stays the source of truth and runs with no UI and no key.
 
-## v0.3 — first-dollar install kit
+## v0.3 — agent-native onboarding + MCP scaffold
+
+Sharpen the control panel into a staged, Apple-inspired setup journey and make it agent-native:
+
+- one coherent flow: Start → Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents (MCP).
+- **connect an AI/agent first** — mock/offline, OpenRouter BYOK, detected CLIs (Claude Code/Codex/Hermes, existence-only), and a manual-prompt fallback. Honest status; mock is never shown as live.
+- context import: paste a dump, name manual paths, or run the extraction prompt through any LLM and paste the packet back; saved under `outputs/<name>/sources/`. No fake Notion/Slack/Discord OAuth — connectors are labeled export/drop/paths.
+- honest staged build, grouped brain explorer, proof loop that contrasts memory vs judgment.
+- `tools/mcp_server.py`: dependency-free, local-only MCP scaffold exposing `list_brain_sections`, `read_brain_section`, `review_output_against_brain`, `append_feedback`, `propose_brain_update`. Writes only via feedback/proposal; never overwrites the brain.
+
+## v0.4 — first-dollar install kit
 
 Manual paid install offer around building a user's Catalyst Brain and making their AI stop resetting across sessions.
 
