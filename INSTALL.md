@@ -27,9 +27,19 @@ If content access is blocked or authorization is unclear, stop before reading fi
 
 The user burden should be almost no path hunting: the agent discovers candidate locations, recommends a safe scan preset, asks only for approval/feedback when needed, and then runs setup.
 
+## Optional: guided onboarding + local control panel
+
+Setup can run as an agent following `AGENTS.md`, or through the optional local control panel:
+
+```txt
+py apps/control-panel/server.py
+```
+
+It opens on `http://127.0.0.1:8765` and walks the same 5–7 question onboarding, read-only discovery, approval gate, brain build, and proof loop — operating on real files under `outputs/<name>/`. The panel is optional; the protocol installs fully without it. BYOK is also optional (mock mode needs no key). See [docs/local-onboarding.md](docs/local-onboarding.md), [docs/control-panel.md](docs/control-panel.md), and [docs/byok.md](docs/byok.md).
+
 ## Privacy
 
-Discovery is read-only. Content scanning is authorized. Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and sensitive material. Outputs are gitignored. Hosted model/provider tools may receive approved context.
+Discovery is read-only. Content scanning is authorized. Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and sensitive material. Outputs are gitignored. Hosted model/provider tools may receive approved context. The local control panel binds localhost only and never writes to `templates/`.
 
 ## Verify
 

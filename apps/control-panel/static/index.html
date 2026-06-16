@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Catalyst — control panel</title>
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<aside class="side">
+  <div class="brand"><b>catalyst</b><span class="v">v0.2</span></div>
+  <div class="tag">Control panel for your local Catalyst Brain. Optional — the brain runs without it.</div>
+  <nav class="nav" id="nav">
+    <button data-view="status" class="active">Status</button>
+    <button data-view="onboarding">Onboarding</button>
+    <button data-view="sources">Sources</button>
+    <button data-view="brain">Brain explorer</button>
+    <button data-view="proof">Proof</button>
+    <button data-view="byok">BYOK</button>
+    <button data-view="export">Export</button>
+  </nav>
+  <div class="foot">local · <code id="repo">…</code><br/>no account · no database · no cloud upload by default</div>
+</aside>
+
+<main>
+  <!-- STATUS -->
+  <section class="view active" id="view-status">
+    <div class="h"><h1>Brain status</h1><button class="btn" onclick="App.refresh()">↻ refresh</button></div>
+    <p class="sub">Catalyst teaches agents what you'd approve, reject, revise, and remember. The loop below is the product — this panel just makes it visible.</p>
+    <div class="loop" id="loop">
+      <span>task</span><i>→</i><span>load brain</span><i>→</i><span>produce</span><i>→</i><span>review vs standards</span><i>→</i><span>show you</span><i>→</i><span>capture feedback</span><i>→</i><span>update brain</span>
+    </div>
+    <div class="grid" id="statusCards"></div>
+    <hr class="sep" />
+    <div class="row">
+      <button class="btn primary" onclick="App.go('onboarding')">Start onboarding</button>
+      <button class="btn" onclick="App.go('brain')">Open brain</button>
+      <button class="btn" onclick="App.go('proof')">Run proof</button>
+      <button class="btn" onclick="App.go('export')">Use without UI</button>
+    </div>
+  </section>
+
+  <!-- ONBOARDING -->
+  <section class="view" id="view-onboarding">
+    <h1>Guided onboarding</h1>
+    <p class="sub">Local-first: this builds markdown files under <span class="kbd">outputs/&lt;name&gt;/</span> on your machine from your own typed answers. No scanning happens on this screen, and nothing leaves your computer.</p>
+    <form id="onboardForm">
+      <label class="f">1 · What name/handle should this Catalyst Brain represent?
+        <input type="text" name="name" placeholder="e.g. pratham / acme-research" required /></label>
+      <label class="f">2 · What are you mainly using agents for right now?
+        <select name="using_for">
+          <option>coding</option><option>writing</option><option>research</option>
+          <option>business</option><option>creative</option><option>other</option>
+        </select></label>
+      <label class="f">3 · What should agents never ship in your name?
+        <small>The lines that get work instantly rejected.</small>
+        <textarea name="never_ship" placeholder="e.g. generic SaaS copy, em-dash slop, anything with 'unlock/supercharge'"></textarea></label>
+      <label class="f">4 · What examples count as approved work / good taste?
+        <small>Links, pasted snippets, or descriptions of work you'd sign off on.</small>
+        <textarea name="approved_examples"></textarea></label>
+      <label class="f">5 · What examples or corrections show rejected work / slop?
+        <small>Highest signal — your standard shows up by contrast.</small>
+        <textarea name="rejected_examples"></textarea></label>
+      <label class="f">6 · What local sources may Catalyst inspect later?</label>
+      <div class="scope" id="scope">
+        <label class="sel" data-scope="recommended"><input type="radio" name="scope" value="recommended" checked hidden /><b>Recommended safe scan</b><small>AI sessions, notes, workspaces. Excludes secrets/DMs/client data.</small></label>
+        <label data-scope="manual"><input type="radio" name="scope" value="manual" hidden /><b>Manual paths</b><small>You name exact folders later.</small></label>
+        <label data-scope="skip"><input type="radio" name="scope" value="skip" hidden /><b>Skip scan</b><small>Build from answers only.</small></label>
+      </div>
+      <div class="notice warn">Excluded by default before any scan: secrets, tokens, private DMs, client data, binaries, vendor/build folders, dependency folders. Discovery (Sources tab) is read-only path metadata; reading file contents needs your approval.</div>
+      <label class="f">7 · What is the first real task to use as proof?
+        <input type="text" name="first_task" placeholder="e.g. draft a launch post / review this PR / write a cold email" /></label>
+      <div class="row" style="margin-top:18px">
+        <button class="btn primary" type="submit">Build brain locally</button>
+        <span class="muted" id="onboardMsg"></span>
+      </div>
+    </form>
+  </section>
+
+  <!-- SOURCES -->
+  <section class="view" id="view-sources">
+    <h1>Source approval</h1>
+    <p class="sub">Read-only discovery finds <em>categories</em> of source material — never giant path dumps, never contents. You approve a scope before anything is read.</p>
+    <button class="btn" onclick="App.discover()">Run read-only discovery</button>
+    <div id="discoverOut" style="margin-top:16px"></div>
+    <div class="notice">One compact approval question (cautious mode):<br/><em>"Approve recommended safe scan, edit scope, or manual mode?"</em><br/>If your starting prompt already authorized a safe scan, an agent proceeds in autonomous authorized mode without re-asking. This panel never reads file contents on its own.</div>
+  </section>
+
+  <!-- BRAIN -->
+  <section class="view" id="view-brain">
+    <div class="h"><h1>Brain explorer</h1><select id="brainSelect" onchange="App.loadBrain(this.value)"></select></div>
+    <p class="sub">Real markdown under <span class="kbd">outputs/&lt;name&gt;/catalyst-brain/</span>. Each file shows its purpose, when agents load it, and what it affects. Edits save straight to disk.</p>
+    <div class="explorer">
+      <div class="filelist" id="brainFiles"></div>
+      <div class="editor" id="brainEditor"><p class="muted">Select a brain, then a file.</p></div>
+    </div>
+  </section>
+
+  <!-- PROOF -->
+  <section class="view" id="view-proof">
+    <h1>Proof / evaluation</h1>
+    <p class="sub">The differentiator: an output is unverified until it's checked against your written standard. This shows which brain files load and what feedback would update.</p>
+    <label class="f">Task to run as proof
+      <input type="text" id="proofTask" placeholder="e.g. draft the launch post" /></label>
+    <label class="f">Draft / output to review (paste real work, or leave blank for the checklist only)
+      <textarea id="proofDraft"></textarea></label>
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" onclick="App.runProof()">Review against standards</button>
+      <span class="muted">uses BYOK if a key is set, otherwise a deterministic local checklist (mock)</span>
+    </div>
+    <div id="proofOut" style="margin-top:16px"></div>
+  </section>
+
+  <!-- BYOK -->
+  <section class="view" id="view-byok">
+    <h1>BYOK — bring your own key</h1>
+    <p class="sub">Optional. Everything above works with no key (mock mode). A key only powers AI-assisted synthesis and review.</p>
+    <div class="grid" id="byokCards"></div>
+    <div class="notice warn">What gets sent if you enable BYOK: only the text you pass to an assisted action (onboarding answers, a draft you submit for review) is sent to your chosen provider over the network. Nothing is sent in mock mode. The key is read from an environment variable only — never typed into this page, never stored by the panel, never committed.</div>
+    <h3 class="muted" style="margin-top:20px">Enable</h3>
+    <pre class="out">cp .env.example .env
+# edit .env:  OPENROUTER_API_KEY=sk-or-...
+# (optional) CATALYST_PROVIDER=openrouter   CATALYST_MODEL=openrouter/auto
+# restart:    py apps/control-panel/server.py</pre>
+    <button class="btn" onclick="App.testKey()">Test connection</button>
+    <pre class="out" id="byokTest" style="display:none"></pre>
+  </section>
+
+  <!-- EXPORT -->
+  <section class="view" id="view-export">
+    <h1>Use with any agent</h1>
+    <p class="sub">The UI is optional. Hand this to Claude Code, Hermes, Cursor, Codex, or OpenClaw and they operate the same local brain.</p>
+    <h3 class="muted">Local brain path</h3>
+    <pre class="out" id="exportPath">…</pre>
+    <h3 class="muted">Prompt to paste into an agent</h3>
+    <pre class="out" id="exportPrompt">…</pre>
+    <button class="btn primary" onclick="App.copy('exportPrompt')">Copy prompt</button>
+    <div class="notice">First-time install prompt (autonomous authorized mode):<br/>
+      <span class="copy">https://github.com/prathamarchives/catalyst — install this and build my Catalyst Brain using the recommended safe scan. Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and anything sensitive. Run the first proof task and update the brain from my feedback.</span>
+    </div>
+  </section>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>

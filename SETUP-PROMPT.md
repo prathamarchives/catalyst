@@ -21,3 +21,13 @@ First discover candidate source locations without reading contents. Recommend a 
 ```txt
 Use only these paths: <paths>. Build my Catalyst Brain from them, excluding secrets/private/client/sensitive material, then install the task-time evaluation and feedback update loops.
 ```
+
+## Optional: guided onboarding via the local control panel
+
+Prefer a guided local flow over chat? Run the optional control panel and use the Onboarding screen (5–7 questions, recommended/manual/skip scan, then a proof task):
+
+```txt
+py apps/control-panel/server.py
+```
+
+It is localhost-only and operates on the same `outputs/<name>/` files. The protocol works without it. See [docs/local-onboarding.md](docs/local-onboarding.md).

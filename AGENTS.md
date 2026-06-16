@@ -152,7 +152,16 @@ Run [prompts/09-distill-and-decay-memory.md](prompts/09-distill-and-decay-memory
 - content reading requires authorization and reads only the approved scope
 - exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and sensitive material by default
 - generated outputs are gitignored
-- this repo makes no network calls; hosted agent providers may send approved context to their provider
+- the protocol itself makes no network calls; hosted agent providers may send approved context to their provider, and optional BYOK (if the user enables it) is the only path that sends approved text to a chosen model provider
+
+## Optional surfaces (not required)
+
+This protocol runs from `AGENTS.md` with no UI and no API key. Two optional surfaces exist and never change the file layout:
+
+- **Local control panel** (`apps/control-panel/`): a zero-dependency Python-stdlib server + vanilla page that operates on the real markdown under `outputs/<name>/`. Localhost-only, allowlisted file ops (reads `outputs/templates/docs/prompts`; writes `outputs/` only, never `templates/`), no shell endpoint. Run with `py apps/control-panel/server.py`. See [docs/control-panel.md](docs/control-panel.md).
+- **BYOK** (`apps/control-panel/byok.py`): optional AI-assisted synthesis/review. Mock provider with no key makes no network call; a key (env only) enables a real provider. Never require BYOK for reading/editing the brain, running the panel, exporting prompts, or manual agent use. See [docs/byok.md](docs/byok.md).
+
+Do not treat either surface as the product or as required infrastructure.
 
 ## Quality checklist
 

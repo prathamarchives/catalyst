@@ -11,3 +11,8 @@ Catalyst is local-first and permission-gated.
 - no cloud upload by default: this repo itself makes no network calls or cloud uploads
 - hosted-provider caveat: your agent/model provider may receive approved context; check that tool's privacy policy before approving sensitive material
 - review before sharing: read through every generated file before committing, posting, or sending it anywhere
+
+## Optional surfaces
+
+- the local control panel (`apps/control-panel/`) binds `127.0.0.1` only, exposes no shell endpoint, confines file operations to allowlisted roots, writes only under `outputs/`, never writes `templates/`, and never returns a BYOK key to the browser
+- BYOK is optional and off by default. With no key, the panel runs in mock mode and makes no network call. Enabling BYOK is the only path that sends approved text to a chosen model provider; the key is read from an environment variable only and is never committed (`.env` and `.catalyst/` are gitignored)

@@ -39,3 +39,7 @@ Interview me in small rounds, extract identity/context/standards/judgment/taste/
 5. It uses the brain on a real task, reviews against your standards, captures feedback, and updates the system.
 
 If the agent starts producing final work before building the brain and standards loop, stop it and point it back to AGENTS.md.
+
+## Optional local control panel
+
+You never need a UI — the prompts above are enough. If you want a local control surface for the brain, run `py apps/control-panel/server.py` (localhost-only, zero dependencies) and open `http://127.0.0.1:8765`. It operates on the same `outputs/<name>/` markdown and includes an Export tab that hands the brain back to any agent without the UI. BYOK is optional; mock mode needs no key. See [docs/control-panel.md](docs/control-panel.md).

@@ -8,6 +8,8 @@ REQUIRED_FILES = [
     "templates/workflows/start-task.md", "templates/workflows/produce-output.md", "templates/workflows/review-output.md", "templates/workflows/update-after-feedback.md", "templates/workflows/weekly-distillation.md",
     "templates/evals/output-review.md", "templates/evals/standards-check.md", "templates/evals/identity-alignment.md", "templates/evals/judgment-check.md", "templates/evals/feedback-capture.md", "templates/evals/improvement-log.md",
     "examples/catalyst-loop/README.md", "examples/catalyst-loop/task-time-evaluation.md", "docs/catalyst-brain.md", "docs/privacy.md", "docs/roadmap.md", "docs/eval-loop.md", "docs/memory-lifecycle.md", "docs/install-vs-use.md", "docs/permission-model.md", "tools/discover_sessions.py",
+    "docs/product-surface.md", "docs/local-onboarding.md", "docs/control-panel.md", "docs/byok.md",
+    ".env.example", "apps/control-panel/README.md", "apps/control-panel/server.py", "apps/control-panel/byok.py", "apps/control-panel/static/index.html", "apps/control-panel/static/app.js", "apps/control-panel/static/styles.css",
 ]
 
 def run(root: Path) -> list:
