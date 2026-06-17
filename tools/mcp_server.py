@@ -206,6 +206,43 @@ def _tool_list() -> list:
     return [{"name": k, "description": v["description"], "inputSchema": v["schema"]} for k, v in TOOLS.items()]
 
 
+# Standing directive surfaced to the agent on connect (MCP `initialize.instructions`).
+# This is what makes "connect MCP -> the agent does the rest" real: the client injects
+# these instructions, so the agent knows to scan, build, and run the brain via AGENTS.md.
+CATALYST_INSTRUCTIONS = (
+    "You are connected to Catalyst, the user's local judgment brain. Before substantive work, "
+    "operate it like this:\n"
+    "1. Read AGENTS.md and README.md in this repo for the full protocol.\n"
+    "2. Discover where the user's AI sessions, notes, exports, and workspaces live "
+    "(tools/discover_sessions.py); do not read contents until the user approves a scan scope.\n"
+    "3. Build the user's Catalyst brain under outputs/<name>/ from the approved material and write "
+    "the personalized skills/workflows/evals. Never overwrite anything under templates/.\n"
+    "4. For each task: call route_task, then get_context_packet (load the brain + judgment contract) "
+    "before producing; after producing call review_output_against_brain; on a correction call "
+    "append_feedback (writes a proposal, never a silent overwrite); periodically call audit_brain to "
+    "keep the brain sharp.\n"
+    "Run the 'catalyst-build-and-run' prompt to kick this off."
+)
+
+BUILD_AND_RUN_PROMPT = (
+    "Read README.md and AGENTS.md in this repo. Use it to build my Catalyst brain.\n"
+    "First discover where my AI sessions, notes, exports, agent memories, and workspaces live. "
+    "Do not read file contents yet. Show me the discovered locations, recommend a safe scan scope, "
+    "and ask what you may scan if I have not already authorized it; then audit only the approved scope.\n"
+    "Extract identity/context/standards/judgment/taste/feedback with evidence, create files under "
+    "outputs/<name>/, write Catalyst skills/workflows/evals, then run my real tasks through the loop: "
+    "route_task -> get_context_packet -> produce -> review_output_against_brain -> append_feedback on my "
+    "corrections -> audit_brain to keep it sharp. Compound session to session."
+)
+
+PROMPTS = {
+    "catalyst-build-and-run": {
+        "description": "Build the user's Catalyst brain from their context, then run + improve it through the loop.",
+        "text": BUILD_AND_RUN_PROMPT,
+    },
+}
+
+
 def handle(req: dict) -> dict | None:
     """Dispatch one JSON-RPC request. Returns a response dict (or None for notifications)."""
     method = req.get("method")
@@ -221,11 +258,20 @@ def handle(req: dict) -> dict | None:
     if method == "initialize":
         return ok({"protocolVersion": "2024-11-05",
                    "serverInfo": {"name": "catalyst-brain", "version": "0.4"},
-                   "capabilities": {"tools": {}}})
+                   "instructions": CATALYST_INSTRUCTIONS,
+                   "capabilities": {"tools": {}, "prompts": {}}})
     if method in ("notifications/initialized", "initialized"):
         return None
     if method == "tools/list":
         return ok({"tools": _tool_list()})
+    if method == "prompts/list":
+        return ok({"prompts": [{"name": k, "description": v["description"]} for k, v in PROMPTS.items()]})
+    if method == "prompts/get":
+        p = PROMPTS.get(params.get("name"))
+        if not p:
+            return err(-32602, f"unknown prompt: {params.get('name')}")
+        return ok({"description": p["description"],
+                   "messages": [{"role": "user", "content": {"type": "text", "text": p["text"]}}]})
     if method == "tools/call":
         tname = params.get("name")
         args = params.get("arguments") or {}
