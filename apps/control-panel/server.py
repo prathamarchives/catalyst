@@ -41,6 +41,7 @@ from urllib.parse import urlparse, parse_qs
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
 STATIC_DIR = HERE / "static"
+DIST_DIR = REPO_ROOT / "apps" / "web" / "dist"  # prebuilt consumer UI (Phase 3)
 
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(REPO_ROOT / "tools"))
@@ -50,6 +51,15 @@ try:
     import discover_sessions  # noqa: E402
 except Exception:  # pragma: no cover
     discover_sessions = None
+
+sys.path.insert(0, str(REPO_ROOT))
+from catalyst_core import (  # noqa: E402
+    router as flow_router,
+    packet as flow_packet,
+    evaluator as flow_evaluator,
+    feedback as flow_feedback,
+    quality as flow_quality,
+)
 
 # --- allowlist ---------------------------------------------------------------
 READ_ROOTS = ["outputs", "templates", "docs", "prompts"]
@@ -317,6 +327,61 @@ def _save_context(name: str, payload: dict) -> dict:
     return {"ok": True, "slug": slug, "written": written}
 
 
+def _import_files(name: str, files: list) -> dict:
+    """Write dropped context files under outputs/<slug>/sources/. Confined to outputs/.
+
+    Filenames are sanitized and re-resolved against the allowlist, so traversal is
+    blocked twice. Each file is capped to keep the brain lean.
+    """
+    slug = _slug(name)
+    base = _safe_path(f"outputs/{slug}/sources", WRITE_ROOTS)
+    if base is None:
+        return {"error": "invalid name"}
+    base.mkdir(parents=True, exist_ok=True)
+    written, skipped = [], []
+    for f in (files or []):
+        fn = _sanitize_filename((f or {}).get("filename") or "")
+        text = (f or {}).get("text") or ""
+        if not fn:
+            skipped.append("(unnamed)")
+            continue
+        if not fn.endswith((".md", ".txt", ".json", ".jsonl", ".csv")):
+            fn += ".md"
+        target = _safe_path(f"outputs/{slug}/sources/{fn}", WRITE_ROOTS)
+        if target is None:
+            skipped.append(fn)
+            continue
+        target.write_text(text[:200000], encoding="utf-8")
+        written.append(f"sources/{fn}")
+    return {"ok": True, "slug": slug, "written": written, "skipped": skipped}
+
+
+def _import_extract(name: str, mode: str) -> dict:
+    """Assemble the no-key extraction prompt + list imported sources. Writes nothing.
+
+    Brain content is written later via paste-back onboarding. With a BYOK key and
+    mode='byok', returns a synthesis draft for review (still not auto-applied).
+    """
+    slug = _slug(name)
+    src = REPO_ROOT / "outputs" / slug / "sources"
+    sources = sorted(p.name for p in src.glob("*")) if src.is_dir() else []
+    cfg = byok.get_config()
+    live = mode == "byok" and cfg["has_key"]
+    result = {"slug": slug, "mode": mode, "live": live, "sources": sources, "prompt": EXTRACTION_PROMPT}
+    if live:
+        material = ""
+        for p in (src.glob("*") if src.is_dir() else []):
+            try:
+                material += f"\n\n# {p.name}\n" + p.read_text(encoding="utf-8")[:20000]
+            except Exception:
+                pass
+        result["synthesis"] = byok.get_provider().complete(
+            "Extract a Catalyst brain (identity/standards/judgment/taste/voice) from the user's "
+            "context. Markdown only, specific, no slop, no overclaiming.",
+            material or "(no imported sources yet)")
+    return result
+
+
 def _build_stages(name: str, mode: str) -> dict:
     """Ensure the brain exists and return an honest staged build log. Synthesis is
     NOT run over the network here; live synthesis stays an explicit BYOK action."""
@@ -396,19 +461,41 @@ class Handler(BaseHTTPRequestHandler):
 
     # -- static --
     def _serve_static(self, path: str):
-        rel = "index.html" if path in ("/", "") else path.lstrip("/")
-        target = (STATIC_DIR / rel).resolve()
+        # legacy vanilla panel stays reachable at /legacy
+        if path == "/legacy" or path.startswith("/legacy/"):
+            return self._serve_from(STATIC_DIR, path[len("/legacy"):].lstrip("/") or "index.html", spa=False)
+        # prefer the prebuilt consumer UI when present
+        if (DIST_DIR / "index.html").is_file():
+            return self._serve_from(DIST_DIR, path.lstrip("/") or "index.html", spa=True)
+        # fallback before Phase 3 ships: the existing vanilla panel
+        return self._serve_from(STATIC_DIR, path.lstrip("/") or "index.html", spa=False)
+
+    def _serve_from(self, base: Path, rel: str, spa: bool):
+        target = (base / rel).resolve()
         try:
-            target.relative_to(STATIC_DIR)
+            target.relative_to(base)
         except ValueError:
             return self._send(403, b"forbidden", "text/plain")
         if not target.is_file():
-            return self._send(404, b"not found", "text/plain")
+            # SPA client-side routes (no file extension) fall back to index.html
+            if spa and "." not in rel.split("/")[-1]:
+                target = base / "index.html"
+                if not target.is_file():
+                    return self._send(404, b"not found", "text/plain")
+            else:
+                return self._send(404, b"not found", "text/plain")
         ctype = {
             ".html": "text/html; charset=utf-8",
             ".css": "text/css; charset=utf-8",
             ".js": "text/javascript; charset=utf-8",
+            ".mjs": "text/javascript; charset=utf-8",
+            ".json": "application/json; charset=utf-8",
             ".svg": "image/svg+xml",
+            ".png": "image/png",
+            ".ico": "image/x-icon",
+            ".woff2": "font/woff2",
+            ".woff": "font/woff",
+            ".map": "application/json",
         }.get(target.suffix, "application/octet-stream")
         self._send(200, target.read_bytes(), ctype)
 
@@ -495,6 +582,29 @@ class Handler(BaseHTTPRequestHandler):
                 "agent_prompt": prompt,
                 "no_ui_note": "You never need this control panel. Point any agent at AGENTS.md and the brain path above.",
             })
+        if path == "/api/flow/route":
+            name = (q.get("name") or [""])[0]
+            task = (q.get("task") or [""])[0]
+            if not name or not task:
+                return self._json({"error": "name and task required"}, 400)
+            return self._json(flow_router.route_task(name, task))
+        if path == "/api/flow/audit":
+            name = (q.get("name") or [""])[0]
+            if not name:
+                return self._json({"error": "name required"}, 400)
+            return self._json(flow_quality.audit_brain(name))
+        if path == "/api/import/discover":
+            if discover_sessions is None:
+                return self._json({"categories": [], "missing_categories": [], "note": "discovery helper unavailable"})
+            res = discover_sessions.discover()
+            cats = {}
+            for item in res.get("found", []):
+                cats[item["category"]] = cats.get(item["category"], 0) + 1
+            return self._json({
+                "categories": [{"category": c, "count": n} for c, n in sorted(cats.items())],
+                "missing_categories": res.get("missing_categories", []),
+                "note": "read-only path discovery. nothing was read. you approve any import.",
+            })
         return self._json({"error": "unknown endpoint"}, 404)
 
     # -- POST api --
@@ -551,6 +661,33 @@ class Handler(BaseHTTPRequestHandler):
                 material,
             )
             return self._json(out)
+        if path == "/api/flow/context":
+            name, task = data.get("name", ""), data.get("task", "")
+            if not name or not task:
+                return self._json({"error": "name and task required"}, 400)
+            return self._json({"packet": flow_packet.build_context_packet(name, task, data.get("mode", "auto"))})
+        if path == "/api/flow/evaluate":
+            name, task = data.get("name", ""), data.get("task", "")
+            if not name or not task:
+                return self._json({"error": "name and task required"}, 400)
+            return self._json(flow_evaluator.evaluate_output(name, task, data.get("output", ""), data.get("mode", "auto")))
+        if path == "/api/flow/feedback":
+            name, task = data.get("name", ""), data.get("task", "")
+            if not name or not task:
+                return self._json({"error": "name and task required"}, 400)
+            res = flow_feedback.capture_feedback(name, task, data.get("output", ""), data.get("feedback", ""))
+            return self._json(res, 200 if res.get("ok") else 400)
+        if path == "/api/import/files":
+            name = data.get("name", "")
+            if not name.strip():
+                return self._json({"error": "name is required"}, 400)
+            res = _import_files(name, data.get("files") or [])
+            return self._json(res, 200 if res.get("ok") else 400)
+        if path == "/api/import/extract":
+            name = data.get("name", "")
+            if not name.strip():
+                return self._json({"error": "name is required"}, 400)
+            return self._json(_import_extract(name, data.get("mode", "manual")))
         return self._json({"error": "unknown endpoint"}, 404)
 
 
