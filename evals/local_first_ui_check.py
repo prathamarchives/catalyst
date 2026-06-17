@@ -50,10 +50,13 @@ def run(root: Path) -> list:
         if SECRET_RE.search(text):
             failures.append(".env.example contains something that looks like a real secret")
 
-    # --- no hardcoded keys under apps/ ---
+    # --- no hardcoded keys under apps/ (authored source only) ---
     if has_app:
+        skip_dirs = {"node_modules", "dist"}  # third-party + build artifacts, not authored code
         for f in apps.rglob("*"):
-            if not f.is_file() or f.suffix not in {".py", ".js", ".ts", ".json", ".html"}:
+            if skip_dirs & set(f.parts):
+                continue
+            if not f.is_file() or f.suffix not in {".py", ".js", ".ts", ".tsx", ".json", ".html"}:
                 continue
             body = _read(f)
             if SECRET_RE.search(body):
