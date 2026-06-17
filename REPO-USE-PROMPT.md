@@ -39,3 +39,7 @@ Interview me in small rounds, extract identity/context/standards/judgment/taste/
 5. It uses the brain on a real task, reviews against your standards, captures feedback, and updates the system.
 
 If the agent starts producing final work before building the brain and standards loop, stop it and point it back to AGENTS.md.
+
+## Optional local control panel
+
+You never need a UI — the prompts above are enough. If you want a local control surface, run `py apps/control-panel/server.py` (localhost-only, zero dependencies) and open `http://127.0.0.1:8765`. It is a staged journey (Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents/MCP) over the same `outputs/<name>/` markdown, and connects an AI/agent first because real synthesis needs a worker. For multi-agent access, `py tools/mcp_server.py` is a local-only MCP scaffold. BYOK is optional; mock mode needs no key. See [docs/control-panel.md](docs/control-panel.md) and [docs/mcp.md](docs/mcp.md).

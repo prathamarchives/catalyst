@@ -129,6 +129,19 @@ Run [prompts/06-task-time-evaluation.md](prompts/06-task-time-evaluation.md) on 
 
 A task is unverified until it has been checked against the user's written standard.
 
+## Backend flow (catalyst_core)
+
+The loop is also a dependency-free engine you can call directly or over MCP — use it to reproduce the loop deterministically:
+
+1. `catalyst_core.router.route_task(name, task)` — classify + load the minimal relevant files.
+2. `catalyst_core.packet.build_context_packet(name, task, mode)` — read this (incl. the judgment contract) before producing.
+3. produce the output.
+4. `catalyst_core.evaluator.evaluate_output(name, task, output)` — verdict ship | revise | reject | ask, with 0–5 scores.
+5. on a correction, `catalyst_core.feedback.capture_feedback(...)` — appends feedback-memory + improvement-log and writes an add/refine/retire proposal.
+6. periodically, `catalyst_core.quality.audit_brain(name)` — keep the brain sharp (thin/stale/duplicate + distill).
+
+CLI: `py tools/catalyst_cli.py <init|status|context|route|evaluate|feedback|audit>`. Over MCP the same tools are `route_task`, `get_context_packet`, `review_output_against_brain`, `append_feedback`, `audit_brain`, `propose_brain_update`. Never silently overwrite core brain files — corrections land as proposals. See [docs/catalyst-flow.md](docs/catalyst-flow.md).
+
 ## Feedback memory and compounding
 
 Run [prompts/07-update-from-feedback.md](prompts/07-update-from-feedback.md) whenever the user reacts. Feedback includes direct correction (“not like that”), preference (“closer”), implicit signals (ignored output, rewritten output), and repeated failures.
@@ -152,7 +165,17 @@ Run [prompts/09-distill-and-decay-memory.md](prompts/09-distill-and-decay-memory
 - content reading requires authorization and reads only the approved scope
 - exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and sensitive material by default
 - generated outputs are gitignored
-- this repo makes no network calls; hosted agent providers may send approved context to their provider
+- the protocol itself makes no network calls; hosted agent providers may send approved context to their provider, and optional BYOK (if the user enables it) is the only path that sends approved text to a chosen model provider
+
+## Optional surfaces (not required)
+
+This protocol runs from `AGENTS.md` with no UI and no API key. Two optional surfaces exist and never change the file layout:
+
+- **Local control panel** (`apps/control-panel/`): a zero-dependency Python-stdlib server + vanilla page that operates on the real markdown under `outputs/<name>/`. Localhost-only, allowlisted file ops (reads `outputs/templates/docs/prompts`; writes `outputs/` only, never `templates/`), no shell endpoint. Run with `py apps/control-panel/server.py`. See [docs/control-panel.md](docs/control-panel.md).
+- **BYOK** (`apps/control-panel/byok.py`): optional AI-assisted synthesis/review. Mock provider with no key makes no network call; a key (env only) enables a real provider. Never require BYOK for reading/editing the brain, running the panel, exporting prompts, or manual agent use. See [docs/byok.md](docs/byok.md).
+- **MCP scaffold** (`tools/mcp_server.py`): a dependency-free, local-only JSON-RPC stdio server so multiple agents can `list_brain_sections`, `read_brain_section`, `review_output_against_brain`, `append_feedback`, and `propose_brain_update`. Read access is limited to the brain; the only writes are feedback append and proposals (never silent overwrite). Honest scaffold, not a certified MCP build. See [docs/mcp.md](docs/mcp.md).
+
+The control panel connects an AI/agent **first** (mock/BYOK/detected-CLI/manual): real synthesis and evaluation need a worker, and mock is never presented as live. Do not treat any of these surfaces as the product or as required infrastructure.
 
 ## Quality checklist
 

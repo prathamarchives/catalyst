@@ -27,9 +27,19 @@ If content access is blocked or authorization is unclear, stop before reading fi
 
 The user burden should be almost no path hunting: the agent discovers candidate locations, recommends a safe scan preset, asks only for approval/feedback when needed, and then runs setup.
 
+## Optional: guided onboarding + local control panel
+
+Setup can run as an agent following `AGENTS.md`, or through the optional local control panel:
+
+```txt
+py apps/control-panel/server.py
+```
+
+It opens on `http://127.0.0.1:8765` as a staged journey (Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents/MCP), operating on real files under `outputs/<name>/`. It connects an AI/agent first because real synthesis/evaluation needs a worker; mock/manual modes always work and are never shown as live. The panel is optional; the protocol installs fully without it. BYOK is also optional (mock mode needs no key). For multi-agent access, `py tools/mcp_server.py` runs a local-only MCP scaffold. See [docs/local-onboarding.md](docs/local-onboarding.md), [docs/control-panel.md](docs/control-panel.md), [docs/byok.md](docs/byok.md), and [docs/mcp.md](docs/mcp.md).
+
 ## Privacy
 
-Discovery is read-only. Content scanning is authorized. Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and sensitive material. Outputs are gitignored. Hosted model/provider tools may receive approved context.
+Discovery is read-only. Content scanning is authorized. Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and sensitive material. Outputs are gitignored. Hosted model/provider tools may receive approved context. The local control panel binds localhost only and never writes to `templates/`.
 
 ## Verify
 
