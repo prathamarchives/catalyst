@@ -32,6 +32,15 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUTPUTS = REPO_ROOT / "outputs"
 
+sys.path.insert(0, str(REPO_ROOT))
+from catalyst_core import (  # noqa: E402
+    router as core_router,
+    packet as core_packet,
+    evaluator as core_evaluator,
+    feedback as core_feedback,
+    quality as core_quality,
+)
+
 BRAIN_GROUPS = [
     ("Who / why", ["identity.md", "context.md", "goals.md", "constraints.md"]),
     ("Taste / standards", ["standards.md", "judgment.md", "taste.md", "anti-slop.md", "rejected-examples.md"]),
@@ -95,41 +104,18 @@ def read_brain_section(name: str, file: str) -> dict:
 
 
 def review_output_against_brain(name: str, task: str = "", draft: str = "") -> dict:
-    bd = _brain_dir(name)
-    if bd is None:
+    """Real deterministic evaluation via catalyst_core (verdict + scores + issues)."""
+    if _brain_dir(name) is None:
         return {"error": f"no brain for '{name}'"}
-    loaded = [f for f in REVIEW_FILES if (bd / f).is_file()]
-    checklist = [
-        f"Does it meet the written bar in standards.md?",
-        f"Would judgment.md approve, revise, or reject it?",
-        f"Does it avoid everything in rejected-examples.md and anti-slop.md?",
-        f"Is it consistent with identity.md and constraints.md?",
-        f"Does it follow the relevant pattern in task-patterns.md?",
-    ]
-    return {
-        "name": name, "task": task,
-        "loaded_files": loaded,
-        "review_checklist": checklist,
-        "verdict_options": ["approve", "revise", "reject"],
-        "note": "Deterministic local review scaffold. A connected model fills in verdicts; "
-                "this server does not call any network.",
-        "draft_chars": len(draft or ""),
-    }
+    return core_evaluator.evaluate_output(name, task, draft)
 
 
-def append_feedback(name: str, note: str) -> dict:
-    bd = _brain_dir(name)
-    if bd is None:
-        return {"error": f"no brain for '{name}'"}
+def append_feedback(name: str, note: str, task: str = "(via mcp)") -> dict:
+    """Compound a correction through catalyst_core: append feedback-memory +
+    improvement-log and write a review proposal (never silently overwrites)."""
     if not (note or "").strip():
         return {"error": "empty feedback"}
-    fm = bd / "feedback-memory.md"
-    block = ("\n\n## feedback (via MCP)\n\n- status: observed\n"
-             "  evidence: appended through mcp_server.append_feedback\n"
-             f"  rule: {note.strip()}\n")
-    existing = fm.read_text(encoding="utf-8") if fm.is_file() else "# feedback-memory\n"
-    fm.write_text(existing + block, encoding="utf-8")
-    return {"ok": True, "file": "catalyst-brain/feedback-memory.md"}
+    return core_feedback.capture_feedback(name, task, "", note)
 
 
 def propose_brain_update(name: str, file: str, suggestion: str) -> dict:
@@ -155,6 +141,23 @@ def propose_brain_update(name: str, file: str, suggestion: str) -> dict:
     return {"ok": True, "file": f"proposed-updates/{file}", "applied": False}
 
 
+def get_context_packet(name: str, task: str = "", mode: str = "auto") -> dict:
+    """Build the full context packet (identity/standards/judgment/taste + judgment contract)."""
+    if _brain_dir(name) is None:
+        return {"error": f"no brain for '{name}'"}
+    return {"name": name, "task": task, "packet": core_packet.build_context_packet(name, task, mode)}
+
+
+def route_task(name: str, task: str = "") -> dict:
+    """Classify a task and return the brain files to load, with reasons + warnings."""
+    return core_router.route_task(name, task)
+
+
+def audit_brain(name: str) -> dict:
+    """Self-audit the brain: readiness, thin/stale/duplicate flags, distill recommendation."""
+    return core_quality.audit_brain(name)
+
+
 TOOLS = {
     "list_brain_sections": {
         "fn": list_brain_sections,
@@ -173,13 +176,28 @@ TOOLS = {
     },
     "append_feedback": {
         "fn": append_feedback,
-        "description": "Append a feedback rule to feedback-memory.md.",
-        "schema": {"type": "object", "properties": {"name": {"type": "string"}, "note": {"type": "string"}}, "required": ["name", "note"]},
+        "description": "Capture a correction: append feedback-memory + improvement-log and write a review proposal.",
+        "schema": {"type": "object", "properties": {"name": {"type": "string"}, "note": {"type": "string"}, "task": {"type": "string"}}, "required": ["name", "note"]},
     },
     "propose_brain_update": {
         "fn": propose_brain_update,
         "description": "Write a proposed brain edit (never overwrites the brain).",
         "schema": {"type": "object", "properties": {"name": {"type": "string"}, "file": {"type": "string"}, "suggestion": {"type": "string"}}, "required": ["name", "file", "suggestion"]},
+    },
+    "get_context_packet": {
+        "fn": get_context_packet,
+        "description": "Build the full context packet (identity/standards/judgment/taste + judgment contract) for a task.",
+        "schema": {"type": "object", "properties": {"name": {"type": "string"}, "task": {"type": "string"}, "mode": {"type": "string"}}, "required": ["name"]},
+    },
+    "route_task": {
+        "fn": route_task,
+        "description": "Classify a task and return the brain files to load.",
+        "schema": {"type": "object", "properties": {"name": {"type": "string"}, "task": {"type": "string"}}, "required": ["name"]},
+    },
+    "audit_brain": {
+        "fn": audit_brain,
+        "description": "Self-audit the brain: readiness, thin/stale/duplicate flags, distill recommendation.",
+        "schema": {"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]},
     },
 }
 
@@ -202,7 +220,7 @@ def handle(req: dict) -> dict | None:
 
     if method == "initialize":
         return ok({"protocolVersion": "2024-11-05",
-                   "serverInfo": {"name": "catalyst-brain", "version": "0.3"},
+                   "serverInfo": {"name": "catalyst-brain", "version": "0.4"},
                    "capabilities": {"tools": {}}})
     if method in ("notifications/initialized", "initialized"):
         return None
