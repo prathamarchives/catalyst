@@ -127,6 +127,16 @@ Catalyst is valuable during real use:
 
 The proof is not a staged comparison. The proof is that the agent gets harder to disappoint over time because every correction becomes an operational rule.
 
+## The runnable backend (v0.4)
+
+The loop is runnable, not just documented. `catalyst_core/` classifies a task, routes the right brain files, builds a context packet **with an embedded judgment contract** (how to behave and decide), evaluates output against your standards/judgment/taste, turns feedback into review proposals, and audits the brain so it gets sharper over time — local, stdlib-only, writing only under `outputs/`. One launcher starts the local app and opens your browser:
+
+```txt
+py catalyst.py
+```
+
+The same engine runs over MCP (so your agent does the loop automatically) and a dev CLI (`py tools/catalyst_cli.py …`). See [docs/catalyst-flow.md](docs/catalyst-flow.md) and [docs/architecture.md](docs/architecture.md).
+
 ## Privacy model
 
 - local-first: everything is built in files on your machine

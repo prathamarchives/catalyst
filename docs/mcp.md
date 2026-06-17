@@ -6,7 +6,7 @@ them raw filesystem access.
 
 Status: **scaffold, honestly.** `tools/mcp_server.py` is a dependency-free
 JSON-RPC 2.0 stdio server that implements the core MCP methods (`initialize`,
-`tools/list`, `tools/call`) plus five Catalyst tools. It is local-only and makes
+`tools/list`, `tools/call`) plus eight Catalyst tools. It is local-only and makes
 no network calls. It is a working scaffold, not a certified MCP build verified
 against every client's handshake. Treat it as the boundary, not the finished product.
 
@@ -25,8 +25,11 @@ connects by launching that command as a stdio server.
 |------|--------|--------------|
 | `list_brain_sections` | read | section index grouped by job |
 | `read_brain_section` | read | one brain file's markdown |
-| `review_output_against_brain` | read | which files load + the standards checklist for a task |
-| `append_feedback` | write | append a rule to `feedback-memory.md` |
+| `route_task` | read | classify a task and return the brain files to load |
+| `get_context_packet` | read | full context packet (identity/standards/judgment/taste + judgment contract) |
+| `review_output_against_brain` | read | deterministic evaluation: verdict (ship/revise/reject/ask) + 0–5 scores + issues |
+| `audit_brain` | read | readiness score + thin/stale/duplicate flags + distill recommendation |
+| `append_feedback` | write | capture a correction: append `feedback-memory.md` + `improvement-log.md` and write a review proposal |
 | `propose_brain_update` | write | write a PROPOSAL under `proposed-updates/` — never overwrites the brain |
 
 All tools take a `name` (the brain under `outputs/<name>/`).
@@ -34,7 +37,7 @@ All tools take a `name` (the brain under `outputs/<name>/`).
 ## Security boundary
 
 - read access is limited to `outputs/<name>/catalyst-brain/*.md`
-- the only write paths are `append_feedback` (→ `feedback-memory.md`) and `propose_brain_update` (→ `proposed-updates/`), both confined to `outputs/`
+- the only write paths are `append_feedback` (→ `feedback-memory.md`, `evals/improvement-log.md`, and a dated proposal under `proposals/`) and `propose_brain_update` (→ `proposed-updates/`), all confined to `outputs/`
 - no arbitrary path access (traversal rejected), no shell, no network
 - the brain is never silently overwritten — updates land as proposals for review
 

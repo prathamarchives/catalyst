@@ -30,10 +30,14 @@ Sharpen the control panel into a staged, Apple-inspired setup journey and make i
 - honest staged build, grouped brain explorer, proof loop that contrasts memory vs judgment.
 - `tools/mcp_server.py`: dependency-free, local-only MCP scaffold exposing `list_brain_sections`, `read_brain_section`, `review_output_against_brain`, `append_feedback`, `propose_brain_update`. Writes only via feedback/proposal; never overwrites the brain.
 
-## v0.4 — first-dollar install kit
+## v0.4 — local app (judgment backend + UI + MCP)
+
+The runnable engine and the consumer flow, one path. `catalyst_core/` runs route → context (+ agent judgment contract) → evaluate → feedback → proposal → audit/distill. One launcher (`py catalyst.py`) starts the local server and opens the browser; one onboarding flow extracts and imports context into the brain; the agent connects once over MCP and then reads/writes/evaluates/improves every task. The dev CLI, `/api/flow/*`, and MCP all share one engine. See [docs/catalyst-flow.md](catalyst-flow.md) and [docs/architecture.md](architecture.md).
+
+## v0.5 — first-dollar install kit
 
 Manual paid install offer around building a user's Catalyst Brain and making their AI stop resetting across sessions.
 
 ## later
 
-Only after repeated manual proof and real demand: a heavier web app (`apps/web`), a hosted option, or an MCP surface. These stay optional layers on top of the same local protocol — never required infrastructure, never a hosted-by-default rewrite.
+Only after repeated manual proof and real demand: a hosted option and packaged installers so non-developers skip `git clone`. These stay optional layers on top of the same local-first app — never required infrastructure, never a hosted-by-default rewrite.

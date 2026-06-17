@@ -15,6 +15,7 @@ REQUIRED_FILES = [
     "catalyst_core/router.py", "catalyst_core/contract.py", "catalyst_core/packet.py",
     "catalyst_core/evaluator.py", "catalyst_core/feedback.py", "catalyst_core/quality.py",
     "tools/catalyst_cli.py", "evals/catalyst_flow_check.py",
+    "docs/catalyst-flow.md", "docs/architecture.md", "catalyst.py",
 ]
 
 def run(root: Path) -> list:

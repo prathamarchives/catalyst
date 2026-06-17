@@ -129,6 +129,19 @@ Run [prompts/06-task-time-evaluation.md](prompts/06-task-time-evaluation.md) on 
 
 A task is unverified until it has been checked against the user's written standard.
 
+## Backend flow (catalyst_core)
+
+The loop is also a dependency-free engine you can call directly or over MCP — use it to reproduce the loop deterministically:
+
+1. `catalyst_core.router.route_task(name, task)` — classify + load the minimal relevant files.
+2. `catalyst_core.packet.build_context_packet(name, task, mode)` — read this (incl. the judgment contract) before producing.
+3. produce the output.
+4. `catalyst_core.evaluator.evaluate_output(name, task, output)` — verdict ship | revise | reject | ask, with 0–5 scores.
+5. on a correction, `catalyst_core.feedback.capture_feedback(...)` — appends feedback-memory + improvement-log and writes an add/refine/retire proposal.
+6. periodically, `catalyst_core.quality.audit_brain(name)` — keep the brain sharp (thin/stale/duplicate + distill).
+
+CLI: `py tools/catalyst_cli.py <init|status|context|route|evaluate|feedback|audit>`. Over MCP the same tools are `route_task`, `get_context_packet`, `review_output_against_brain`, `append_feedback`, `audit_brain`, `propose_brain_update`. Never silently overwrite core brain files — corrections land as proposals. See [docs/catalyst-flow.md](docs/catalyst-flow.md).
+
 ## Feedback memory and compounding
 
 Run [prompts/07-update-from-feedback.md](prompts/07-update-from-feedback.md) whenever the user reacts. Feedback includes direct correction (“not like that”), preference (“closer”), implicit signals (ignored output, rewritten output), and repeated failures.

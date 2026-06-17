@@ -26,7 +26,7 @@ def run(root: Path) -> list:
     for rel in ["catalyst_core/__init__.py", "catalyst_core/paths.py", "catalyst_core/registry.py",
                 "catalyst_core/router.py", "catalyst_core/contract.py", "catalyst_core/packet.py",
                 "catalyst_core/evaluator.py", "catalyst_core/feedback.py", "catalyst_core/quality.py",
-                "tools/catalyst_cli.py"]:
+                "tools/catalyst_cli.py", "docs/catalyst-flow.md", "docs/architecture.md"]:
         if not (root / rel).is_file():
             failures.append(f"missing flow file: {rel}")
 
@@ -73,6 +73,15 @@ def run(root: Path) -> list:
 
     if (root / "templates" / "proposals").exists():
         failures.append("templates/ was written to")
+
+    doc = root / "docs" / "catalyst-flow.md"
+    if doc.is_file():
+        low = doc.read_text(encoding="utf-8").lower()
+        for need in ["judgment", "standards", "identity"]:
+            if need not in low:
+                failures.append(f"docs/catalyst-flow.md missing concept: {need}")
+        if "just persistent memory" in low or "only memory" in low:
+            failures.append("docs/catalyst-flow.md collapses Catalyst into generic memory")
     return failures
 
 
