@@ -35,9 +35,9 @@ function Welcome({ onStart }: { onStart: () => void }) {
 }
 
 const TOOL_NOTES: { id: string; label: string; note: string }[] = [
-  { id: "claude-code", label: "Claude Code", note: "Add to .mcp.json in this repo (or run `claude mcp add`), then start a session here." },
-  { id: "cursor", label: "Cursor", note: "Settings → MCP → Add server, paste this, point cwd at this repo." },
-  { id: "other", label: "Other agent", note: "Any MCP client: run `py tools/mcp_server.py` as a stdio server from this repo." },
+  { id: "claude-code", label: "Claude Code", note: "Add to .mcp.json, or run `claude mcp add catalyst -s user -- py <path>` with the command below, then start a fresh session." },
+  { id: "cursor", label: "Cursor", note: "Settings → MCP → Add server, paste this config." },
+  { id: "other", label: "Other agent", note: "Any MCP client: launch this command as a stdio server." },
 ];
 
 function Connect({ onFinish, onBack }: { onFinish: () => void; onBack: () => void }) {
@@ -45,8 +45,10 @@ function Connect({ onFinish, onBack }: { onFinish: () => void; onBack: () => voi
   const [tool, setTool] = useState("claude-code");
   useEffect(() => { api.status().then((s) => setRepo(s.repo_root || "<repo path>")).catch(() => {}); }, []);
 
+  // Absolute path so it connects from any cwd (the server resolves its repo from __file__).
+  const script = repo.replace(/\\/g, "/") + "/tools/mcp_server.py";
   const config = JSON.stringify(
-    { mcpServers: { catalyst: { command: "py", args: ["tools/mcp_server.py"], cwd: repo } } },
+    { mcpServers: { catalyst: { command: "py", args: [script] } } },
     null, 2,
   );
   const note = TOOL_NOTES.find((t) => t.id === tool)!.note;
