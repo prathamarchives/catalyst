@@ -11,6 +11,10 @@ REQUIRED_FILES = [
     "docs/product-surface.md", "docs/local-onboarding.md", "docs/control-panel.md", "docs/byok.md", "docs/mcp.md",
     ".env.example", "apps/control-panel/README.md", "apps/control-panel/server.py", "apps/control-panel/byok.py", "apps/control-panel/static/index.html", "apps/control-panel/static/app.js", "apps/control-panel/static/styles.css",
     "tools/mcp_server.py",
+    "catalyst_core/__init__.py", "catalyst_core/paths.py", "catalyst_core/registry.py",
+    "catalyst_core/router.py", "catalyst_core/contract.py", "catalyst_core/packet.py",
+    "catalyst_core/evaluator.py", "catalyst_core/feedback.py", "catalyst_core/quality.py",
+    "tools/catalyst_cli.py", "evals/catalyst_flow_check.py",
 ]
 
 def run(root: Path) -> list:

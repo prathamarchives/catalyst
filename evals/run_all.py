@@ -14,6 +14,7 @@ import task_time_evaluation_check
 import positioning_check
 import local_first_ui_check
 import agent_native_check
+import catalyst_flow_check
 
 EVALS = [
     ("repo_structure_check", repo_structure_check),
@@ -28,6 +29,7 @@ EVALS = [
     ("positioning_check", positioning_check),
     ("local_first_ui_check", local_first_ui_check),
     ("agent_native_check", agent_native_check),
+    ("catalyst_flow_check", catalyst_flow_check),
 ]
 
 def main() -> int:
