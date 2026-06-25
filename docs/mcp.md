@@ -45,7 +45,7 @@ All tools take a `name` (the brain under `outputs/<name>/`).
 
 These are connector *instructions*, not live OAuth. Point each client at the stdio command above.
 
-- **Claude Code** — add an MCP server entry whose command is `py tools/mcp_server.py` (cwd = repo root).
+- **Claude Code** — add an MCP server entry whose command is `py tools/mcp_server.py` (cwd = repo root). The local UI exposes the copyable `claude mcp add ...` command when useful.
 - **Cursor** — add a custom MCP server with the same command in its MCP settings.
 - **Hermes / Codex / OpenAI-style agents** — launch the command as a stdio MCP server, or call the same Python functions directly (`from tools import mcp_server`).
 - **Generic MCP client** — stdio transport, command `py tools/mcp_server.py`.
@@ -53,6 +53,8 @@ These are connector *instructions*, not live OAuth. Point each client at the std
 If your client cannot speak MCP yet, agents can still use the brain directly: read
 `outputs/<name>/catalyst-brain/*.md` and follow `AGENTS.md`. The MCP layer is an
 optional convenience, not required infrastructure.
+
+During setup, the connected agent is the builder. It should read `.catalyst/permissions.json`, run read-only discovery, build under `outputs/<name>/`, and keep `outputs/<name>/BUILD-STATUS.json` updated so the local UI can render progress.
 
 ## What's next
 

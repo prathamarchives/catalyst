@@ -33,3 +33,16 @@ def test_empty_asks(temp_brain):
                                     outputs_root=temp_brain["outputs_root"])
     assert rep["verdict"] == "ask"
     assert rep["missing_context_questions"]
+
+
+def test_placeholder_brain_blocks_alignment_scores(temp_brain):
+    rep = evaluator.evaluate_output("demo-flow-test", "write a launch post",
+                                    "Our platform helps teams unlock productivity with seamless AI workflows.",
+                                    outputs_root=temp_brain["outputs_root"])
+    assert rep["verdict"] == "ask"
+    assert rep["scores"]["identity_alignment"] <= 1
+    assert rep["scores"]["standards_match"] <= 1
+    assert rep["scores"]["judgment_match"] <= 1
+    assert any("blocked/limited" in issue for issue in rep["issues"])
+    assert any("routed files missing/unfilled" in q for q in rep["missing_context_questions"])
+    assert any("extraction" in c or "build" in c for c in rep["brain_update_candidates"])

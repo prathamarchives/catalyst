@@ -42,9 +42,9 @@ from catalyst_core import (  # noqa: E402
 )
 
 BRAIN_GROUPS = [
-    ("Who / why", ["identity.md", "context.md", "goals.md", "constraints.md"]),
-    ("Taste / standards", ["standards.md", "judgment.md", "taste.md", "anti-slop.md", "rejected-examples.md"]),
-    ("Operating system", ["decision-rules.md", "task-patterns.md", "voice.md", "lexicon.md", "references.md"]),
+    ("Identity / context", ["identity.md", "context.md", "goals.md", "constraints.md"]),
+    ("Taste / judgment", ["standards.md", "judgment.md", "taste.md", "anti-slop.md", "rejected-examples.md"]),
+    ("Operating logic", ["decision-rules.md", "task-patterns.md", "voice.md", "lexicon.md", "references.md"]),
     ("Learning", ["feedback-memory.md", "open-questions.md"]),
 ]
 REVIEW_FILES = ["standards.md", "judgment.md", "identity.md", "constraints.md",
@@ -213,12 +213,14 @@ CATALYST_INSTRUCTIONS = (
     "You are connected to Catalyst, the user's local judgment brain. Before substantive work, "
     "operate it like this:\n"
     "1. Read AGENTS.md and README.md in this repo for the full protocol.\n"
-    "2. Discover where the user's AI sessions, notes, exports, and workspaces live "
-    "(tools/discover_sessions.py); do not read contents until the user approves a scan scope.\n"
-    "3. Build the user's Catalyst brain under outputs/<name>/ from the approved material, write the "
-    "personalized skills/workflows/evals, and write outputs/<name>/SUMMARY.md explaining how to use it. "
-    "Never overwrite anything under templates/.\n"
-    "4. For each task: call route_task, then get_context_packet (load the brain + judgment contract) "
+    "2. Read .catalyst/permissions.json if present. If it explicitly approves the recommended safe scan, "
+    "do not ask the approval question again; otherwise ask one compact approval question.\n"
+    "3. Discover where the user's AI sessions, notes, exports, and workspaces live "
+    "(tools/discover_sessions.py); do not read contents until the scan scope is approved.\n"
+    "4. Build the user's Catalyst brain under outputs/<name>/ from the approved material. Keep "
+    "outputs/<name>/BUILD-STATUS.json updated while working, then write SUMMARY.md plus the personalized "
+    "skills/workflows/evals/proposed-updates. Never overwrite anything under templates/.\n"
+    "5. For each task: call route_task, then get_context_packet (load the brain + judgment contract) "
     "before producing; after producing call review_output_against_brain; on a correction call "
     "append_feedback (writes a proposal, never a silent overwrite); periodically call audit_brain to "
     "keep the brain sharp.\n"
@@ -227,12 +229,12 @@ CATALYST_INSTRUCTIONS = (
 
 BUILD_AND_RUN_PROMPT = (
     "Read README.md and AGENTS.md in this repo. Use it to build my Catalyst brain.\n"
-    "First discover where my AI sessions, notes, exports, agent memories, and workspaces live. "
-    "Do not read file contents yet. Show me the discovered locations, recommend a safe scan scope, "
-    "and ask what you may scan if I have not already authorized it; then audit only the approved scope.\n"
+    "First read .catalyst/permissions.json if present, then discover where my AI sessions, notes, exports, "
+    "agent memories, and workspaces live. Do not read file contents yet. Show me the discovered locations, "
+    "recommend a safe scan scope, and ask what you may scan if I have not already authorized it; then audit only the approved scope.\n"
     "Extract identity/context/standards/judgment/taste/feedback with evidence, create files under "
-    "outputs/<name>/, write Catalyst skills/workflows/evals, and write outputs/<name>/SUMMARY.md "
-    "explaining how to use the brain. Then run my real tasks through the loop: "
+    "outputs/<name>/, keep BUILD-STATUS.json updated while you work, write Catalyst skills/workflows/evals, "
+    "and write outputs/<name>/SUMMARY.md explaining how to use the brain. Then run my real tasks through the loop: "
     "route_task -> get_context_packet -> produce -> review_output_against_brain -> append_feedback on my "
     "corrections -> audit_brain to keep it sharp. Compound session to session."
 )

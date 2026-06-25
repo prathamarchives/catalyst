@@ -8,6 +8,7 @@ Local-first: binds 127.0.0.1, no account, no cloud. Ctrl+C to stop.
 """
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import threading
 import webbrowser
@@ -24,12 +25,20 @@ def _load_server():
     return mod
 
 
-def main() -> int:
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description="Launch the local Catalyst app.")
+    parser.add_argument("--no-open", action="store_true", help="start the server without opening a browser")
+    args = parser.parse_args(argv)
+
     server = _load_server()
     url = f"http://{server.HOST}:{server.PORT}"
-    # open the browser shortly after the server starts serving
-    threading.Timer(1.0, lambda: webbrowser.open(url)).start()
-    print(f"Catalyst -> {url} (opening your browser…)")
+    if not args.no_open:
+        # open the browser shortly after the server starts serving
+        threading.Timer(1.0, lambda: webbrowser.open(url)).start()
+        print(f"Catalyst local -> {url} (opening your browser)")
+    else:
+        print(f"Catalyst local -> {url}")
+    print("Stop server: press Ctrl+C in this terminal.")
     return server.main()
 
 

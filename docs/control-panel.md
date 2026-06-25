@@ -1,53 +1,64 @@
 # control panel
 
-An optional local control surface for the Catalyst Brain. It is not the product. The product is the markdown protocol in `AGENTS.md`; the panel just makes the brain easy to see and operate. Catalyst works fully without it.
-
-## Why it is built this way
-
-The repo is deliberately dependency-free: markdown plus Python standard library, no npm, no `node_modules`, no build step, no database, no account. A heavy web stack would contradict the positioning (lighter and deeper, optional control surface). So the panel is:
-
-- a single Python stdlib HTTP server (`apps/control-panel/server.py`) — the "bridge"
-- a vanilla HTML/CSS/JS single page (`apps/control-panel/static/`)
-- zero external dependencies; runs with `py apps/control-panel/server.py`
-
-A richer web app (e.g. `apps/web`) remains a future option once there is demand. The protocol and file layout would not change.
+The Catalyst local UI is an optional command center for the Catalyst Brain your agent builds. It is not the product and it is not a hosted app. The product is the local protocol in `AGENTS.md` plus the files under `outputs/<name>/`.
 
 ## Run
 
 ```txt
-py apps/control-panel/server.py
+py catalyst.py
+py catalyst.py --no-open
 python apps/control-panel/server.py
 ```
 
-Open `http://127.0.0.1:8765`. It binds `127.0.0.1` only.
+Open `http://127.0.0.1:8765`. It binds `127.0.0.1` by default. Stop server: press Ctrl+C in the terminal that started Catalyst.
 
-## The journey
-
-The panel is one staged setup flow with a progress rail, Apple-inspired black/white/minimal, one main idea per screen:
+## Current local UI flow
 
 ```txt
-Start → Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents (MCP)
+Promise -> Connect agent -> Source permission -> Build status -> Command center
 ```
 
-0. **Start** — what Catalyst is, local control-panel status, no account/database. One CTA: start setup.
-1. **Connect AI** — comes first on purpose. Catalyst needs a worker to synthesize/evaluate/update; without one it only copies empty templates. Modes: Mock/offline (always, no network), OpenRouter BYOK (env key), detected CLIs — Claude Code / Codex / Hermes (existence-only detection, login state unknown), and Manual LLM prompt (always). Each card shows real status; the UI never implies a live model exists when only mock is available.
-2. **Identity** — five sharp answers (name, agent jobs, goals/projects, never-ship, first proof task). Not an interview.
-3. **Context** — paste a context dump, name manual paths, copy the extraction prompt for any LLM and paste the structured packet back. Connector cards (Notion/Slack/Discord/workspace) are labeled honestly as export/drop/paths — not live OAuth. Saved under `outputs/<name>/sources/`.
-4. **Permission** — read-only discovery shown as category counts, the safe-scan explanation with exclusions, and approve / edit / skip. Content scanning stays consent-gated.
-5. **Build** — an honest staged build (prepare packet → synthesize identity/context → extract standards/judgment → extract rejected/anti-slop → write skills/workflows/evals → proof setup), labeled live (BYOK) or mock/no-key seed.
-6. **Explore** — the brain grouped by job (Who/why · Taste/standards · Operating system · Learning), each file showing what it controls and when agents load it. Edit + save to disk.
-7. **Proof** — "Memory tells the agent what exists. Judgment tells it what you would ship." Shows loaded files, mode, a standards review (live or clearly-marked mock preview), and what feedback would update.
-8. **Agents (MCP)** — the local MCP scaffold and connector instructions so multiple agents can use the brain. See [mcp.md](mcp.md).
+1. **Promise** - "Give your agents your taste, context, and judgment."
+2. **Connect agent** - cards/tabs for Claude Code, Codex, Cursor, Hermes, and Manual MCP. Each shows detection when possible, one real command when useful, one copy-paste prompt always, and a manual MCP JSON fallback. These are instructions, not fake OAuth connectors.
+3. **Source permission** - recommended safe scan, manual paths only, or skip scan / use typed context. This writes `.catalyst/permissions.json`.
+4. **Build status** - waits for `outputs/<name>/BUILD-STATUS.json`. The local UI only displays it; the connected agent writes it while building.
+5. **Command center** - active brain name, build timeline, local brain graph, readiness, missing context/open questions, agent instructions, and hosted/founding CTA.
+
+The advanced "Run the loop" tool is collapsed. It is for manual testing of the same local calls your agent uses over MCP; it is not required onboarding.
+
+## API
+
+| endpoint | method | purpose |
+|----------|--------|---------|
+| `/api/status` | GET | repo root, brains, permission state, BYOK status |
+| `/api/agents/status` | GET | connection mode status + safe CLI detection |
+| `/api/connect/prompts` | GET | Claude/Codex/Cursor/Hermes/manual MCP commands and prompts |
+| `/api/permissions` | GET/POST | read/write `.catalyst/permissions.json` |
+| `/api/build/status?name=` | GET | read `outputs/<name>/BUILD-STATUS.json`, or return safe waiting defaults |
+| `/api/discover` | GET | read-only source categories, no contents |
+| `/api/brain?name=` | GET | brain files grouped by Catalyst section |
+| `/api/file` | GET/POST | read/save allowed markdown under `outputs/` only |
+| `/api/flow/*` | GET/POST | deterministic local routing/context/evaluation/feedback/audit calls |
+| `/api/export` | GET | brain path + agent prompt |
+
+No shell endpoint. No arbitrary filesystem access.
 
 ## Security
 
-- binds `127.0.0.1` by default; a non-local host refuses to start without `CATALYST_TOKEN`
+- localhost-only by default; a non-local host refuses to start without `CATALYST_TOKEN`
 - no shell or exec endpoint of any kind
 - no arbitrary filesystem access: every path is resolved and must stay inside an allowlisted repo-relative root
-- reads limited to `outputs/`, `templates/`, `docs/`, `prompts/`
-- writes limited to `outputs/` and the local-only `.catalyst/` config; `templates/` are never written (protocol: never overwrite templates)
-- the BYOK key is never returned to the browser
+- reads limited to `outputs/`, `templates/`, `docs/`, `prompts/`, and fixed repo metadata/status endpoints
+- writes limited to `outputs/` and fixed local config files under `.catalyst/`
+- `templates/` are never written
+- BYOK keys are env-only and never returned to the browser
 
-## Without the UI
+## Legacy panel
 
-Everything the panel does, an agent can do from `AGENTS.md`. The Export tab exists to make that explicit: the brain is just local markdown.
+The old vanilla staged panel remains available at `/legacy/` as an archived/dev fallback. Public docs should describe the React UI at `/` as the canonical local command center.
+
+## Hosted path
+
+Local UI = free local engine.
+
+Hosted Catalyst later = synced/no-setup/always-on Catalyst across agents. The local CTA points to `https://itscatalyst.com` and founding install email only. No Stripe, accounts, or hosted backend exist in this repo.

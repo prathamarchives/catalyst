@@ -13,7 +13,7 @@ def run(args):
 def test_help_lists_subcommands():
     r = run(["--help"])
     assert r.returncode == 0
-    for sub in ["init", "status", "context", "route", "evaluate", "feedback", "audit"]:
+    for sub in ["init", "guide", "status", "context", "route", "evaluate", "feedback", "audit"]:
         assert sub in r.stdout
 
 

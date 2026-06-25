@@ -20,9 +20,9 @@ BRAIN_FILE_ORDER = [
 ]
 
 BRAIN_GROUPS = [
-    ("Who / why", ["identity.md", "context.md", "goals.md", "constraints.md"]),
-    ("Taste / standards", ["standards.md", "judgment.md", "taste.md", "anti-slop.md", "rejected-examples.md"]),
-    ("Operating system", ["decision-rules.md", "task-patterns.md", "voice.md", "lexicon.md", "references.md"]),
+    ("Identity / context", ["identity.md", "context.md", "goals.md", "constraints.md"]),
+    ("Taste / judgment", ["standards.md", "judgment.md", "taste.md", "anti-slop.md", "rejected-examples.md"]),
+    ("Operating logic", ["decision-rules.md", "task-patterns.md", "voice.md", "lexicon.md", "references.md"]),
     ("Learning", ["feedback-memory.md", "open-questions.md"]),
 ]
 

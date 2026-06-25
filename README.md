@@ -30,6 +30,26 @@ This is early and honest about it: Catalyst is a protocol plus an optional local
 
 ## Start here
 
+One-command local app path:
+
+```txt
+npx catalyst local
+```
+
+Until the unscoped package exists, use the scoped launcher:
+
+```txt
+npx @trycatalyst/cli local
+```
+
+Local development from this checkout:
+
+```txt
+node packages/cli/bin/catalyst.mjs local --repo C:/Users/Rakesh/Desktop/catalyst
+```
+
+The command opens a localhost command center. First screen: connect your agent. The agent is the v0 builder; the local UI is the command center and brain viewer.
+
 Paste this into Claude Code, Cursor, Hermes, or any agent that can read/write local files:
 
 ```txt
@@ -37,7 +57,7 @@ https://github.com/prathamarchives/catalyst
 install this and build my Catalyst Brain.
 You may discover and scan my local AI sessions, agent memories, workspaces, markdown notes, and project files using the recommended safe scope.
 Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and anything sensitive.
-Build everything locally, write the personalized skills/workflows/evals, run the first real task through the task-time evaluation loop, then ask me for feedback and update the brain.
+Build everything locally, write BUILD-STATUS.json while you work, write the personalized skills/workflows/evals, then install the task-time evaluation and feedback update loop for future real tasks.
 ```
 
 Prefer approval first? Use:
@@ -68,6 +88,8 @@ There is no required package install, no account, no database, no required API k
 
 ```txt
 outputs/<name>/
+  BUILD-STATUS.json
+  SUMMARY.md
   catalyst-brain/
     README.md
     identity.md
@@ -108,6 +130,7 @@ outputs/<name>/
     feedback-capture.md
     improvement-log.md
   README.md
+  proposed-updates/
 ```
 
 Every brain file includes: purpose, when to load, tasks affected, how to apply, how to update, and what not to put there.
@@ -133,9 +156,10 @@ The loop is runnable, not just documented. `catalyst_core/` classifies a task, r
 
 ```txt
 py catalyst.py
+py catalyst.py --no-open
 ```
 
-The same engine runs over MCP (so your agent does the loop automatically) and a dev CLI (`py tools/catalyst_cli.py …`). See [docs/catalyst-flow.md](docs/catalyst-flow.md) and [docs/architecture.md](docs/architecture.md).
+The same engine runs over MCP (so your agent does the loop automatically) and a dev CLI (`py tools/catalyst_cli.py ...`). See [docs/catalyst-flow.md](docs/catalyst-flow.md) and [docs/architecture.md](docs/architecture.md).
 
 ## Privacy model
 
@@ -159,13 +183,21 @@ py apps/control-panel/server.py
 python apps/control-panel/server.py
 ```
 
-Then open `http://127.0.0.1:8765`. It binds localhost only and operates on the real markdown under `outputs/<name>/`. The panel is a staged setup journey, not a tab grid:
+Then open `http://127.0.0.1:8765`. It binds localhost only and operates on the real markdown under `outputs/<name>/`. The local UI flow is:
 
 ```txt
-Start → Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents (MCP)
+Promise -> Connect agent -> Source permission -> Build status -> Command center
 ```
 
-It deliberately **connects an AI/agent first** — Catalyst needs a worker to synthesize, evaluate, and update the brain; without one it can only copy empty templates. Mock/offline and manual-prompt modes always work; OpenRouter BYOK and detected CLIs (Claude Code, Codex, Hermes) are offered honestly by status. The panel is a control surface, not the product. See [apps/control-panel/README.md](apps/control-panel/README.md) and [docs/control-panel.md](docs/control-panel.md).
+It deliberately connects an agent first. Catalyst needs a worker to discover approved sources, synthesize the brain, and write `outputs/<name>/BUILD-STATUS.json`; the browser only stores permission config and renders local files. Claude Code, Codex, Cursor, Hermes, and manual MCP are offered as honest instructions, not fake live OAuth. Stop the server with Ctrl+C in the terminal. See [apps/control-panel/README.md](apps/control-panel/README.md) and [docs/control-panel.md](docs/control-panel.md).
+
+## Hosted upgrade path
+
+Local Catalyst is the free engine: one machine, local files, manual agent setup. Hosted Catalyst later is the paid convenience layer: synced brains, no local setup, always-on MCP/API, revision history, and multi-agent/team/client workflows.
+
+Want this synced across every agent without local setup? Join hosted Catalyst: [itscatalyst.com](https://itscatalyst.com).
+
+Want a founding install? Email [hello@itscatalyst.com](mailto:hello@itscatalyst.com).
 
 ## Multi-agent access (MCP)
 

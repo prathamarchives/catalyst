@@ -72,7 +72,7 @@ def audit_brain(name: str, outputs_root: Path = paths.OUTPUTS) -> dict:
     if ready >= 0.8 and not flags:
         summary = "brain is solid"
     elif ready < 0.4:
-        summary = "brain is mostly unfilled — run extraction first"
+        summary = "brain is mostly unfilled - run extraction first"
     else:
         summary = f"{len(flags)} section(s) need tightening"
     return {"name": name, "ready_score": ready, "filled": filled, "total": total,

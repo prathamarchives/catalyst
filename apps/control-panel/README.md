@@ -1,28 +1,31 @@
 # Catalyst control panel
 
-Optional local control surface for the Catalyst Brain. Zero dependencies — Python standard library plus a vanilla HTML/CSS/JS page. It operates on the real markdown under `outputs/<name>/`. It is not required: point any agent at the repo's `AGENTS.md` instead.
+Optional local command center for the Catalyst Brain. It operates on the real markdown under `outputs/<name>/`. It is not required: point any agent at `AGENTS.md` instead.
 
-It is a staged setup journey (Apple-inspired black/white), not a tab grid:
+The canonical local UI at `/` is the React command center:
 
 ```txt
-Start → Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents (MCP)
+Promise -> Connect agent -> Source permission -> Build status -> Command center
 ```
 
-It connects an AI/agent **first** — real synthesis/evaluation needs a worker, and mock is never shown as live.
+It connects an agent first because the agent is the v0 builder. The local UI stores scan permission in `.catalyst/permissions.json`, displays `outputs/<name>/BUILD-STATUS.json`, renders the brain graph, and gives MCP/agent instructions. It does not pretend to run live OAuth connectors or build the brain alone.
 
-## Local JSON API (allowlisted)
+The legacy vanilla panel remains available at `/legacy/` as a dev fallback.
+
+## Local JSON API
 
 | endpoint | method | purpose |
 |----------|--------|---------|
-| `/api/status` | GET | brains, key files, BYOK mode |
-| `/api/agents/status` | GET | connection modes + safe CLI detection (`shutil.which`) |
-| `/api/extraction-prompt` | GET | copyable context-extraction prompt |
-| `/api/discover` | GET | read-only source categories (no contents) |
-| `/api/brain?name=` | GET | brain files grouped by job |
-| `/api/file` | GET/POST | read / save a brain `.md` (writes: `outputs/` only) |
+| `/api/status` | GET | brains, permission state, BYOK mode |
+| `/api/agents/status` | GET | connection modes + safe CLI detection |
+| `/api/connect/prompts` | GET | Claude/Codex/Cursor/Hermes/manual MCP prompts and commands |
+| `/api/permissions` | GET/POST | local permission config under `.catalyst/` |
+| `/api/build/status?name=` | GET | status-file timeline from `outputs/<name>/BUILD-STATUS.json` |
+| `/api/discover` | GET | read-only source categories, no contents |
+| `/api/brain?name=` | GET | brain files grouped by Catalyst section |
+| `/api/file` | GET/POST | read / save allowed brain `.md` files, writes under `outputs/` only |
 | `/api/context/save` | POST | save pasted context / packet / paths under `outputs/<name>/sources/` |
-| `/api/build` | POST | scaffold + honest staged build log |
-| `/api/byok/test`, `/api/synthesize` | POST | optional provider call (mock with no key) |
+| `/api/flow/*` | GET/POST | deterministic local routing/context/evaluation/feedback/audit |
 | `/api/export` | GET | brain path + agent prompt |
 
 No shell endpoint. No arbitrary filesystem access.
@@ -30,26 +33,27 @@ No shell endpoint. No arbitrary filesystem access.
 ## Run
 
 ```txt
-py apps/control-panel/server.py
+py catalyst.py
+py catalyst.py --no-open
 python apps/control-panel/server.py
 ```
 
-Open `http://127.0.0.1:8765`.
+Open `http://127.0.0.1:8765`. Stop with Ctrl+C in the terminal.
 
 ## Layout
 
 ```txt
 apps/control-panel/
-  server.py        # stdlib HTTP server + allowlisted JSON API (the "bridge")
+  server.py        # stdlib HTTP server + allowlisted JSON API
   byok.py          # optional provider abstraction: mock (no key) + OpenRouter
-  static/
-    index.html     # single-page control panel
-    styles.css     # dark, minimal, command-center theme
-    app.js         # vanilla JS, talks to the local API
+  static/          # legacy vanilla panel at /legacy/
   README.md
+apps/web/
+  src/             # React command center served at /
+  dist/            # built static UI
 ```
 
-## Config (env)
+## Config
 
 | var | default | purpose |
 |-----|---------|---------|
@@ -66,9 +70,10 @@ Copy `.env.example` to `.env` to set these. `.env` and `.catalyst/` are gitignor
 
 - localhost-only by default; non-local host refuses to start without a token
 - no shell/exec endpoint
-- no arbitrary filesystem access — paths resolved and confined to allowlisted roots
-- reads: `outputs/`, `templates/`, `docs/`, `prompts/`
-- writes: `outputs/` and local-only `.catalyst/` only — never `templates/`
+- no arbitrary filesystem access
+- reads: `outputs/`, `templates/`, `docs/`, `prompts/`, and fixed repo status/config endpoints
+- writes: `outputs/` and fixed local config files under `.catalyst/`
+- never writes `templates/`
 - BYOK key never returned to the browser
 
-See [docs/control-panel.md](../../docs/control-panel.md) and [docs/byok.md](../../docs/byok.md).
+See [docs/control-panel.md](../../docs/control-panel.md), [docs/byok.md](../../docs/byok.md), and [docs/mcp.md](../../docs/mcp.md).

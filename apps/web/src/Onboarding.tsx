@@ -1,102 +1,279 @@
-import React, { useEffect, useState } from "react";
-import { api } from "./api";
+import React, { useEffect, useMemo, useState } from "react";
+import { api, BuildStatus, ConnectClient, ConnectPrompts } from "./api";
 import { Button, Card, CopyButton } from "./components";
 
-// Two screens, no forms: Welcome -> Connect (one copy-paste prompt). The agent
-// installs the MCP, scans with approval, builds the brain/skills/evals, and writes
-// a how-to-use summary. That's the whole setup.
+type Step = "promise" | "connect" | "permissions" | "waiting";
+
 export default function Onboarding({ onDone }: { onDone: () => void }) {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState<Step>("promise");
   return (
     <div className="container">
       <div className="fade-in" key={step}>
-        {step === 0
-          ? <Welcome onStart={() => setStep(1)} />
-          : <Connect onFinish={onDone} onBack={() => setStep(0)} />}
+        {step === "promise" && <PromiseScreen onStart={() => setStep("connect")} />}
+        {step === "connect" && <ConnectScreen onBack={() => setStep("promise")} onNext={() => setStep("permissions")} />}
+        {step === "permissions" && <PermissionScreen onBack={() => setStep("connect")} onNext={() => setStep("waiting")} />}
+        {step === "waiting" && <WaitingScreen onBack={() => setStep("permissions")} onDone={onDone} />}
       </div>
     </div>
   );
 }
 
-function Welcome({ onStart }: { onStart: () => void }) {
+function PromiseScreen({ onStart }: { onStart: () => void }) {
   return (
     <div className="center stack" style={{ paddingTop: "var(--s6)" }}>
       <div>
-        <div className="eyebrow">Catalyst</div>
-        <h1 className="hero">Give your AI your judgment.</h1>
+        <div className="eyebrow">Local Catalyst Brain</div>
+        <h1 className="hero">Give your agents your taste, context, and judgment.</h1>
         <p className="lede">
-          Not just memory. One prompt connects Catalyst to the agent you already use —
-          it scans your workspace, builds your brain, and learns what you'd approve,
-          reject, and revise. It gets sharper every time you correct it. Local, private, yours.
+          Catalyst builds a local brain your agents can use to know what you approve,
+          reject, revise, and never ship.
         </p>
       </div>
-      <div><Button variant="primary" onClick={onStart}>Start</Button></div>
-      <p className="faint small">Runs on your machine. No account, no cloud.</p>
+      <div><Button variant="primary" onClick={onStart}>Connect agent</Button></div>
+      <p className="faint small">Local files first. Hosted/synced Catalyst comes later.</p>
     </div>
   );
 }
 
-function Connect({ onFinish, onBack }: { onFinish: () => void; onBack: () => void }) {
-  const [repo, setRepo] = useState("<repo path>");
-  useEffect(() => { api.status().then((s) => setRepo(s.repo_root || "<repo path>")).catch(() => {}); }, []);
+function ConnectScreen({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+  const [data, setData] = useState<ConnectPrompts | null>(null);
+  const [error, setError] = useState("");
+  const [activeId, setActiveId] = useState("claude-code");
 
-  const repoFwd = repo.replace(/\\/g, "/");
-  const setupPrompt =
-`Set up Catalyst for me, then build my brain.
+  useEffect(() => {
+    api.connectPrompts()
+      .then((d) => {
+        setData(d);
+        setActiveId(d.clients[0]?.id || "manual-mcp");
+      })
+      .catch((err) => setError(err?.message || "Could not load agent prompts."));
+  }, []);
 
-1. Install the Catalyst MCP server. Run this (use PowerShell on Windows if 'claude' isn't on your shell's PATH):
-   claude mcp add catalyst -s user -- py "${repoFwd}/tools/mcp_server.py"
-
-2. Read AGENTS.md and README.md in ${repoFwd}.
-
-3. Discover where my AI sessions, notes, exports, and workspaces live (you can run ${repoFwd}/tools/discover_sessions.py). Show me what you found and recommend a safe scan scope. Do not read any file contents until I approve.
-
-4. With my approval, build my Catalyst brain under ${repoFwd}/outputs/<name>/ — identity, context, goals, constraints, standards, judgment, taste, voice, anti-slop, rejected-examples, decision-rules, task-patterns — plus the skills/ and evals/. Never overwrite anything in templates/.
-
-5. Write ${repoFwd}/outputs/<name>/SUMMARY.md: a short how-to-use (what's in my brain, how you'll use it each task, how I correct it).
-
-From the next session on, use the Catalyst MCP tools (route_task, get_context_packet, review_output_against_brain, append_feedback, audit_brain) on every task: load context before, evaluate after, capture my corrections, keep the brain sharp.`;
-
-  const mcpConfig = JSON.stringify(
-    { mcpServers: { catalyst: { command: "py", args: [`${repoFwd}/tools/mcp_server.py`] } } },
-    null, 2,
+  const active = useMemo(
+    () => data?.clients.find((c) => c.id === activeId) || data?.clients[0],
+    [data, activeId],
   );
 
   return (
     <div className="stack" style={{ paddingTop: "var(--s4)" }}>
       <div className="row spread">
-        <div className="eyebrow">Connect</div>
+        <div className="eyebrow">Connect agent</div>
         <Button variant="ghost" className="btn-sm" onClick={onBack}>Back</Button>
       </div>
       <div>
-        <h1 className="t">One prompt. Your agent does the rest.</h1>
+        <h1 className="t">Your agent builds the brain.</h1>
         <p className="lede">
-          Paste this into Claude Code (or your agent). It installs Catalyst, scans your
-          workspace with your approval, builds your brain, and writes a how-to. No forms.
+          Catalyst gives it the protocol, MCP fallback, and build-status contract. The browser
+          does not pretend to scan or synthesize on its own.
         </p>
       </div>
 
-      <Card>
-        <div className="eyebrow">Copy this to your agent</div>
-        <div className="pre scroll" style={{ marginTop: "var(--s2)" }}>{setupPrompt}</div>
+      {error && <Card><p className="muted">{error}</p></Card>}
+      {!data && !error && <Card><p className="muted">Loading agent instructions...</p></Card>}
+
+      {data && (
+        <>
+          <div className="tabs" role="tablist" aria-label="Agent choices">
+            {data.clients.map((client) => (
+              <button
+                key={client.id}
+                className={`tab ${activeId === client.id ? "on" : ""}`}
+                onClick={() => setActiveId(client.id)}
+                type="button"
+              >
+                {client.label}
+              </button>
+            ))}
+          </div>
+          {active && <AgentCard client={active} />}
+        </>
+      )}
+
+      <div className="row spread wrap">
+        <Button variant="ghost" onClick={onBack}>Back</Button>
+        <Button variant="primary" onClick={onNext}>Choose scan scope</Button>
+      </div>
+    </div>
+  );
+}
+
+function AgentCard({ client }: { client: ConnectClient }) {
+  const config = JSON.stringify(client.mcp_config, null, 2);
+  return (
+    <Card>
+      <div className="row spread wrap">
+        <div>
+          <div className="eyebrow">{client.label}</div>
+          <h2 className="t" style={{ marginBottom: 0 }}>{client.detected ? "Ready to copy" : "Instructions available"}</h2>
+        </div>
+        <span className={`badge ${client.detected ? "ship" : "ask"}`}><span className="dot" />{client.detected ? "detected" : "not detected"}</span>
+      </div>
+      <p className="muted small">{client.setup}</p>
+
+      {client.command && (
+        <div style={{ marginTop: "var(--s3)" }}>
+          <div className="eyebrow">{client.command_label}</div>
+          <div className="pre">{client.command}</div>
+          <div style={{ marginTop: "var(--s2)" }}>
+            <CopyButton text={client.command} label="Copy command" />
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginTop: "var(--s3)" }}>
+        <div className="eyebrow">Copy-paste prompt</div>
+        <div className="pre scroll">{client.prompt}</div>
         <div className="row wrap" style={{ marginTop: "var(--s2)" }}>
-          <CopyButton text={setupPrompt} label="Copy setup prompt" variant="primary" />
-          <span className="faint small">Approve the scan when it asks. Your brain appears in the workspace as it builds.</span>
+          <CopyButton text={client.prompt} label="Copy setup prompt" variant="primary" />
+          <span className="faint small">{client.note}</span>
+        </div>
+      </div>
+
+      <details style={{ marginTop: "var(--s3)" }}>
+        <summary className="eyebrow" style={{ cursor: "pointer" }}>Manual MCP JSON fallback</summary>
+        <div className="pre" style={{ marginTop: "var(--s2)" }}>{config}</div>
+        <div style={{ marginTop: "var(--s2)" }}><CopyButton text={config} label="Copy MCP JSON" /></div>
+      </details>
+    </Card>
+  );
+}
+
+function PermissionScreen({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+  const [mode, setMode] = useState<"recommended" | "manual" | "skip">("recommended");
+  const [manualPaths, setManualPaths] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function save() {
+    setSaving(true);
+    setError("");
+    try {
+      await api.savePermissions({
+        mode,
+        manual_paths: manualPaths.split(/\r?\n/).map((p) => p.trim()).filter(Boolean),
+      });
+      onNext();
+    } catch (err: any) {
+      setError(err?.message || "Could not save permissions.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="stack" style={{ paddingTop: "var(--s4)" }}>
+      <div className="row spread">
+        <div className="eyebrow">Source permission</div>
+        <Button variant="ghost" className="btn-sm" onClick={onBack}>Back</Button>
+      </div>
+      <div>
+        <h1 className="t">Choose what your agent may inspect.</h1>
+        <p className="lede">
+          Discovery only finds candidate paths. Content reading stays gated by this choice
+          and the exclusions stay binding.
+        </p>
+      </div>
+
+      <div className="choice-grid">
+        <Choice title="Recommended safe scan" active={mode === "recommended"} onClick={() => setMode("recommended")}>
+          AI sessions, exports, agent memories, markdown workspaces, and notes. Excludes secrets, private DMs, client data, binaries, and vendor/build folders.
+        </Choice>
+        <Choice title="Manual paths only" active={mode === "manual"} onClick={() => setMode("manual")}>
+          Your agent only reads paths you list. Use this for tight project scopes or sensitive machines.
+        </Choice>
+        <Choice title="Skip scan / use typed context" active={mode === "skip"} onClick={() => setMode("skip")}>
+          No local content scan. Build from pasted context and interview answers only.
+        </Choice>
+      </div>
+
+      {mode === "manual" && (
+        <label className="field">
+          <span>Manual paths</span>
+          <textarea
+            className="in mono-area"
+            value={manualPaths}
+            onChange={(e) => setManualPaths(e.target.value)}
+            placeholder="One path per line"
+          />
+        </label>
+      )}
+
+      {error && <p className="muted small">{error}</p>}
+      <div className="row spread wrap">
+        <Button variant="ghost" onClick={onBack}>Back</Button>
+        <Button variant="primary" disabled={saving} onClick={save}>{saving ? "Saving..." : "Save permission"}</Button>
+      </div>
+    </div>
+  );
+}
+
+function Choice({ title, active, onClick, children }: {
+  title: string;
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button type="button" className={`choice ${active ? "on" : ""}`} onClick={onClick}>
+      <span className="choice-title">{title}</span>
+      <span className="choice-body">{children}</span>
+    </button>
+  );
+}
+
+function WaitingScreen({ onBack, onDone }: { onBack: () => void; onDone: () => void }) {
+  const [name, setName] = useState("me");
+  const [status, setStatus] = useState<BuildStatus | null>(null);
+
+  async function refresh() {
+    const s = await api.status().catch(() => null);
+    const active = s?.active_brain || s?.brains?.[0]?.name || "me";
+    setName(active);
+    const b = await api.buildStatus(active).catch(() => null);
+    setStatus(b);
+  }
+
+  useEffect(() => {
+    refresh();
+    const id = setInterval(refresh, 4000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="stack" style={{ paddingTop: "var(--s4)" }}>
+      <div className="row spread">
+        <div className="eyebrow">Build status</div>
+        <Button variant="ghost" className="btn-sm" onClick={onBack}>Back</Button>
+      </div>
+      <Card>
+        <h1 className="t">Waiting for your agent to build your Catalyst Brain.</h1>
+        <p className="muted">
+          Paste the setup prompt into your agent. This page updates automatically as
+          <span className="mono"> outputs/{name}/BUILD-STATUS.json</span> appears.
+        </p>
+        {status && <MiniTimeline status={status} />}
+        <div className="row wrap" style={{ marginTop: "var(--s3)" }}>
+          <Button variant="primary" onClick={onDone}>Open command center</Button>
+          <Button onClick={refresh}>Refresh status</Button>
         </div>
       </Card>
+    </div>
+  );
+}
 
-      <Card tight>
-        <details>
-          <summary className="eyebrow" style={{ cursor: "pointer" }}>Not using Claude Code? (manual MCP config)</summary>
-          <div style={{ marginTop: "var(--s3)" }}>
-            <p className="muted small" style={{ marginTop: 0 }}>Add this MCP server to Cursor or any client, then paste the prompt above and skip step 1.</p>
-            <div className="pre">{mcpConfig}</div>
-            <div style={{ marginTop: "var(--s2)" }}><CopyButton text={mcpConfig} label="Copy MCP config" /></div>
+function MiniTimeline({ status }: { status: BuildStatus }) {
+  return (
+    <div>
+      <div className="progress"><span style={{ width: `${Math.round(status.progress * 100)}%` }} /></div>
+      <p className="small muted">{status.message}</p>
+      <div className="timeline compact">
+        {status.steps.map((step) => (
+          <div key={step.id} className={`timeline-step ${step.state}`}>
+            <span className="marker" />
+            <span>{step.label}</span>
           </div>
-        </details>
-      </Card>
-
-      <div className="row"><Button variant="primary" onClick={onFinish}>Open my workspace</Button></div>
+        ))}
+      </div>
     </div>
   );
 }

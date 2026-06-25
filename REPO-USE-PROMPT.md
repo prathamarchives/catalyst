@@ -9,7 +9,7 @@ https://github.com/prathamarchives/catalyst
 install this and build my Catalyst Brain.
 You may discover and scan my local AI sessions, agent memories, workspaces, markdown notes, and project files using the recommended safe scope.
 Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and anything sensitive.
-Build everything locally, write the personalized skills/workflows/evals, run the first real task through the task-time evaluation loop, then ask me for feedback and update the brain.
+Build everything locally, write BUILD-STATUS.json while you work, write the personalized skills/workflows/evals, then install the task-time evaluation and feedback update loop for future real tasks.
 ```
 
 Cautious approval mode:
@@ -27,7 +27,7 @@ This is a protocol repo, not an app. A correct agent does not stop at clone and 
 Read README.md and AGENTS.md. Use this repo to build my Catalyst Brain.
 First discover where my AI sessions, notes, exports, agent memories, and workspaces live. Do not read file contents yet.
 Show me the discovered locations, recommend a safe scan scope, ask what you may scan if I did not already authorize it, then audit only the approved scope.
-Interview me in small rounds, extract identity/context/standards/judgment/taste/feedback with evidence, create files under outputs/<name>/, write Catalyst skills/workflows/evals, run a real task through task-time evaluation, then ask for feedback and update the system so it compounds session to session.
+Read `.catalyst/permissions.json` if it exists. Interview me in small rounds, extract identity/context/standards/judgment/taste/feedback with evidence, create files under outputs/<name>/, keep BUILD-STATUS.json updated while you work, write Catalyst skills/workflows/evals, and install the task-time evaluation loop so future real tasks compound session to session.
 ```
 
 ## What to expect
@@ -42,4 +42,4 @@ If the agent starts producing final work before building the brain and standards
 
 ## Optional local control panel
 
-You never need a UI — the prompts above are enough. If you want a local control surface, run `py apps/control-panel/server.py` (localhost-only, zero dependencies) and open `http://127.0.0.1:8765`. It is a staged journey (Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents/MCP) over the same `outputs/<name>/` markdown, and connects an AI/agent first because real synthesis needs a worker. For multi-agent access, `py tools/mcp_server.py` is a local-only MCP scaffold. BYOK is optional; mock mode needs no key. See [docs/control-panel.md](docs/control-panel.md) and [docs/mcp.md](docs/mcp.md).
+You never need a UI — the prompts above are enough. If you want a local command center, run `py catalyst.py` (localhost-only) and open `http://127.0.0.1:8765`. It shows connect-agent instructions, stores scan permission in `.catalyst/permissions.json`, and renders `outputs/<name>/BUILD-STATUS.json` plus the brain your agent builds. For multi-agent access, `py tools/mcp_server.py` is a local-only MCP scaffold. BYOK is optional; mock mode needs no key. See [docs/control-panel.md](docs/control-panel.md) and [docs/mcp.md](docs/mcp.md).

@@ -25,6 +25,7 @@ First action, always: **discover where the user's source material lives — do n
 Determine authorization mode:
 
 - **Mode A — autonomous authorized mode:** if the user already authorized a recommended safe scan, announce the safe scope and proceed without a second approval question.
+- **Mode A2 — local UI permission mode:** if `.catalyst/permissions.json` exists, follow it. `recommended` means the safe scan is approved; `manual` means read only the listed paths; `skip` means use typed context/interview only.
 - **Mode B — cautious approval mode:** if authorization is ambiguous, ask exactly one compact approval question before reading contents:
 
 > I recommend scanning AI sessions, exports, agent memories, and markdown-heavy workspaces while excluding secrets/client/private-DM/vendor/build/binary folders. Approve recommended scan, edit scope, or manual mode?
@@ -77,6 +78,8 @@ Every file must include: purpose, when to load, tasks affected, how to apply, ho
 
 ```txt
 outputs/<name>/
+  BUILD-STATUS.json
+  SUMMARY.md
   catalyst-brain/
   skills/
     catalyst-skill.md
@@ -100,7 +103,37 @@ outputs/<name>/
     feedback-capture.md
     improvement-log.md
   README.md
+  proposed-updates/
 ```
+
+## Build status contract
+
+While building, write `outputs/<name>/BUILD-STATUS.json` and update it after each major step. The local UI only displays this file; you are the v0 builder.
+
+```json
+{
+  "name": "pratham",
+  "status": "building",
+  "step": "extracting_taste_judgment",
+  "message": "Extracting standards, rejected examples, and decision rules from approved sources.",
+  "progress": 0.55,
+  "updated_at": "2026-06-25T12:00:00Z",
+  "steps": [
+    {"id":"connect_agent","label":"Connect agent","state":"done"},
+    {"id":"discover_sources","label":"Discover sources","state":"done"},
+    {"id":"approve_scope","label":"Approve scan scope","state":"done"},
+    {"id":"extract_identity_context","label":"Extract identity/context","state":"done"},
+    {"id":"extract_taste_judgment","label":"Extract taste/judgment","state":"active"},
+    {"id":"write_brain","label":"Write Catalyst Brain","state":"pending"},
+    {"id":"write_skills","label":"Write skills/workflows/evals","state":"pending"},
+    {"id":"ready","label":"Ready for agents","state":"pending"}
+  ]
+}
+```
+
+Allowed step states: `pending`, `active`, `done`, `blocked`, `error`.
+
+When blocked, keep the status file honest with a clear message and the exact question or approval needed. Do not fabricate progress.
 
 ## Skills are the real product
 
@@ -116,7 +149,7 @@ Run [prompts/05-write-agent-skill.md](prompts/05-write-agent-skill.md). The gene
 
 ## Task-time evaluation loop
 
-Run [prompts/06-task-time-evaluation.md](prompts/06-task-time-evaluation.md) on the first real task and every meaningful future task:
+Install [prompts/06-task-time-evaluation.md](prompts/06-task-time-evaluation.md) for every meaningful future task:
 
 1. classify the task
 2. load relevant Catalyst Brain files

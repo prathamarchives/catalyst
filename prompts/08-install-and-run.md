@@ -10,5 +10,5 @@ This is a protocol repo. There is no dependency install.
 6. Extract Catalyst Brain signal.
 7. Build outputs under `outputs/<name>/`.
 8. Write skills/workflows/evals.
-9. Run the first real task through task-time evaluation.
+9. Install the task-time evaluation loop for future real tasks.
 10. Ask for feedback and update the brain.

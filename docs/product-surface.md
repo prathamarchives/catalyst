@@ -13,7 +13,7 @@ Catalyst is your local judgment layer for agents. The product is the brain + loo
 ## The setup journey
 
 ```txt
-Start → Connect AI → Identity → Context → Permission → Build → Explore → Proof → Agents (MCP)
+Promise -> Connect agent -> Source permission -> Build status -> Command center
 ```
 
 Connect an AI first (it does the synthesis/evaluation), give five sharp answers, drop or extract context, approve any scan, build the brain locally, explore it grouped by job, prove it on a real task, then expose it to many agents over a local MCP scaffold.
@@ -23,7 +23,8 @@ Connect an AI first (it does the synthesis/evaluation), give five sharp answers,
 - **What it is:** a local-first, markdown-first judgment system for agents. It turns your messy source material — AI sessions, notes, drafts, rejected outputs, corrections — into a multi-file **Catalyst Brain** an agent loads before work, reviews against after work, and updates every time you correct it.
 - **How it differs from one-file context/profile tools:** a profile file makes an agent remember facts about you. Catalyst makes an agent *judge* a specific output against your standards, reject what you'd reject, and improve from feedback. Memory is flat; judgment is task-time.
 - **How you run it locally:** clone/open the repo and run `py catalyst.py` (starts the local app and opens your browser), or point an agent at `AGENTS.md`. No account, no database, no hosted backend.
-- **What the UI / onboarding does:** asks 5–7 questions, runs read-only source discovery, gets your approval for any scan, builds the brain under `outputs/<name>/`, runs a first proof task, and updates the brain from your feedback.
+- **What the UI / onboarding does:** gives copyable agent instructions, stores scan permission, watches `outputs/<name>/BUILD-STATUS.json`, and shows the brain graph/readiness/open questions under `outputs/<name>/`.
+- **What the agent does in v0:** runs read-only source discovery, gets or follows approval for any scan, builds the brain under `outputs/<name>/`, writes skills/workflows/evals, and installs the task-time evaluation loop for future real tasks.
 - **How it stays private:** local files only; discovery is read-only path metadata; reading contents needs your approval; secrets/DMs/client data excluded by default; outputs are gitignored; no cloud upload by default.
 - **How BYOK is optional:** everything core works with no key (mock mode, no network). A key only powers optional AI-assisted synthesis/review.
 - **How feedback makes agents improve:** every correction becomes a feedback-memory entry plus a patch to standards/judgment/taste plus a new eval line. The next task inherits the rule.

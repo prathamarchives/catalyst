@@ -2,11 +2,15 @@ const JSON_HEADERS = { "Content-Type": "application/json" };
 
 async function get(path: string): Promise<any> {
   const r = await fetch(path);
-  return r.json();
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(body.error || `GET ${path} failed`);
+  return body;
 }
 async function post(path: string, body: unknown): Promise<any> {
   const r = await fetch(path, { method: "POST", headers: JSON_HEADERS, body: JSON.stringify(body) });
-  return r.json();
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || `POST ${path} failed`);
+  return data;
 }
 
 export type RouteResult = {
@@ -42,15 +46,62 @@ export type Audit = {
 
 export type BrainFile = { file: string; meta: Record<string, string> };
 export type Brain = { name: string; groups: { label: string; files: BrainFile[] }[] };
+export type Permissions = {
+  mode: "unset" | "recommended" | "manual" | "skip";
+  label: string;
+  manual_paths: string[];
+  updated_at?: string | null;
+};
+export type ConnectClient = {
+  id: string;
+  label: string;
+  detected: boolean;
+  status: string;
+  command: string;
+  command_label: string;
+  prompt: string;
+  setup: string;
+  note: string;
+  mcp_config: Record<string, unknown>;
+};
+export type ConnectPrompts = {
+  repo_root: string;
+  server_url: string;
+  permissions: Permissions;
+  clients: ConnectClient[];
+  manual_mcp: Record<string, unknown>;
+};
+export type BuildStep = {
+  id: string;
+  label: string;
+  state: "pending" | "active" | "done" | "blocked" | "error";
+};
+export type BuildStatus = {
+  name: string;
+  status: "waiting" | "building" | "ready" | "blocked" | "error";
+  step: string;
+  message: string;
+  progress: number;
+  updated_at?: string | null;
+  exists: boolean;
+  steps: BuildStep[];
+};
 export type Status = {
   repo_root: string;
-  brains: { name: string; brain_present: string[]; brain_missing: string[] }[];
+  active_brain?: string;
+  brains: { name: string; brain_present: string[]; brain_missing: string[]; has_skills?: boolean; has_workflows?: boolean; has_evals?: boolean }[];
+  permissions?: Permissions;
   byok: { has_key: boolean; effective_provider: string };
 };
 
 export const api = {
   status: (): Promise<Status> => get("/api/status"),
   agents: () => get("/api/agents/status"),
+  connectPrompts: (): Promise<ConnectPrompts> => get("/api/connect/prompts"),
+  permissions: (): Promise<Permissions> => get("/api/permissions"),
+  savePermissions: (payload: { mode: "recommended" | "manual" | "skip"; manual_paths?: string[]; notes?: string }) =>
+    post("/api/permissions", payload),
+  buildStatus: (name: string): Promise<BuildStatus> => get(`/api/build/status?name=${encodeURIComponent(name)}`),
   extractionPrompt: (): Promise<{ prompt: string }> => get("/api/extraction-prompt"),
   onboarding: (answers: Record<string, string>) => post("/api/onboarding", { answers }),
   brain: (name: string): Promise<Brain> => get(`/api/brain?name=${encodeURIComponent(name)}`),

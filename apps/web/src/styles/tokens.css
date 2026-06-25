@@ -16,7 +16,7 @@
   --bad: #9a3b33;
   --info: #355c8a;
 
-  --radius: 12px;
+  --radius: 8px;
   --radius-sm: 8px;
   --maxw: 46rem;
 
@@ -28,7 +28,7 @@
   --step-1: 19px;
   --step-2: 24px;
   --step-3: 34px;
-  --step-hero: clamp(2.2rem, 6vw, 4rem);
+  --step-hero: 56px;
 
   --s1: 8px;
   --s2: 12px;
@@ -38,6 +38,13 @@
   --s6: 64px;
 
   --motion: 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --step-hero: 38px;
+    --step-3: 30px;
+  }
 }
 
 @media (prefers-color-scheme: dark) {

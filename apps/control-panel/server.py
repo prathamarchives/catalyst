@@ -34,6 +34,7 @@ import json
 import os
 import shutil
 import sys
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -42,6 +43,9 @@ HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
 STATIC_DIR = HERE / "static"
 DIST_DIR = REPO_ROOT / "apps" / "web" / "dist"  # prebuilt consumer UI (Phase 3)
+CATALYST_DIR = REPO_ROOT / ".catalyst"
+PERMISSIONS_FILE = CATALYST_DIR / "permissions.json"
+AGENT_STATUS_FILE = CATALYST_DIR / "agent-status.json"
 
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(REPO_ROOT / "tools"))
@@ -73,17 +77,18 @@ BRAIN_FILE_ORDER = [
 
 # Brain explorer grouping: section label -> ordered files + human meaning.
 BRAIN_GROUPS = [
-    ("Who / why", ["identity.md", "context.md", "goals.md", "constraints.md"]),
-    ("Taste / standards", ["standards.md", "judgment.md", "taste.md", "anti-slop.md", "rejected-examples.md"]),
-    ("Operating system", ["decision-rules.md", "task-patterns.md", "voice.md", "lexicon.md", "references.md"]),
+    ("Identity / context", ["identity.md", "context.md", "goals.md", "constraints.md"]),
+    ("Taste / judgment", ["standards.md", "judgment.md", "taste.md", "anti-slop.md", "rejected-examples.md"]),
+    ("Operating logic", ["decision-rules.md", "task-patterns.md", "voice.md", "lexicon.md", "references.md"]),
     ("Learning", ["feedback-memory.md", "open-questions.md"]),
 ]
 
 # CLI binaries we may *detect* (existence only, never executed from user input).
 AGENT_CLIS = [
-    ("claude-code", "Claude Code CLI", "claude", "Install Claude Code and run `claude` once to log in."),
-    ("codex", "Codex CLI", "codex", "Install the Codex/OpenAI CLI and authenticate it."),
-    ("hermes", "Hermes CLI", "hermes", "Install/point to your Hermes CLI on PATH."),
+    ("claude-code", "Claude Code", "claude", "Install Claude Code and run `claude` once to log in."),
+    ("codex", "Codex", "codex", "Install Codex and authenticate it."),
+    ("cursor", "Cursor", "cursor", "Install Cursor and make `cursor` available on PATH, or use the MCP JSON fallback."),
+    ("hermes", "Hermes", "hermes", "Install or point to your Hermes CLI on PATH."),
 ]
 
 # A copyable prompt the user can paste into ANY LLM to produce a context packet.
@@ -119,6 +124,22 @@ HOST = os.environ.get("CATALYST_HOST", "127.0.0.1")
 PORT = int(os.environ.get("CATALYST_PORT", "8765"))
 TOKEN = os.environ.get("CATALYST_TOKEN", "")
 LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
+PERMISSION_MODES = {"recommended", "manual", "skip"}
+BUILD_STEPS = [
+    {"id": "connect_agent", "label": "Connect agent", "state": "pending"},
+    {"id": "discover_sources", "label": "Discover sources", "state": "pending"},
+    {"id": "approve_scope", "label": "Approve scan scope", "state": "pending"},
+    {"id": "extract_identity_context", "label": "Extract identity/context", "state": "pending"},
+    {"id": "extract_taste_judgment", "label": "Extract taste/judgment", "state": "pending"},
+    {"id": "write_brain", "label": "Write Catalyst Brain", "state": "pending"},
+    {"id": "write_skills", "label": "Write skills/workflows/evals", "state": "pending"},
+    {"id": "ready", "label": "Ready for agents", "state": "pending"},
+]
+BUILD_STATES = {"pending", "active", "done", "blocked", "error"}
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _safe_path(rel: str, roots) -> Path | None:
@@ -145,6 +166,250 @@ def _slug(name: str) -> str:
     while "--" in s:
         s = s.replace("--", "-")
     return s.strip("-") or "me"
+
+
+def _read_json_file(path: Path, default):
+    try:
+        if path.is_file():
+            return json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        return default
+    return default
+
+
+def _write_local_config(path: Path, data: dict) -> None:
+    """Write a known local Catalyst config file under .catalyst/ only."""
+    path = path.resolve()
+    base = CATALYST_DIR.resolve()
+    try:
+        path.relative_to(base)
+    except ValueError:
+        raise ValueError("config path escaped .catalyst")
+    CATALYST_DIR.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def _permissions() -> dict:
+    data = _read_json_file(PERMISSIONS_FILE, {})
+    if not isinstance(data, dict):
+        data = {}
+    mode = data.get("mode")
+    if mode not in PERMISSION_MODES:
+        return {
+            "mode": "unset",
+            "label": "No scan permission selected",
+            "manual_paths": [],
+            "exclusions": [
+                "secrets",
+                "tokens",
+                "private DMs",
+                "client data",
+                "binaries",
+                "vendor/build folders",
+                "sensitive material",
+            ],
+            "updated_at": None,
+        }
+    data.setdefault("manual_paths", [])
+    data.setdefault("exclusions", [
+        "secrets",
+        "tokens",
+        "private DMs",
+        "client data",
+        "binaries",
+        "vendor/build folders",
+        "sensitive material",
+    ])
+    return data
+
+
+def _save_permissions(data: dict) -> dict:
+    mode = (data.get("mode") or "").strip().lower()
+    if mode not in PERMISSION_MODES:
+        return {"error": "mode must be one of: recommended, manual, skip"}
+    manual_paths = data.get("manual_paths") or []
+    if not isinstance(manual_paths, list):
+        manual_paths = []
+    clean_paths = [str(p).strip() for p in manual_paths if str(p).strip()]
+    labels = {
+        "recommended": "Recommended safe scan",
+        "manual": "Manual paths only",
+        "skip": "Skip scan / use typed context",
+    }
+    payload = {
+        "mode": mode,
+        "label": labels[mode],
+        "manual_paths": clean_paths[:50],
+        "exclusions": [
+            "secrets",
+            "tokens",
+            "private DMs",
+            "client data",
+            "binaries",
+            "vendor/build folders",
+            "sensitive material",
+        ],
+        "notes": str(data.get("notes") or "")[:2000],
+        "updated_at": _now_iso(),
+    }
+    _write_local_config(PERMISSIONS_FILE, payload)
+    return payload
+
+
+def _safe_agent_status() -> dict:
+    data = _read_json_file(AGENT_STATUS_FILE, {})
+    if not isinstance(data, dict):
+        return {}
+    allowed = {}
+    for key in ("agent", "status", "message", "updated_at"):
+        if key in data:
+            allowed[key] = str(data[key])[:500]
+    return allowed
+
+
+def _setup_prompt(repo_path: str, client: str) -> str:
+    repo = repo_path.replace("\\", "/")
+    return f"""Set up Catalyst for me and build my Catalyst Brain.
+
+Repository: {repo}
+Client: {client}
+
+1. Read README.md, AGENTS.md, and REPO-USE-PROMPT.md in the repository.
+2. Read .catalyst/permissions.json if it exists. If it explicitly allows the recommended safe scan, do not ask the approval question again. If it says manual or skip, follow that choice.
+3. Discover candidate sources with tools/discover_sessions.py. Discovery is read-only path metadata only.
+4. Read file contents only inside the approved scope. Always exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and sensitive material.
+5. Build everything locally under outputs/<name>/:
+   - BUILD-STATUS.json
+   - SUMMARY.md
+   - catalyst-brain/
+   - skills/
+   - workflows/
+   - evals/
+   - proposed-updates/
+6. While building, keep outputs/<name>/BUILD-STATUS.json updated with the schema in AGENTS.md so the Catalyst command center can show progress.
+7. After the brain is ready, use the Catalyst loop on real work: route_task -> get_context_packet -> produce -> review_output_against_brain -> append_feedback on corrections -> audit_brain.
+
+The local UI is only the command center. You are the v0 builder. Do not overwrite templates/ and do not create a fake hosted integration."""
+
+
+def _connect_prompts() -> dict:
+    repo = str(REPO_ROOT)
+    repo_fwd = repo.replace("\\", "/")
+    py_cmd = "py" if os.name == "nt" else "python3"
+    mcp_args = [str((REPO_ROOT / "tools" / "mcp_server.py").resolve())]
+    mcp_config = {
+        "mcpServers": {
+            "catalyst": {
+                "command": py_cmd,
+                "args": mcp_args,
+                "cwd": repo,
+            }
+        }
+    }
+    command_by_id = {
+        "claude-code": f'claude mcp add catalyst -s user -- {py_cmd} "{repo_fwd}/tools/mcp_server.py"',
+        "codex": f'cd "{repo}" && codex',
+        "cursor": f'cursor "{repo}"',
+        "hermes": f'cd "{repo}" && hermes',
+    }
+    clients = []
+    for cid, label, binary, setup in AGENT_CLIS:
+        found = shutil.which(binary) is not None
+        clients.append({
+            "id": cid,
+            "label": label,
+            "detected": found,
+            "status": "detected" if found else "not_detected",
+            "command": command_by_id.get(cid) if found or cid == "claude-code" else "",
+            "command_label": "Install MCP server" if cid == "claude-code" else "Open this agent in the repo",
+            "prompt": _setup_prompt(repo, label),
+            "setup": setup,
+            "mcp_config": mcp_config,
+            "live": False,
+            "note": "Instructions only. Catalyst does not run this agent from the browser.",
+        })
+    clients.append({
+        "id": "manual-mcp",
+        "label": "Manual MCP",
+        "detected": True,
+        "status": "ready",
+        "command": f'{py_cmd} "{repo_fwd}/tools/mcp_server.py"',
+        "command_label": "MCP stdio command",
+        "prompt": _setup_prompt(repo, "Manual MCP client"),
+        "setup": "Add the JSON config to any MCP client, then paste the setup prompt into your agent.",
+        "mcp_config": mcp_config,
+        "live": False,
+        "note": "Manual configuration fallback. No OAuth or hosted connector is implied.",
+    })
+    return {
+        "repo_root": repo,
+        "server_url": f"http://{HOST}:{PORT}",
+        "permissions": _permissions(),
+        "clients": clients,
+        "manual_mcp": mcp_config,
+    }
+
+
+def _default_build_status(name: str, exists: bool = False) -> dict:
+    slug = _slug(name or "me")
+    return {
+        "name": slug,
+        "status": "waiting",
+        "step": "connect_agent",
+        "message": "Waiting for your agent to build your Catalyst Brain. Paste the setup prompt into your agent; this page updates automatically.",
+        "progress": 0.0,
+        "updated_at": None,
+        "exists": exists,
+        "steps": [dict(step) for step in BUILD_STEPS],
+    }
+
+
+def _build_status(name: str) -> dict:
+    slug = _slug(name or "me")
+    path = _safe_path(f"outputs/{slug}/BUILD-STATUS.json", READ_ROOTS)
+    if not path or not path.is_file():
+        return _default_build_status(slug, exists=False)
+    raw = _read_json_file(path, {})
+    if not isinstance(raw, dict):
+        status = _default_build_status(slug, exists=True)
+        status.update({
+            "status": "error",
+            "step": "read_status",
+            "message": "BUILD-STATUS.json exists but is not valid JSON.",
+            "exists": True,
+        })
+        return status
+    status = _default_build_status(raw.get("name") or slug, exists=True)
+    status.update({
+        "name": _slug(str(raw.get("name") or slug)),
+        "status": str(raw.get("status") or "building"),
+        "step": str(raw.get("step") or status["step"]),
+        "message": str(raw.get("message") or status["message"]),
+        "progress": raw.get("progress", 0.0),
+        "updated_at": raw.get("updated_at"),
+        "exists": True,
+    })
+    try:
+        status["progress"] = max(0.0, min(1.0, float(status["progress"])))
+    except (TypeError, ValueError):
+        status["progress"] = 0.0
+    steps = raw.get("steps")
+    if isinstance(steps, list):
+        clean = []
+        for step in steps:
+            if not isinstance(step, dict):
+                continue
+            state = step.get("state") if step.get("state") in BUILD_STATES else "pending"
+            clean.append({
+                "id": str(step.get("id") or "")[:80],
+                "label": str(step.get("label") or step.get("id") or "")[:120],
+                "state": state,
+            })
+        if clean:
+            status["steps"] = clean
+    if status["status"] not in {"waiting", "building", "ready", "blocked", "error"}:
+        status["status"] = "building"
+    return status
 
 
 def _list_brains() -> list:
@@ -503,9 +768,13 @@ class Handler(BaseHTTPRequestHandler):
     def _api_get(self, path: str, q: dict):
         if path == "/api/status":
             cfg = byok.get_config()
+            brains = _list_brains()
             return self._json({
                 "repo_root": str(REPO_ROOT),
-                "brains": _list_brains(),
+                "brains": brains,
+                "active_brain": brains[0]["name"] if brains else "",
+                "permissions": _permissions(),
+                "agent_status": _safe_agent_status(),
                 "byok": {
                     "effective_provider": cfg["effective_provider"],
                     "mock_mode": cfg["mock_mode"],
@@ -529,7 +798,19 @@ class Handler(BaseHTTPRequestHandler):
                 "note": "read-only path discovery. nothing was read. you approve any scan.",
             })
         if path == "/api/agents/status":
-            return self._json(_agent_status())
+            status = _agent_status()
+            status["agent_status"] = _safe_agent_status()
+            return self._json(status)
+        if path == "/api/connect/prompts":
+            return self._json(_connect_prompts())
+        if path == "/api/permissions":
+            return self._json(_permissions())
+        if path == "/api/build/status":
+            name = (q.get("name") or [""])[0]
+            if not name:
+                brains = _list_brains()
+                name = brains[0]["name"] if brains else "me"
+            return self._json(_build_status(name))
         if path == "/api/extraction-prompt":
             return self._json({"prompt": EXTRACTION_PROMPT})
         if path == "/api/brain":
@@ -632,6 +913,9 @@ class Handler(BaseHTTPRequestHandler):
             res = _save_context(name, data)
             code = 200 if res.get("ok") else 400
             return self._json(res, code)
+        if path == "/api/permissions":
+            res = _save_permissions(data)
+            return self._json(res, 400 if res.get("error") else 200)
         if path == "/api/build":
             name = data.get("name", "")
             if not name.strip():
@@ -701,7 +985,14 @@ def main():
         print("REFUSING to bind a non-local host without CATALYST_TOKEN set.", file=sys.stderr)
         print("Set CATALYST_TOKEN=... or use the default 127.0.0.1.", file=sys.stderr)
         return 2
-    httpd = ThreadingHTTPServer((HOST, PORT), Handler)
+    try:
+        httpd = ThreadingHTTPServer((HOST, PORT), Handler)
+    except OSError as exc:
+        print(f"Could not start Catalyst on http://{HOST}:{PORT}.", file=sys.stderr)
+        print(f"Reason: {exc}", file=sys.stderr)
+        if "address already in use" in str(exc).lower() or getattr(exc, "winerror", None) == 10048:
+            print("Port 8765 is already in use. Stop the other Catalyst/Python process or set CATALYST_PORT to another port.", file=sys.stderr)
+        return 2
     print(f"Catalyst control panel -> http://{HOST}:{PORT}")
     print(f"repo: {REPO_ROOT}")
     cfg = byok.get_config()
