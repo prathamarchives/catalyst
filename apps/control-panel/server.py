@@ -63,6 +63,14 @@ from catalyst_core import (  # noqa: E402
     evaluator as flow_evaluator,
     feedback as flow_feedback,
     quality as flow_quality,
+    capture as runtime_capture,
+    events as runtime_events,
+    graph as runtime_graph,
+    health as runtime_health,
+    judgment as runtime_judgment,
+    memory as runtime_memory,
+    recall as runtime_recall,
+    signals as runtime_signals,
 )
 
 # --- allowlist ---------------------------------------------------------------
@@ -775,6 +783,8 @@ class Handler(BaseHTTPRequestHandler):
                 "active_brain": brains[0]["name"] if brains else "",
                 "permissions": _permissions(),
                 "agent_status": _safe_agent_status(),
+                "runtime_health": runtime_health.get_health(None),
+                "recent_captures": runtime_events.list_events(None, limit=10),
                 "byok": {
                     "effective_provider": cfg["effective_provider"],
                     "mock_mode": cfg["mock_mode"],
@@ -811,6 +821,29 @@ class Handler(BaseHTTPRequestHandler):
                 brains = _list_brains()
                 name = brains[0]["name"] if brains else "me"
             return self._json(_build_status(name))
+        if path == "/api/health":
+            project = (q.get("project") or [""])[0] or None
+            return self._json(runtime_health.get_health(project))
+        if path == "/api/events":
+            project = (q.get("project") or [""])[0] or None
+            return self._json({"events": runtime_events.list_events(project, limit=50)})
+        if path == "/api/signals":
+            project = (q.get("project") or [""])[0] or None
+            return self._json({"signals": runtime_signals.list_signals(project, limit=100)})
+        if path == "/api/memories":
+            project = (q.get("project") or [""])[0] or None
+            query = (q.get("query") or [""])[0]
+            if query:
+                memories = runtime_memory.search_memories(query, project, limit=50)
+            else:
+                memories = runtime_memory.list_memories(project, limit=100)
+            return self._json({"memories": memories})
+        if path == "/api/graph":
+            project = (q.get("project") or [""])[0] or None
+            graph = runtime_graph.load_graph()
+            if not graph.get("nodes"):
+                graph = runtime_graph.build_graph(project)
+            return self._json({"summary": runtime_graph.graph_summary(project), "graph": graph})
         if path == "/api/extraction-prompt":
             return self._json({"prompt": EXTRACTION_PROMPT})
         if path == "/api/brain":
@@ -961,6 +994,28 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": "name and task required"}, 400)
             res = flow_feedback.capture_feedback(name, task, data.get("output", ""), data.get("feedback", ""))
             return self._json(res, 200 if res.get("ok") else 400)
+        if path == "/api/recall":
+            task = data.get("task", "")
+            if not task:
+                return self._json({"error": "task required"}, 400)
+            return self._json(runtime_recall.build_context_packet(
+                task,
+                data.get("project") or "default",
+                data.get("agent") or "api",
+            ))
+        if path == "/api/capture":
+            event = data.get("event") if isinstance(data.get("event"), dict) else data
+            res = runtime_capture.capture_event(event)
+            return self._json(res, 200 if res.get("ok") else 400)
+        if path == "/api/review":
+            task = data.get("task", "")
+            if not task:
+                return self._json({"error": "task required"}, 400)
+            return self._json(runtime_judgment.review_output(
+                task,
+                data.get("output", ""),
+                data.get("project") or "default",
+            ))
         if path == "/api/import/files":
             name = data.get("name", "")
             if not name.strip():

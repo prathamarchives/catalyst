@@ -45,7 +45,7 @@ npx @trycatalyst/cli local
 Local development from this checkout:
 
 ```txt
-node packages/cli/bin/catalyst.mjs local --repo C:/Users/Rakesh/Desktop/catalyst
+node packages/cli/bin/catalyst.mjs local --repo <path-to-this-repo>
 ```
 
 The command opens a localhost command center. First screen: connect your agent. The agent is the v0 builder; the local UI is the command center and brain viewer.
@@ -80,6 +80,8 @@ Full install model: [INSTALL.md](INSTALL.md). Copy/paste prompts: [SETUP-PROMPT.
 - [templates/workflows/](templates/workflows/): task, review, update, and distillation loops
 - [templates/evals/](templates/evals/): standards checks and improvement logs
 - [tools/discover_sessions.py](tools/discover_sessions.py): read-only discovery helper
+- [catalyst_core/](catalyst_core/): local routing, packet, evaluator, feedback, quality, and Persona Brain runtime
+- [tools/mcp_server.py](tools/mcp_server.py): local MCP scaffold with recall, capture, search, review, health, graph, and proposal tools
 - [evals/](evals/): static checks that keep the repo coherent
 
 There is no required package install, no account, no database, no required API key, and no hosted service. An optional local control panel ships in `apps/control-panel/` (Python standard library, localhost-only) and an optional BYOK helper exists, but the protocol runs fully without either. “Install” means clone/open the repo, verify it if possible, and let an agent build the local Catalyst Brain under `outputs/<name>/`.
@@ -150,16 +152,24 @@ Catalyst is valuable during real use:
 
 The proof is not a staged comparison. The proof is that the agent gets harder to disappoint over time because every correction becomes an operational rule.
 
-## The runnable backend (v0.4)
+## The runnable backend (v0.5)
 
-The loop is runnable, not just documented. `catalyst_core/` classifies a task, routes the right brain files, builds a context packet **with an embedded judgment contract** (how to behave and decide), evaluates output against your standards/judgment/taste, turns feedback into review proposals, and audits the brain so it gets sharper over time — local, stdlib-only, writing only under `outputs/`. One launcher starts the local app and opens your browser:
+The loop is runnable, not just documented. `catalyst_core/` classifies a task, routes the right brain files, builds a context packet **with an embedded judgment contract** (how to behave and decide), evaluates output against your standards/judgment/taste, turns feedback into review proposals, and audits the brain so it gets sharper over time.
+
+It also includes a local Persona Brain runtime:
+
+```txt
+recall -> work -> capture -> extract -> update -> compile -> recall
+```
+
+Captured events are stored under `.catalyst/`, extracted into signals, compacted into memory atoms, routed into sub-brains, compiled into a wiki-style Persona Brain, and exposed through health and graph reports. The generated user brain still lives under `outputs/<name>/`; `.catalyst/` is the local runtime state. One launcher starts the local app and opens your browser:
 
 ```txt
 py catalyst.py
 py catalyst.py --no-open
 ```
 
-The same engine runs over MCP (so your agent does the loop automatically) and a dev CLI (`py tools/catalyst_cli.py ...`). See [docs/catalyst-flow.md](docs/catalyst-flow.md) and [docs/architecture.md](docs/architecture.md).
+The same engine runs over MCP (so your agent does the loop automatically) and a dev CLI (`py tools/catalyst_cli.py ...`). See [docs/catalyst-flow.md](docs/catalyst-flow.md), [docs/persona-runtime.md](docs/persona-runtime.md), and [docs/architecture.md](docs/architecture.md).
 
 ## Privacy model
 

@@ -39,6 +39,13 @@ from catalyst_core import (  # noqa: E402
     evaluator as core_evaluator,
     feedback as core_feedback,
     quality as core_quality,
+    capture as runtime_capture,
+    graph as runtime_graph,
+    health as runtime_health,
+    judgment as runtime_judgment,
+    memory as runtime_memory,
+    proposals as runtime_proposals,
+    recall as runtime_recall,
 )
 
 BRAIN_GROUPS = [
@@ -158,6 +165,81 @@ def audit_brain(name: str) -> dict:
     return core_quality.audit_brain(name)
 
 
+def catalyst_recall(task: str, project: str = "default", agent: str = "mcp") -> dict:
+    """Return a Persona Brain context packet for a task."""
+    if not (task or "").strip():
+        return {"error": "task is required"}
+    return runtime_recall.build_context_packet(task, project or "default", agent or "mcp")
+
+
+def catalyst_capture(type: str = "user_statement", project: str = "default", agent: str = "mcp",
+                     task: str = "", input: str = "", output: str = "",
+                     user_feedback: str = "", outcome: str = "", metadata: dict | None = None) -> dict:
+    """Capture an event and run extract -> memory -> graph -> compile locally."""
+    event = {
+        "type": type or "user_statement",
+        "project": project or "default",
+        "agent": agent or "mcp",
+        "task": task or "",
+        "input": input or "",
+        "output": output or "",
+        "user_feedback": user_feedback or "",
+        "outcome": outcome or "",
+        "metadata": metadata if isinstance(metadata, dict) else {},
+    }
+    return runtime_capture.capture_event(event)
+
+
+def catalyst_search(query: str = "", project: str = "", limit: int = 10) -> dict:
+    """Search local memory atoms."""
+    try:
+        lim = max(1, min(50, int(limit)))
+    except (TypeError, ValueError):
+        lim = 10
+    return {"query": query, "memories": runtime_memory.search_memories(query or "", project or None, lim)}
+
+
+def catalyst_profile(project: str = "") -> dict:
+    """Return compact memory profile grouped by sub-brain."""
+    return runtime_memory.compact_profile(project or None)
+
+
+def catalyst_review(task: str, output: str, project: str = "default") -> dict:
+    """Review output against recalled Persona Brain memory and built-in slop rules."""
+    if not (task or "").strip():
+        return {"error": "task is required"}
+    return runtime_judgment.review_output(task, output or "", project or "default")
+
+
+def catalyst_health(project: str = "") -> dict:
+    """Report runtime event/signal/memory/sub-brain/link health."""
+    return runtime_health.get_health(project or None)
+
+
+def catalyst_graph(project: str = "") -> dict:
+    """Return the local runtime graph and a small summary."""
+    graph = runtime_graph.load_graph()
+    if not graph.get("nodes"):
+        graph = runtime_graph.build_graph(project or None)
+    return {"summary": runtime_graph.graph_summary(project or None), "graph": graph}
+
+
+def catalyst_propose_update(target_file: str, proposed_change: str, reason: str = "",
+                            source_event_id: str = "", source_memory_id: str = "",
+                            target_brain: str = "") -> dict:
+    """Create a local update proposal; never applies edits silently."""
+    if not (target_file or "").strip() or not (proposed_change or "").strip():
+        return {"error": "target_file and proposed_change are required"}
+    return runtime_proposals.create_proposal(
+        target_file=target_file,
+        proposed_change=proposed_change,
+        reason=reason or "agent proposed update",
+        source_event_id=source_event_id or None,
+        source_memory_id=source_memory_id or None,
+        target_brain=target_brain or None,
+    )
+
+
 TOOLS = {
     "list_brain_sections": {
         "fn": list_brain_sections,
@@ -198,6 +280,46 @@ TOOLS = {
         "fn": audit_brain,
         "description": "Self-audit the brain: readiness, thin/stale/duplicate flags, distill recommendation.",
         "schema": {"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]},
+    },
+    "catalyst_recall": {
+        "fn": catalyst_recall,
+        "description": "Recall the right Persona Brain context packet before work.",
+        "schema": {"type": "object", "properties": {"task": {"type": "string"}, "project": {"type": "string"}, "agent": {"type": "string"}}, "required": ["task"]},
+    },
+    "catalyst_capture": {
+        "fn": catalyst_capture,
+        "description": "Capture an event and compound it into signals, memories, graph, and compiled Persona Brain files.",
+        "schema": {"type": "object", "properties": {"type": {"type": "string"}, "project": {"type": "string"}, "agent": {"type": "string"}, "task": {"type": "string"}, "input": {"type": "string"}, "output": {"type": "string"}, "user_feedback": {"type": "string"}, "outcome": {"type": "string"}, "metadata": {"type": "object"}}},
+    },
+    "catalyst_search": {
+        "fn": catalyst_search,
+        "description": "Search local Catalyst memory atoms.",
+        "schema": {"type": "object", "properties": {"query": {"type": "string"}, "project": {"type": "string"}, "limit": {"type": "integer"}}},
+    },
+    "catalyst_profile": {
+        "fn": catalyst_profile,
+        "description": "Return a compact profile grouped by sub-brain.",
+        "schema": {"type": "object", "properties": {"project": {"type": "string"}}},
+    },
+    "catalyst_review": {
+        "fn": catalyst_review,
+        "description": "Review output against recalled Persona Brain memory and quality rules.",
+        "schema": {"type": "object", "properties": {"task": {"type": "string"}, "output": {"type": "string"}, "project": {"type": "string"}}, "required": ["task", "output"]},
+    },
+    "catalyst_health": {
+        "fn": catalyst_health,
+        "description": "Report events, signals, memories, sub-brain maturity, graph health, orphans, and dead links.",
+        "schema": {"type": "object", "properties": {"project": {"type": "string"}}},
+    },
+    "catalyst_graph": {
+        "fn": catalyst_graph,
+        "description": "Return the local runtime graph and summary.",
+        "schema": {"type": "object", "properties": {"project": {"type": "string"}}},
+    },
+    "catalyst_propose_update": {
+        "fn": catalyst_propose_update,
+        "description": "Create a local update proposal without applying it.",
+        "schema": {"type": "object", "properties": {"target_file": {"type": "string"}, "proposed_change": {"type": "string"}, "reason": {"type": "string"}, "source_event_id": {"type": "string"}, "source_memory_id": {"type": "string"}, "target_brain": {"type": "string"}}, "required": ["target_file", "proposed_change"]},
     },
 }
 

@@ -35,6 +35,14 @@ The advanced "Run the loop" tool is collapsed. It is for manual testing of the s
 | `/api/connect/prompts` | GET | Claude/Codex/Cursor/Hermes/manual MCP commands and prompts |
 | `/api/permissions` | GET/POST | read/write `.catalyst/permissions.json` |
 | `/api/build/status?name=` | GET | read `outputs/<name>/BUILD-STATUS.json`, or return safe waiting defaults |
+| `/api/health` | GET | local runtime health: events, signals, memories, graph, links, warnings |
+| `/api/events` | GET | recent captured runtime events |
+| `/api/signals` | GET | extracted learning signals |
+| `/api/memories` | GET | memory atoms, with optional `query` filter |
+| `/api/graph` | GET | runtime graph and summary |
+| `/api/recall` | POST | build a task context packet from local runtime memory |
+| `/api/capture` | POST | append an event and run extract/update/compile |
+| `/api/review` | POST | review output against recalled memory and local quality rules |
 | `/api/discover` | GET | read-only source categories, no contents |
 | `/api/brain?name=` | GET | brain files grouped by Catalyst section |
 | `/api/file` | GET/POST | read/save allowed markdown under `outputs/` only |

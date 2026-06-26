@@ -1,8 +1,9 @@
-# Catalyst flow (v0.4 local app)
+# Catalyst flow (v0.5 local app)
 
 The runnable spine of the Catalyst loop. Markdown is still the product; this is the
 dependency-free engine so any agent can reproduce it. Local-first, stdlib-only,
-writes confined to `outputs/`, templates never written, core rules never silently mutated.
+writes confined to `outputs/` and `.catalyst/`, templates never written, core
+rules never silently mutated.
 
 ## What makes this Catalyst (not memory, not a profile)
 
@@ -25,11 +26,32 @@ install → onboard (extract + import) → connect → route → context (+ judg
 - **feedback** — `catalyst_core.feedback.capture_feedback` appends a marked entry to `feedback-memory.md` and `evals/improvement-log.md`, and writes a dated proposal under `outputs/<name>/proposals/` classified add | refine | retire. Core rules are never silently overwritten.
 - **audit / distill** — `catalyst_core.quality.audit_brain` flags placeholder/thin/stale/duplicate sections, scores readiness, and recommends distillation when feedback piles up. The brain gets sharper, not just longer.
 
+## Persona Brain runtime
+
+The local runtime adds the event-memory loop that agents can call before and
+after work:
+
+```txt
+recall -> work -> capture -> extract -> update -> compile -> recall
+```
+
+- **recall** - `catalyst_core.recall.build_context_packet` selects relevant
+  sub-brains and memory atoms for the task.
+- **capture** - `catalyst_core.capture.capture_event` appends an event, extracts
+  signals, creates or merges memory atoms, routes them into sub-brains, saves
+  graph state, compiles markdown, and writes a trace.
+- **health** - `catalyst_core.health.get_health` reports events, signals,
+  memories, sub-brain maturity, graph counts, orphans, dead links, traces,
+  recalls, reviews, and warnings.
+
+Runtime state is local under `.catalyst/`; generated user brains remain under
+`outputs/<name>/`.
+
 ## Surfaces (one engine)
 
 - **App / UI** — `py catalyst.py` serves the UI and the local API.
-- **HTTP API** — `GET /api/flow/route|audit`, `POST /api/flow/context|evaluate|feedback`, `GET /api/import/discover`, `POST /api/import/files|extract`.
-- **MCP** — tools `route_task`, `get_context_packet`, `review_output_against_brain`, `append_feedback`, `audit_brain`, `propose_brain_update` (`list_brain_sections`, `read_brain_section` too).
+- **HTTP API** — `GET /api/flow/route|audit`, `POST /api/flow/context|evaluate|feedback`, `GET /api/health|events|signals|memories|graph`, `POST /api/recall|capture|review`, `GET /api/import/discover`, `POST /api/import/files|extract`.
+- **MCP** — tools `route_task`, `get_context_packet`, `review_output_against_brain`, `append_feedback`, `audit_brain`, `propose_brain_update`, plus runtime tools `catalyst_recall`, `catalyst_capture`, `catalyst_search`, `catalyst_profile`, `catalyst_review`, `catalyst_health`, `catalyst_graph`, and `catalyst_propose_update` (`list_brain_sections`, `read_brain_section` too).
 - **Dev CLI** — `py tools/catalyst_cli.py <init|status|context|route|evaluate|feedback|audit>`.
 
 All four are thin layers over `catalyst_core`.

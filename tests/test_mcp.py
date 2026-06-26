@@ -30,3 +30,6 @@ def test_tools_still_listed():
     tools = {t["name"] for t in _result("tools/list")["tools"]}
     assert {"route_task", "get_context_packet", "review_output_against_brain",
             "append_feedback", "audit_brain", "propose_brain_update"} <= tools
+    assert {"catalyst_recall", "catalyst_capture", "catalyst_search",
+            "catalyst_profile", "catalyst_review", "catalyst_health",
+            "catalyst_graph", "catalyst_propose_update"} <= tools

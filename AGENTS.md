@@ -175,6 +175,24 @@ The loop is also a dependency-free engine you can call directly or over MCP — 
 
 CLI: `py tools/catalyst_cli.py <init|status|context|route|evaluate|feedback|audit>`. Over MCP the same tools are `route_task`, `get_context_packet`, `review_output_against_brain`, `append_feedback`, `audit_brain`, `propose_brain_update`. Never silently overwrite core brain files — corrections land as proposals. See [docs/catalyst-flow.md](docs/catalyst-flow.md).
 
+## Persona Brain runtime loop
+
+For connected agents, use the local runtime calls when available:
+
+```txt
+catalyst_recall -> work -> catalyst_review -> catalyst_capture -> catalyst_health
+```
+
+- `catalyst_recall`: load the relevant runtime memory and sub-brain context before work.
+- `catalyst_review`: check important output before showing it.
+- `catalyst_capture`: append approvals, rejections, corrections, task starts, task completions, and user statements. Capture compiles events into signals, memory atoms, graph state, traces, and `.catalyst/persona-brain/` markdown.
+- `catalyst_search` / `catalyst_profile`: inspect local memory atoms.
+- `catalyst_health` / `catalyst_graph`: inspect maturity, missing pieces, graph health, and dead links.
+- `catalyst_propose_update`: record a proposed change without applying it silently.
+
+This runtime state is local under `.catalyst/`. Generated user deliverables and
+build artifacts remain under `outputs/<name>/`.
+
 ## Feedback memory and compounding
 
 Run [prompts/07-update-from-feedback.md](prompts/07-update-from-feedback.md) whenever the user reacts. Feedback includes direct correction (“not like that”), preference (“closer”), implicit signals (ignored output, rewritten output), and repeated failures.

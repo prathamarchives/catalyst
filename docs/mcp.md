@@ -6,7 +6,8 @@ them raw filesystem access.
 
 Status: **scaffold, honestly.** `tools/mcp_server.py` is a dependency-free
 JSON-RPC 2.0 stdio server that implements the core MCP methods (`initialize`,
-`tools/list`, `tools/call`) plus eight Catalyst tools. It is local-only and makes
+`tools/list`, `tools/call`) plus the Catalyst file tools and Persona Brain
+runtime tools. It is local-only and makes
 no network calls. It is a working scaffold, not a certified MCP build verified
 against every client's handshake. Treat it as the boundary, not the finished product.
 
@@ -32,7 +33,21 @@ connects by launching that command as a stdio server.
 | `append_feedback` | write | capture a correction: append `feedback-memory.md` + `improvement-log.md` and write a review proposal |
 | `propose_brain_update` | write | write a PROPOSAL under `proposed-updates/` — never overwrites the brain |
 
-All tools take a `name` (the brain under `outputs/<name>/`).
+All file-brain tools take a `name` (the brain under `outputs/<name>/`).
+
+Runtime tools use local `.catalyst/` state and do not require an existing
+`outputs/<name>/` brain:
+
+| tool | access | what it does |
+|------|--------|--------------|
+| `catalyst_recall` | read/write log | context packet before work |
+| `catalyst_capture` | write | event -> signals -> memories -> graph -> compiled Persona Brain |
+| `catalyst_search` | read | search memory atoms |
+| `catalyst_profile` | read | compact memory profile grouped by sub-brain |
+| `catalyst_review` | read/write log | review output against recalled memory and local quality rules |
+| `catalyst_health` | read/write log | event, signal, memory, sub-brain, graph, orphan, and dead-link health |
+| `catalyst_graph` | read | machine graph and summary |
+| `catalyst_propose_update` | write | local proposal record, never applied silently |
 
 ## Security boundary
 

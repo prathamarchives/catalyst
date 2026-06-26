@@ -4,6 +4,11 @@ Catalyst is a local-first app. A small Python server serves a prebuilt UI and a 
 API, the brain stays as markdown under `outputs/<name>/`, and one engine (`catalyst_core/`)
 powers every surface. No accounts, no cloud, no database.
 
+The v0.5 runtime adds local `.catalyst/` state for events, signals, memory atoms,
+persona nodes, compiled Persona Brain files, graph, traces, health, and
+proposals. `outputs/<name>/` remains the generated user brain; `.catalyst/` is
+the local engine state agents use for recall, capture, review, and health.
+
 ```
 ┌─ apps/web (React/Vite, built → dist/) ──────────────┐
 │  Onboarding (welcome→extract→import→review→connect)  │
