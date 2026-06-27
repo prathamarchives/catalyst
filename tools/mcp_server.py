@@ -44,6 +44,7 @@ from catalyst_core import (  # noqa: E402
     health as runtime_health,
     judgment as runtime_judgment,
     memory as runtime_memory,
+    mcp_tools as hybrid_tools,
     proposals as runtime_proposals,
     recall as runtime_recall,
 )
@@ -240,6 +241,44 @@ def catalyst_propose_update(target_file: str, proposed_change: str, reason: str 
     )
 
 
+def catalyst_get_brain_context(task: str, project: str = "default", agent: str = "mcp") -> dict:
+    """Return compact task-specific brain context for an agent."""
+    return hybrid_tools.get_brain_context(task, project=project, agent=agent)
+
+
+def catalyst_evaluate_output(task: str, output: str, project: str = "default") -> dict:
+    """Evaluate a draft against standards, judgment, taste, and rejected patterns."""
+    return hybrid_tools.evaluate_output(task, output, project=project)
+
+
+def catalyst_capture_feedback(task: str, output: str = "", feedback: str = "",
+                              project: str = "default", source: str = "mcp") -> dict:
+    """Classify user feedback, capture runtime signal, and create update proposals."""
+    return hybrid_tools.capture_feedback(task, output=output, feedback=feedback, project=project, source=source)
+
+
+def catalyst_propose_brain_updates(project: str = "default", limit: int = 10,
+                                   status: str = "pending") -> dict:
+    """List pending structured brain update proposals."""
+    return hybrid_tools.propose_brain_updates(project=project, limit=limit, status=status)
+
+
+def catalyst_apply_brain_update(proposal_id: str, project: str = "default",
+                                approve: bool = True) -> dict:
+    """Apply or reject one proposed brain update with local history logging."""
+    return hybrid_tools.apply_brain_update(proposal_id, project=project, approve=approve)
+
+
+def catalyst_list_brain(project: str = "default") -> dict:
+    """List brain sections, readiness, and structured extraction counts."""
+    return hybrid_tools.list_brain(project=project)
+
+
+def catalyst_get_runtime_health(project: str = "default") -> dict:
+    """Return runtime health, graph/index state, and recent history."""
+    return hybrid_tools.get_runtime_health(project=project)
+
+
 TOOLS = {
     "list_brain_sections": {
         "fn": list_brain_sections,
@@ -320,6 +359,41 @@ TOOLS = {
         "fn": catalyst_propose_update,
         "description": "Create a local update proposal without applying it.",
         "schema": {"type": "object", "properties": {"target_file": {"type": "string"}, "proposed_change": {"type": "string"}, "reason": {"type": "string"}, "source_event_id": {"type": "string"}, "source_memory_id": {"type": "string"}, "target_brain": {"type": "string"}}, "required": ["target_file", "proposed_change"]},
+    },
+    "catalyst_get_brain_context": {
+        "fn": catalyst_get_brain_context,
+        "description": "Return compact task-specific Catalyst Brain context for an agent.",
+        "schema": {"type": "object", "properties": {"task": {"type": "string"}, "project": {"type": "string"}, "agent": {"type": "string"}}, "required": ["task"]},
+    },
+    "catalyst_evaluate_output": {
+        "fn": catalyst_evaluate_output,
+        "description": "Evaluate output against standards, judgment, rejected patterns, taste, task fit, specificity, and safety.",
+        "schema": {"type": "object", "properties": {"task": {"type": "string"}, "output": {"type": "string"}, "project": {"type": "string"}}, "required": ["task", "output"]},
+    },
+    "catalyst_capture_feedback": {
+        "fn": catalyst_capture_feedback,
+        "description": "Classify feedback, capture source signal, store memory, and create update proposals.",
+        "schema": {"type": "object", "properties": {"task": {"type": "string"}, "output": {"type": "string"}, "feedback": {"type": "string"}, "project": {"type": "string"}, "source": {"type": "string"}}, "required": ["task", "feedback"]},
+    },
+    "catalyst_propose_brain_updates": {
+        "fn": catalyst_propose_brain_updates,
+        "description": "List structured Catalyst Brain update proposals for review.",
+        "schema": {"type": "object", "properties": {"project": {"type": "string"}, "limit": {"type": "integer"}, "status": {"type": "string"}}},
+    },
+    "catalyst_apply_brain_update": {
+        "fn": catalyst_apply_brain_update,
+        "description": "Apply or reject one brain update proposal with local history snapshotting.",
+        "schema": {"type": "object", "properties": {"proposal_id": {"type": "string"}, "project": {"type": "string"}, "approve": {"type": "boolean"}}, "required": ["proposal_id"]},
+    },
+    "catalyst_list_brain": {
+        "fn": catalyst_list_brain,
+        "description": "List brain sections, readiness, and structured rule counts.",
+        "schema": {"type": "object", "properties": {"project": {"type": "string"}}},
+    },
+    "catalyst_get_runtime_health": {
+        "fn": catalyst_get_runtime_health,
+        "description": "Return runtime health, graph/index status, and recent update history.",
+        "schema": {"type": "object", "properties": {"project": {"type": "string"}}},
     },
 }
 

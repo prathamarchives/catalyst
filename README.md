@@ -1,6 +1,6 @@
 # catalyst
 
-A local protocol for giving agents identity, judgment, standards, and adaptive feedback.
+A local app/runtime for giving agents identity, context, taste, judgment, standards, and adaptive feedback.
 
 Catalyst turns messy source material — AI sessions, notes, drafts, rejected outputs, project files, and user corrections — into a **Catalyst Brain** your agent can load before it works, review against after it works, and update every time you correct it.
 
@@ -26,7 +26,7 @@ The difference is depth, not branding:
 - **A multi-file local brain** — identity, standards, judgment, taste, rejected examples, decision rules, task patterns, and feedback memory live in separate files an agent loads by task, not one blob.
 - **The proof is the loop** — `task → load brain → produce → review against standards → show you → capture feedback → update brain/skill/eval`. The agent gets harder to disappoint over time because every correction becomes an operational rule.
 
-This is early and honest about it: Catalyst is a protocol plus an optional local control panel, not a finished product. The value is the loop, run on real work.
+This is early and honest about it: Catalyst is a local runtime plus an agent protocol, not a finished hosted service. The value is the loop, run on real work.
 
 ## Start here
 
@@ -71,7 +71,7 @@ Full install model: [INSTALL.md](INSTALL.md). Copy/paste prompts: [SETUP-PROMPT.
 
 ## What this repo is
 
-`catalyst` is a markdown-first, local-first, agent-runnable protocol. It provides:
+`catalyst` is a local-first, agent-runnable runtime with human-readable markdown under the hood. It provides:
 
 - [AGENTS.md](AGENTS.md): the operating protocol an agent executes
 - [prompts/](prompts/): modular steps for discovery, audit, extraction, build, skills, task evaluation, feedback, and distillation
@@ -80,8 +80,8 @@ Full install model: [INSTALL.md](INSTALL.md). Copy/paste prompts: [SETUP-PROMPT.
 - [templates/workflows/](templates/workflows/): task, review, update, and distillation loops
 - [templates/evals/](templates/evals/): standards checks and improvement logs
 - [tools/discover_sessions.py](tools/discover_sessions.py): read-only discovery helper
-- [catalyst_core/](catalyst_core/): local routing, packet, evaluator, feedback, quality, and Persona Brain runtime
-- [tools/mcp_server.py](tools/mcp_server.py): local MCP scaffold with recall, capture, search, review, health, graph, and proposal tools
+- [catalyst_core/](catalyst_core/): hybrid brain models, markdown parser/manager, routing, context assembly, evaluator, feedback processor, proposals, version history, retrieval, health, and runtime state
+- [tools/mcp_server.py](tools/mcp_server.py): local MCP scaffold with brain context, evaluation, feedback capture, proposals, section listing, health, and compatibility tools
 - [evals/](evals/): static checks that keep the repo coherent
 
 There is no required package install, no account, no database, no required API key, and no hosted service. An optional local control panel ships in `apps/control-panel/` (Python standard library, localhost-only) and an optional BYOK helper exists, but the protocol runs fully without either. “Install” means clone/open the repo, verify it if possible, and let an agent build the local Catalyst Brain under `outputs/<name>/`.
@@ -152,11 +152,11 @@ Catalyst is valuable during real use:
 
 The proof is not a staged comparison. The proof is that the agent gets harder to disappoint over time because every correction becomes an operational rule.
 
-## The runnable backend (v0.5)
+## The hybrid local runtime
 
-The loop is runnable, not just documented. `catalyst_core/` classifies a task, routes the right brain files, builds a context packet **with an embedded judgment contract** (how to behave and decide), evaluates output against your standards/judgment/taste, turns feedback into review proposals, and audits the brain so it gets sharper over time.
+The loop is runnable, not just documented. `catalyst_core/` classifies a task, routes the right brain files, builds a compact context packet **with an embedded judgment contract** (how to behave and decide), evaluates output against your standards/judgment/taste, turns feedback into structured proposals, and snapshots accepted updates.
 
-It also includes a local Persona Brain runtime:
+It also includes local runtime state:
 
 ```txt
 recall -> work -> capture -> extract -> update -> compile -> recall
@@ -169,7 +169,7 @@ py catalyst.py
 py catalyst.py --no-open
 ```
 
-The same engine runs over MCP (so your agent does the loop automatically) and a dev CLI (`py tools/catalyst_cli.py ...`). See [docs/catalyst-flow.md](docs/catalyst-flow.md), [docs/persona-runtime.md](docs/persona-runtime.md), and [docs/architecture.md](docs/architecture.md).
+The same engine runs over MCP (so your agent does the loop automatically), HTTP APIs, and a dev CLI (`py tools/catalyst_cli.py ...`). See [docs/hybrid-brain-runtime.md](docs/hybrid-brain-runtime.md), [docs/catalyst-flow.md](docs/catalyst-flow.md), [docs/persona-runtime.md](docs/persona-runtime.md), and [docs/architecture.md](docs/architecture.md).
 
 ## Privacy model
 
@@ -211,7 +211,7 @@ Want a founding install? Email [hello@itscatalyst.com](mailto:hello@itscatalyst.
 
 ## Multi-agent access (MCP)
 
-`tools/mcp_server.py` is a dependency-free, local-only MCP scaffold (JSON-RPC over stdio) that lets many agents `list_brain_sections`, `read_brain_section`, `review_output_against_brain`, `append_feedback`, and `propose_brain_update` — without raw filesystem access, and without ever silently overwriting the brain. It is an honest scaffold, not a certified MCP build. See [docs/mcp.md](docs/mcp.md).
+`tools/mcp_server.py` is a dependency-free, local-only MCP scaffold (JSON-RPC over stdio) that lets agents call `catalyst_get_brain_context`, `catalyst_evaluate_output`, `catalyst_capture_feedback`, `catalyst_propose_brain_updates`, `catalyst_apply_brain_update`, `catalyst_list_brain`, and `catalyst_get_runtime_health` without raw filesystem access. Older file tools remain as compatibility wrappers. Updates are proposal-backed and never applied silently. It is an honest scaffold, not a certified MCP build. See [docs/mcp.md](docs/mcp.md).
 
 ## BYOK is optional
 

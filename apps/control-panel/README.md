@@ -21,11 +21,18 @@ The legacy vanilla panel remains available at `/legacy/` as a dev fallback.
 | `/api/connect/prompts` | GET | Claude/Codex/Cursor/Hermes/manual MCP prompts and commands |
 | `/api/permissions` | GET/POST | local permission config under `.catalyst/` |
 | `/api/build/status?name=` | GET | status-file timeline from `outputs/<name>/BUILD-STATUS.json` |
+| `/api/runtime/health` | GET | hybrid runtime health, history, and brain section readiness |
+| `/api/brain/sections` | GET | structured section summary and extracted rule counts |
+| `/api/proposals` | GET | pending or historical brain update proposals |
 | `/api/discover` | GET | read-only source categories, no contents |
 | `/api/brain?name=` | GET | brain files grouped by Catalyst section |
 | `/api/file` | GET/POST | read / save allowed brain `.md` files, writes under `outputs/` only |
 | `/api/context/save` | POST | save pasted context / packet / paths under `outputs/<name>/sources/` |
 | `/api/flow/*` | GET/POST | deterministic local routing/context/evaluation/feedback/audit |
+| `/api/brain/context` | POST | compact task context packet for agents |
+| `/api/evaluate` | POST | structured output evaluation against the local brain |
+| `/api/feedback` | POST | classify feedback and create update proposals |
+| `/api/proposals/apply` | POST | apply or reject a proposal with history snapshotting |
 | `/api/export` | GET | brain path + agent prompt |
 
 No shell endpoint. No arbitrary filesystem access.

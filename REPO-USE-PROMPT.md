@@ -19,7 +19,7 @@ https://github.com/prathamarchives/catalyst
 help me install this and build my Catalyst Brain
 ```
 
-This is a protocol repo, not an app. A correct agent does not stop at clone and must never overwrite templates. It discovers candidate sources, gates reading on authorization, audits approved material, interviews in small rounds, builds `outputs/<name>/`, writes skills/evals/workflows, and installs the feedback loop. See [INSTALL.md](INSTALL.md).
+This is a local app/runtime plus an agent protocol. A correct agent does not stop at clone and must never overwrite templates. It discovers candidate sources, gates reading on authorization, audits approved material, interviews in small rounds, builds `outputs/<name>/`, writes skills/evals/workflows, and installs the feedback loop. See [INSTALL.md](INSTALL.md).
 
 ## Core prompt inside the repo
 
@@ -42,4 +42,4 @@ If the agent starts producing final work before building the brain and standards
 
 ## Optional local control panel
 
-You never need a UI — the prompts above are enough. If you want a local command center, run `py catalyst.py` (localhost-only) and open `http://127.0.0.1:8765`. It shows connect-agent instructions, stores scan permission in `.catalyst/permissions.json`, and renders `outputs/<name>/BUILD-STATUS.json` plus the brain your agent builds. For multi-agent access, `py tools/mcp_server.py` is a local-only MCP scaffold. BYOK is optional; mock mode needs no key. See [docs/control-panel.md](docs/control-panel.md) and [docs/mcp.md](docs/mcp.md).
+You never need a UI - the prompts above are enough. If you want a local command center, run `py catalyst.py` (localhost-only) and open `http://127.0.0.1:8765`. It shows connect-agent instructions, stores scan permission in `.catalyst/permissions.json`, and renders `outputs/<name>/BUILD-STATUS.json` plus the brain your agent builds. For multi-agent access, `py tools/mcp_server.py` exposes local-only MCP tools for context, evaluation, feedback capture, proposals, brain listing, and health. BYOK is optional; mock mode needs no key. See [docs/control-panel.md](docs/control-panel.md) and [docs/mcp.md](docs/mcp.md).

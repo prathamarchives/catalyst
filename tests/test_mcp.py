@@ -33,3 +33,7 @@ def test_tools_still_listed():
     assert {"catalyst_recall", "catalyst_capture", "catalyst_search",
             "catalyst_profile", "catalyst_review", "catalyst_health",
             "catalyst_graph", "catalyst_propose_update"} <= tools
+    assert {"catalyst_get_brain_context", "catalyst_evaluate_output",
+            "catalyst_capture_feedback", "catalyst_propose_brain_updates",
+            "catalyst_apply_brain_update", "catalyst_list_brain",
+            "catalyst_get_runtime_health"} <= tools

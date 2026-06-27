@@ -8,25 +8,31 @@ from . import store
 
 def create_proposal(target_file: str, proposed_change: str, reason: str,
                     source_event_id: str | None = None, source_memory_id: str | None = None,
-                    target_brain: str | None = None, state_root: Path = store.STATE_ROOT) -> dict:
+                    target_brain: str | None = None, project: str | None = None,
+                    confidence: float = 0.5, state_root: Path = store.STATE_ROOT) -> dict:
     proposal = {
         "id": store.new_id("prop"),
         "target_file": target_file,
+        "project": project or "default",
         "target_brain": target_brain or "",
         "source_memory_id": source_memory_id or "",
         "source_event_id": source_event_id or "",
         "proposed_change": proposed_change,
         "reason": reason,
+        "confidence": confidence,
         "status": "pending",
         "created_at": store.now_iso(),
     }
     return store.append_jsonl("proposals/proposals.jsonl", proposal, state_root)
 
 
-def list_proposals(status: str | None = None, state_root: Path = store.STATE_ROOT) -> list[dict]:
+def list_proposals(status: str | None = None, project: str | None = None,
+                   state_root: Path = store.STATE_ROOT) -> list[dict]:
     rows = store.read_jsonl("proposals/proposals.jsonl", state_root)
     if status:
         rows = [r for r in rows if r.get("status") == status]
+    if project:
+        rows = [r for r in rows if (r.get("project") or "default") == project]
     return store.latest(rows, 200)
 
 
@@ -46,4 +52,3 @@ def apply_proposal(id: str, state_root: Path = store.STATE_ROOT) -> dict:
 
 def reject_proposal(id: str, state_root: Path = store.STATE_ROOT) -> dict:
     return _status_update(id, "rejected", state_root)
-

@@ -35,7 +35,7 @@ The launcher checks for Python, starts `catalyst.py`, prints `http://127.0.0.1:8
 4. run setup: discover candidate local sources with `tools/discover_sessions.py`
 5. determine authorization mode:
    - autonomous authorized mode: if the user pre-authorized the recommended scan, proceed without a second approval
-   - dashboard permission mode: read `.catalyst/permissions.json` if it exists
+   - command-center permission mode: read `.catalyst/permissions.json` if it exists
    - cautious approval mode: ask one approval question - approve recommended scan, edit scope, or manual mode
 6. read contents only inside the approved scope / authorized scope
 7. build `outputs/<name>/` from templates and approved evidence
@@ -51,9 +51,9 @@ If content access is blocked or authorization is unclear, stop before reading fi
 
 The user burden should be almost no path hunting: the agent discovers candidate locations, recommends a safe scan preset, asks only for approval/feedback when needed, and then runs setup.
 
-## Optional dashboard
+## Optional command center
 
-Setup can run as an agent following `AGENTS.md`, or through the optional local dashboard:
+Setup can run as an agent following `AGENTS.md`, or through the optional local command center:
 
 ```txt
 py catalyst.py
@@ -66,13 +66,13 @@ It opens on `http://127.0.0.1:8765` as a command center:
 Promise -> Connect agent -> Source permission -> Build status -> Command center
 ```
 
-The dashboard is not the builder in v0. It gives Claude Code, Codex, Cursor, Hermes, and manual MCP instructions; stores `.catalyst/permissions.json`; and renders `outputs/<name>/BUILD-STATUS.json` plus the local Catalyst Brain your agent writes.
+The command center is not the builder in v0. It gives Claude Code, Codex, Cursor, Hermes, and manual MCP instructions; stores `.catalyst/permissions.json`; and renders `outputs/<name>/BUILD-STATUS.json` plus the local Catalyst Brain your agent writes.
 
 BYOK is optional (mock mode needs no key). A hosted model/provider may receive approved context only if you enable a provider or run the protocol inside a hosted agent. For multi-agent access, `py tools/mcp_server.py` runs a local-only MCP scaffold. See [docs/local-onboarding.md](docs/local-onboarding.md), [docs/control-panel.md](docs/control-panel.md), [docs/byok.md](docs/byok.md), and [docs/mcp.md](docs/mcp.md).
 
 ## Privacy
 
-Discovery is read-only. Content scanning is authorized. Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and sensitive material. Outputs are gitignored. The local dashboard binds localhost only and never writes to `templates/`.
+Discovery is read-only. Content scanning is authorized. Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and sensitive material. Outputs are gitignored. The local command center binds localhost only and never writes to `templates/`.
 
 If port 8765 is stuck on Windows, close the Python process that started Catalyst, or inspect it with `netstat -ano | findstr :8765` and stop only that process.
 

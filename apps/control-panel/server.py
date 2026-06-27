@@ -58,9 +58,12 @@ except Exception:  # pragma: no cover
 
 sys.path.insert(0, str(REPO_ROOT))
 from catalyst_core import (  # noqa: E402
+    brain_manager,
+    context_assembler,
     router as flow_router,
     packet as flow_packet,
     evaluator as flow_evaluator,
+    feedback_processor,
     feedback as flow_feedback,
     quality as flow_quality,
     capture as runtime_capture,
@@ -69,8 +72,11 @@ from catalyst_core import (  # noqa: E402
     health as runtime_health,
     judgment as runtime_judgment,
     memory as runtime_memory,
+    proposal_engine,
     recall as runtime_recall,
     signals as runtime_signals,
+    structured_evaluator,
+    versioning,
 )
 
 # --- allowlist ---------------------------------------------------------------
@@ -824,6 +830,27 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/health":
             project = (q.get("project") or [""])[0] or None
             return self._json(runtime_health.get_health(project))
+        if path == "/api/runtime/health":
+            project = (q.get("project") or [""])[0] or "default"
+            report = runtime_health.get_health(project)
+            report["history"] = versioning.list_history(limit=20)
+            report["brain"] = brain_manager.brain_sections_summary(project)
+            return self._json(report)
+        if path == "/api/brain/sections":
+            project = (q.get("project") or [""])[0] or "default"
+            return self._json(brain_manager.brain_sections_summary(project))
+        if path == "/api/proposals":
+            project = (q.get("project") or [""])[0] or None
+            status = (q.get("status") or ["pending"])[0]
+            try:
+                limit = int((q.get("limit") or ["50"])[0])
+            except (TypeError, ValueError):
+                limit = 50
+            return self._json({
+                "project": project or "all",
+                "status": status or "all",
+                "proposals": proposal_engine.list_brain_updates(project=project, status=status or None, limit=limit),
+            })
         if path == "/api/events":
             project = (q.get("project") or [""])[0] or None
             return self._json({"events": runtime_events.list_events(project, limit=50)})
@@ -993,6 +1020,47 @@ class Handler(BaseHTTPRequestHandler):
             if not name or not task:
                 return self._json({"error": "name and task required"}, 400)
             res = flow_feedback.capture_feedback(name, task, data.get("output", ""), data.get("feedback", ""))
+            return self._json(res, 200 if res.get("ok") else 400)
+        if path == "/api/brain/context":
+            task = data.get("task", "")
+            if not task:
+                return self._json({"error": "task required"}, 400)
+            return self._json(context_assembler.assemble_context(
+                task,
+                project=data.get("project") or "default",
+                agent=data.get("agent") or "api",
+            ))
+        if path == "/api/evaluate":
+            task = data.get("task", "")
+            if not task:
+                return self._json({"error": "task required"}, 400)
+            return self._json(structured_evaluator.evaluate_output_structured(
+                task,
+                data.get("output", ""),
+                project=data.get("project") or "default",
+            ))
+        if path == "/api/feedback":
+            task = data.get("task", "")
+            feedback = data.get("feedback", "")
+            if not task or not feedback:
+                return self._json({"error": "task and feedback required"}, 400)
+            res = feedback_processor.capture_feedback_structured(
+                task,
+                data.get("output", ""),
+                feedback,
+                project=data.get("project") or "default",
+                source=data.get("source") or "api",
+            )
+            return self._json(res, 200 if res.get("ok") else 400)
+        if path == "/api/proposals/apply":
+            proposal_id = data.get("proposal_id") or data.get("id") or ""
+            if not proposal_id:
+                return self._json({"error": "proposal_id required"}, 400)
+            res = proposal_engine.apply_brain_update(
+                proposal_id,
+                project=data.get("project") or "default",
+                approve=bool(data.get("approve", True)),
+            )
             return self._json(res, 200 if res.get("ok") else 400)
         if path == "/api/recall":
             task = data.get("task", "")

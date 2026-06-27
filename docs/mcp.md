@@ -20,7 +20,21 @@ py tools/mcp_server.py
 It reads JSON-RPC requests on stdin and writes responses on stdout. An MCP client
 connects by launching that command as a stdio server.
 
-## Tools (allowlisted)
+## Primary hybrid tools
+
+These are the agent-first tools for the local runtime:
+
+| tool | access | what it does |
+|------|--------|--------------|
+| `catalyst_get_brain_context` | read | compact task packet with relevant sections, rules, examples, memory atoms, warnings, and confidence |
+| `catalyst_evaluate_output` | read/write proposal log | structured verdict, scores, issues, matched rules, violated patterns, and suggested feedback |
+| `catalyst_capture_feedback` | write | classify feedback, capture source event/signal/memory, and create proposal-backed brain updates |
+| `catalyst_propose_brain_updates` | read | list pending or historical brain update proposals |
+| `catalyst_apply_brain_update` | write | apply or reject one proposal with a local history snapshot |
+| `catalyst_list_brain` | read | list sections, readiness, and structured extraction counts |
+| `catalyst_get_runtime_health` | read | report runtime health, graph/index state, and recent history |
+
+## Compatibility tools (allowlisted)
 
 | tool | access | what it does |
 |------|--------|--------------|

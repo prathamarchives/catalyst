@@ -6,8 +6,27 @@ export function Button({ variant = "default", className = "", ...rest }: BtnProp
   return <button className={`btn ${v} ${className}`} {...rest} />;
 }
 
+export function CatalystMark({ className = "" }: { className?: string }) {
+  return (
+    <span className={`catalyst-mark ${className}`} aria-hidden="true">
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+    </span>
+  );
+}
+
 export function Card({ tight, className = "", ...rest }: { tight?: boolean } & React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={`card ${tight ? "card-tight" : ""} ${className}`} {...rest} />;
+  return <div className={`card glass-card ${tight ? "card-tight" : ""} ${className}`} {...rest} />;
 }
 
 type FieldProps = {
@@ -53,7 +72,7 @@ export function SectionView({ name, body, filled = true }: { name: string; body?
     <div className={`section ${filled ? "" : "unfilled"}`}>
       <div className="bar" />
       <div className="grow">
-        <div className="name">{name}{!filled && <span className="faint small"> · unfilled</span>}</div>
+        <div className="name">{name}{!filled && <span className="faint small"> - unfilled</span>}</div>
         {body && <div className="body">{body}</div>}
       </div>
     </div>
@@ -72,7 +91,7 @@ export function ReadinessRing({ score, size = 44 }: { score: number; size?: numb
     <div className="ring" style={{ width: size, height: size }}>
       <svg width={size} height={size}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--line)" strokeWidth="3" />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ink)" strokeWidth="3"
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--accent)" strokeWidth="3"
           strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round" />
       </svg>
       <span className="pct">{Math.round(score * 100)}</span>

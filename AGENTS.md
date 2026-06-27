@@ -162,6 +162,26 @@ Install [prompts/06-task-time-evaluation.md](prompts/06-task-time-evaluation.md)
 
 A task is unverified until it has been checked against the user's written standard.
 
+## Hybrid runtime loop
+
+For connected agents, prefer the hybrid local runtime tools:
+
+```txt
+catalyst_get_brain_context -> work -> catalyst_evaluate_output -> catalyst_capture_feedback -> catalyst_propose_brain_updates -> catalyst_get_runtime_health
+```
+
+- `catalyst_get_brain_context`: load a compact packet with relevant sections, rules, examples, memory atoms, warnings, and confidence.
+- `catalyst_evaluate_output`: check output against standards, judgment, rejected patterns, taste, task fit, specificity, and safety.
+- `catalyst_capture_feedback`: classify correction/approval, capture source signal, store memory, and create proposal-backed updates.
+- `catalyst_propose_brain_updates`: list pending update proposals.
+- `catalyst_apply_brain_update`: apply or reject one proposal with a local history snapshot.
+- `catalyst_list_brain`: inspect sections and extraction counts.
+- `catalyst_get_runtime_health`: inspect maturity, graph/index state, and history.
+
+The local HTTP equivalents are `POST /api/brain/context`, `POST /api/evaluate`, `POST /api/feedback`, `GET /api/proposals`, `POST /api/proposals/apply`, `GET /api/runtime/health`, and `GET /api/brain/sections`.
+
+Compatibility tools remain available, but new agent clients should use the hybrid tools first. Never silently overwrite core brain files; corrections land as proposals. See [docs/hybrid-brain-runtime.md](docs/hybrid-brain-runtime.md), [docs/catalyst-flow.md](docs/catalyst-flow.md), and [docs/mcp.md](docs/mcp.md).
+
 ## Backend flow (catalyst_core)
 
 The loop is also a dependency-free engine you can call directly or over MCP — use it to reproduce the loop deterministically:
@@ -224,7 +244,7 @@ This protocol runs from `AGENTS.md` with no UI and no API key. Two optional surf
 
 - **Local control panel** (`apps/control-panel/`): a zero-dependency Python-stdlib server + vanilla page that operates on the real markdown under `outputs/<name>/`. Localhost-only, allowlisted file ops (reads `outputs/templates/docs/prompts`; writes `outputs/` only, never `templates/`), no shell endpoint. Run with `py apps/control-panel/server.py`. See [docs/control-panel.md](docs/control-panel.md).
 - **BYOK** (`apps/control-panel/byok.py`): optional AI-assisted synthesis/review. Mock provider with no key makes no network call; a key (env only) enables a real provider. Never require BYOK for reading/editing the brain, running the panel, exporting prompts, or manual agent use. See [docs/byok.md](docs/byok.md).
-- **MCP scaffold** (`tools/mcp_server.py`): a dependency-free, local-only JSON-RPC stdio server so multiple agents can `list_brain_sections`, `read_brain_section`, `review_output_against_brain`, `append_feedback`, and `propose_brain_update`. Read access is limited to the brain; the only writes are feedback append and proposals (never silent overwrite). Honest scaffold, not a certified MCP build. See [docs/mcp.md](docs/mcp.md).
+- **MCP scaffold** (`tools/mcp_server.py`): a dependency-free, local-only JSON-RPC stdio server so multiple agents can call the hybrid runtime tools (`catalyst_get_brain_context`, `catalyst_evaluate_output`, `catalyst_capture_feedback`, proposals, brain listing, health) plus compatibility file tools. Read access is limited to the brain/runtime state; writes are feedback capture, proposals, and explicit proposal application with history. Honest scaffold, not a certified MCP build. See [docs/mcp.md](docs/mcp.md).
 
 The control panel connects an AI/agent **first** (mock/BYOK/detected-CLI/manual): real synthesis and evaluation need a worker, and mock is never presented as live. Do not treat any of these surfaces as the product or as required infrastructure.
 

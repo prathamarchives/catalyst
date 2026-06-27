@@ -33,6 +33,78 @@ export type EvalResult = {
   brain_update_candidates: string[];
 };
 
+export type HybridEvalIssue = {
+  id?: string;
+  severity: string;
+  dimension: string;
+  message: string;
+  evidence?: string;
+  suggested_fix?: string;
+};
+export type HybridEvalResult = {
+  verdict: "ship" | "revise" | "reject" | "ask";
+  scores: Record<string, number>;
+  issues: HybridEvalIssue[];
+  matched_rules: string[];
+  violated_patterns: string[];
+  suggested_feedback: string[];
+  proposal_ids: string[];
+  confidence: number;
+  metadata?: Record<string, unknown>;
+};
+export type BrainContextPacket = {
+  task: string;
+  project: string;
+  agent: string;
+  task_type: string;
+  sections_loaded: string[];
+  selected_sub_brains: string[];
+  standards: Record<string, unknown>[];
+  judgment_rules: Record<string, unknown>[];
+  rejected_patterns: Record<string, unknown>[];
+  approved_examples: Record<string, unknown>[];
+  memory_atoms: Record<string, unknown>[];
+  instructions_for_agent: string;
+  confidence: number;
+  warnings: string[];
+};
+export type BrainSectionSummary = {
+  name: string;
+  title: string;
+  status: string;
+  standards: number;
+  judgment_rules: number;
+  rejected_patterns: number;
+  approved_examples: number;
+  feedback_memories: number;
+  task_patterns: number;
+  decision_rules: number;
+  context_sources: number;
+};
+export type BrainSectionsSummary = {
+  project: string;
+  sections: BrainSectionSummary[];
+  health: {
+    ok: boolean;
+    missing_sections: string[];
+    placeholder_sections: string[];
+    structured_counts: Record<string, number>;
+    warnings: string[];
+  };
+};
+export type Proposal = {
+  id: string;
+  project?: string;
+  target_file: string;
+  target_brain?: string;
+  proposed_change: string;
+  reason: string;
+  confidence?: number;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type Audit = {
   name?: string;
   ready_score: number;
@@ -86,17 +158,60 @@ export type BuildStatus = {
   exists: boolean;
   steps: BuildStep[];
 };
+export type RuntimeHealth = {
+  status?: string;
+  ok?: boolean;
+  summary?: string;
+  project?: string;
+  issues?: string[];
+  checks?: Record<string, unknown>;
+  [key: string]: unknown;
+};
+export type RuntimeEvent = {
+  id?: string;
+  type?: string;
+  event_type?: string;
+  summary?: string;
+  text?: string;
+  created_at?: string;
+  updated_at?: string;
+  timestamp?: string;
+  [key: string]: unknown;
+};
+export type RuntimeGraph = {
+  summary?: Record<string, unknown>;
+  graph?: {
+    nodes?: unknown[];
+    links?: unknown[];
+    edges?: unknown[];
+  };
+};
 export type Status = {
   repo_root: string;
   active_brain?: string;
   brains: { name: string; brain_present: string[]; brain_missing: string[]; has_skills?: boolean; has_workflows?: boolean; has_evals?: boolean }[];
   permissions?: Permissions;
-  byok: { has_key: boolean; effective_provider: string };
+  agent_status?: { agent?: string; status?: string; message?: string; updated_at?: string };
+  runtime_health?: RuntimeHealth;
+  recent_captures?: RuntimeEvent[];
+  brain_file_order?: string[];
+  byok: { has_key: boolean; effective_provider: string; mock_mode?: boolean; model?: string };
 };
 
 export const api = {
   status: (): Promise<Status> => get("/api/status"),
   agents: () => get("/api/agents/status"),
+  health: (): Promise<RuntimeHealth> => get("/api/health"),
+  runtimeHealth: (project = "default"): Promise<RuntimeHealth> =>
+    get(`/api/runtime/health?project=${encodeURIComponent(project)}`),
+  brainSections: (project = "default"): Promise<BrainSectionsSummary> =>
+    get(`/api/brain/sections?project=${encodeURIComponent(project)}`),
+  proposals: (project = "default", status = "pending"): Promise<{ proposals: Proposal[] }> =>
+    get(`/api/proposals?project=${encodeURIComponent(project)}&status=${encodeURIComponent(status)}`),
+  applyProposal: (proposal_id: string, project = "default", approve = true): Promise<any> =>
+    post("/api/proposals/apply", { proposal_id, project, approve }),
+  events: (): Promise<{ events: RuntimeEvent[] }> => get("/api/events"),
+  graph: (): Promise<RuntimeGraph> => get("/api/graph"),
   connectPrompts: (): Promise<ConnectPrompts> => get("/api/connect/prompts"),
   permissions: (): Promise<Permissions> => get("/api/permissions"),
   savePermissions: (payload: { mode: "recommended" | "manual" | "skip"; manual_paths?: string[]; notes?: string }) =>
@@ -122,4 +237,10 @@ export const api = {
     post("/api/flow/evaluate", { name, task, output, mode }),
   flowFeedback: (name: string, task: string, output: string, feedback: string): Promise<any> =>
     post("/api/flow/feedback", { name, task, output, feedback }),
+  brainContext: (project: string, task: string, agent = "control-panel"): Promise<BrainContextPacket> =>
+    post("/api/brain/context", { project, task, agent }),
+  evaluate: (project: string, task: string, output: string): Promise<HybridEvalResult> =>
+    post("/api/evaluate", { project, task, output }),
+  feedback: (project: string, task: string, output: string, feedback: string, source = "control-panel"): Promise<any> =>
+    post("/api/feedback", { project, task, output, feedback, source }),
 };
