@@ -22,17 +22,14 @@ flowchart LR
   L2 --> L3["Layer 3: Agents"]
   L3 --> L2
   L2 --> L4["Layer 4: Products and surfaces"]
-
-  subgraph Core["Catalyst Core Layer 2"]
-    Events["Event log"]
-    Objects["Typed cognitive objects"]
-    Graph["Object graph and provenance"]
-    Retrieval["Retrieval planner"]
-    Packets["Agent packet compiler"]
-    Evals["Eval runtime"]
-    Feedback["Feedback learner"]
-    Proof["Proof records"]
-  end
+  L2 --> Events["Event log"]
+  L2 --> Objects["Typed cognitive objects"]
+  L2 --> GraphStore["Object graph and provenance"]
+  L2 --> Retrieval["Retrieval planner"]
+  L2 --> Packets["Agent packet compiler"]
+  L2 --> Evals["Eval runtime"]
+  L2 --> Feedback["Feedback learner"]
+  L2 --> Proof["Proof records"]
 ```
 
 Layer 1 provides evidence. Layer 3 consumes packets and returns outputs or feedback. Layer 4 observes or controls. None of those layers owns memory, judgment, retrieval, evals, or feedback learning.
