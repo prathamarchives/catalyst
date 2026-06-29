@@ -1,235 +1,276 @@
-# catalyst
+# Catalyst Core
 
-A local app/runtime for giving agents identity, context, taste, judgment, standards, and adaptive feedback.
+Catalyst is a cognitive kernel for AI agents.
 
-Catalyst turns messy source material — AI sessions, notes, drafts, rejected outputs, project files, and user corrections — into a **Catalyst Brain** your agent can load before it works, review against after it works, and update every time you correct it.
+It is not a dashboard, prompt pack, RAG wrapper, hosted memory toy, CLI onboarding flow, or markdown brain generator. Catalyst Core is Layer 2 infrastructure: an event-sourced object graph that turns evidence and feedback into durable memory, taste, judgment, retrieval behavior, eval checks, and proof that future behavior changed.
 
-Not voice cloning. Not a content pipeline. Not a hosted memory app.
+The core claim is simple:
 
 ```txt
-source material → Catalyst Brain → task routing → standards review → feedback capture → brain/skill/eval update → sharper next task
+An agent system is not meaningfully personalized until feedback changes future behavior.
 ```
 
-The goal is: the agent knows who it represents, what standard the work must meet, how to judge outputs, what the user rejects, and how to improve from every task instead of resetting every session.
+Catalyst makes that testable.
 
-## Catalyst vs one-file context tools
+## What Catalyst Owns
 
-One-file context tools help agents remember who you are.
-Catalyst teaches agents what you would approve, reject, revise, and remember.
+Catalyst Core owns the mechanism below. Everything else is a client.
 
-Catalyst is for people who do not just need more memory. They need agents that can judge work against their standards, learn from corrections, and get harder to disappoint over time.
+```mermaid
+flowchart LR
+  L1["Layer 1: Evidence sources"] --> L2["Layer 2: Catalyst Core"]
+  L2 --> L3["Layer 3: Agents"]
+  L3 --> L2
+  L2 --> L4["Layer 4: Products and surfaces"]
 
-The difference is depth, not branding:
-
-- **Memory / profile** — a single context file is useful but flat. It tells an agent facts about you. It does not tell the agent what "good" means for a specific task, or what you would reject.
-- **Judgment** — task-time standards, rejected examples, approval logic, and feedback updates. This is the part that changes the output, not just the agent's self-description.
-- **A multi-file local brain** — identity, standards, judgment, taste, rejected examples, decision rules, task patterns, and feedback memory live in separate files an agent loads by task, not one blob.
-- **The proof is the loop** — `task → load brain → produce → review against standards → show you → capture feedback → update brain/skill/eval`. The agent gets harder to disappoint over time because every correction becomes an operational rule.
-
-This is early and honest about it: Catalyst is a local runtime plus an agent protocol, not a finished hosted service. The value is the loop, run on real work.
-
-## Start here
-
-One-command local app path:
-
-```txt
-npx catalyst local
+  subgraph Core["Catalyst Core Layer 2"]
+    Events["Event log"]
+    Objects["Typed cognitive objects"]
+    Graph["Object graph and provenance"]
+    Retrieval["Retrieval planner"]
+    Packets["Agent packet compiler"]
+    Evals["Eval runtime"]
+    Feedback["Feedback learner"]
+    Proof["Proof records"]
+  end
 ```
 
-Until the unscoped package exists, use the scoped launcher:
+Layer 1 provides evidence. Layer 3 consumes packets and returns outputs or feedback. Layer 4 observes or controls. None of those layers owns memory, judgment, retrieval, evals, or feedback learning.
 
-```txt
-npx @trycatalyst/cli local
+## Core Operating Loop
+
+```mermaid
+flowchart TD
+  A["Raw evidence or feedback"] --> B["Immutable event"]
+  B --> C["Engine input"]
+  C --> D["Engine run"]
+  D --> E["Proposed mutations"]
+  E --> F["Mutation validation"]
+  F --> G["Committed events"]
+  G --> H["SQLite read models"]
+  H --> I["Cognitive object graph"]
+  I --> J["Hybrid retrieval"]
+  J --> K["Task-specific agent packet"]
+  K --> L["Output eval"]
+  L --> M["Feedback learner"]
+  M --> N["Confidence and retrieval updates"]
+  N --> O["Proof: future behavior changed"]
+  O --> J
 ```
 
-Local development from this checkout:
+The kernel is intentionally headless and Python-first. No React, no product onboarding, no MCP product surface, no local dashboard state.
 
-```txt
-node packages/cli/bin/catalyst.mjs local --repo <path-to-this-repo>
+## Storage Architecture
+
+The SQLite event store is the canonical local state. JSONL and markdown are export formats only.
+
+```mermaid
+flowchart TB
+  EventLog["events"] --> MutationRuntime["mutation runtime"]
+  MutationRuntime --> Evidence["evidence_items"]
+  MutationRuntime --> Objects["cognitive_objects"]
+  MutationRuntime --> Edges["object_edges"]
+  MutationRuntime --> Runs["engine_runs / retrieval_runs"]
+  MutationRuntime --> Packets["agent_packets"]
+  MutationRuntime --> Evals["eval_checks / eval_results"]
+  MutationRuntime --> Feedback["feedback_events"]
+  MutationRuntime --> Proofs["proof_records"]
+  Objects --> FTS["SQLite FTS5 / BM25"]
+  Objects --> Scores["object_scores"]
+  Objects --> Versions["object_versions"]
+  Objects --> Vector["vector adapter fallback"]
 ```
 
-The command opens a localhost command center. First screen: connect your agent. The agent is the v0 builder; the local UI is the command center and brain viewer.
-
-Paste this into Claude Code, Cursor, Hermes, or any agent that can read/write local files:
+Required tables include:
 
 ```txt
-https://github.com/prathamarchives/catalyst
-install this and build my Catalyst Brain.
-You may discover and scan my local AI sessions, agent memories, workspaces, markdown notes, and project files using the recommended safe scope.
-Exclude secrets, tokens, private DMs, client data, binaries, vendor/build folders, and anything sensitive.
-Build everything locally, write BUILD-STATUS.json while you work, write the personalized skills/workflows/evals, then install the task-time evaluation and feedback update loop for future real tasks.
+events
+artifacts
+evidence_items
+cognitive_objects
+object_edges
+engine_runs
+proposed_mutations
+retrieval_runs
+agent_packets
+eval_checks
+eval_results
+feedback_events
+proof_records
+object_scores
+object_versions
 ```
 
-Prefer approval first? Use:
+## Cognitive Objects
+
+Objects are not notes. They are structured units with scope, evidence, confidence, source strength, usage, success, failure, and provenance.
+
+Object types:
 
 ```txt
-https://github.com/prathamarchives/catalyst
-help me install this and build my Catalyst Brain
+memory_atom
+taste_delta
+judgment_atom
+identity_atom
+context_atom
+standard_atom
+anti_pattern
+eval_check
+reference_item
+retrieval_policy
+agent_packet
+proof_record
 ```
 
-Full install model: [INSTALL.md](INSTALL.md). Copy/paste prompts: [SETUP-PROMPT.md](SETUP-PROMPT.md). Direct agent prompt: [REPO-USE-PROMPT.md](REPO-USE-PROMPT.md).
-
-## What this repo is
-
-`catalyst` is a local-first, agent-runnable runtime with human-readable markdown under the hood. It provides:
-
-- [AGENTS.md](AGENTS.md): the operating protocol an agent executes
-- [prompts/](prompts/): modular steps for discovery, audit, extraction, build, skills, task evaluation, feedback, and distillation
-- [templates/catalyst-brain/](templates/catalyst-brain/): the generated brain structure
-- [templates/skills/](templates/skills/): future-agent instructions that make the brain usable
-- [templates/workflows/](templates/workflows/): task, review, update, and distillation loops
-- [templates/evals/](templates/evals/): standards checks and improvement logs
-- [tools/discover_sessions.py](tools/discover_sessions.py): read-only discovery helper
-- [catalyst_core/](catalyst_core/): hybrid brain models, markdown parser/manager, routing, context assembly, evaluator, feedback processor, proposals, version history, retrieval, health, and runtime state
-- [tools/mcp_server.py](tools/mcp_server.py): local MCP scaffold with brain context, evaluation, feedback capture, proposals, section listing, health, and compatibility tools
-- [evals/](evals/): static checks that keep the repo coherent
-
-There is no required package install, no account, no database, no required API key, and no hosted service. An optional local control panel ships in `apps/control-panel/` (Python standard library, localhost-only) and an optional BYOK helper exists, but the protocol runs fully without either. “Install” means clone/open the repo, verify it if possible, and let an agent build the local Catalyst Brain under `outputs/<name>/`.
-
-## What it creates
+Memory families:
 
 ```txt
-outputs/<name>/
-  BUILD-STATUS.json
-  SUMMARY.md
-  catalyst-brain/
-    README.md
-    identity.md
-    context.md
-    goals.md
-    constraints.md
-    standards.md
-    judgment.md
-    taste.md
-    voice.md
-    anti-slop.md
-    references.md
-    rejected-examples.md
-    decision-rules.md
-    task-patterns.md
-    feedback-memory.md
-    lexicon.md
-    open-questions.md
-  skills/
-    catalyst-skill.md
-    use-catalyst-brain.md
-    update-catalyst-brain.md
-    review-against-standards.md
-    extract-feedback.md
-    task-routing.md
-    distill-memory.md
-  workflows/
-    start-task.md
-    produce-output.md
-    review-output.md
-    update-after-feedback.md
-    weekly-distillation.md
-  evals/
-    output-review.md
-    standards-check.md
-    identity-alignment.md
-    judgment-check.md
-    feedback-capture.md
-    improvement-log.md
-  README.md
-  proposed-updates/
+episodic
+semantic
+procedural
+preference
+negative
+reference
+social/customer
+strategic
 ```
 
-Every brain file includes: purpose, when to load, tasks affected, how to apply, how to update, and what not to put there.
-
-## The core loop
-
-Catalyst is valuable during real use:
-
-1. classify the task
-2. load the relevant Catalyst Brain files
-3. produce the work
-4. review the output against standards, judgment, identity, and task patterns
-5. show the user
-6. capture explicit and implicit feedback
-7. patch the right brain files, skills, and evals
-8. log the improvement so the next task benefits
-
-The proof is not a staged comparison. The proof is that the agent gets harder to disappoint over time because every correction becomes an operational rule.
-
-## The hybrid local runtime
-
-The loop is runnable, not just documented. `catalyst_core/` classifies a task, routes the right brain files, builds a compact context packet **with an embedded judgment contract** (how to behave and decide), evaluates output against your standards/judgment/taste, turns feedback into structured proposals, and snapshots accepted updates.
-
-Core V1 adds the object-first mechanism:
+Graph edges:
 
 ```txt
-raw evidence -> engines -> typed memory objects -> graph -> retrieval set -> agent packet -> eval -> feedback -> proof
+extracted_from
+supports
+contradicts
+refines
+consolidates
+scoped_to
+retrieved_for
+compiled_into
+evaluated_by
+updated_by
+improved_by
 ```
 
-The first vertical path is deterministic and local. `catalyst_core/core_engines.py` defines the 12 engines, `catalyst_core/core_store.py` stores objects/edges/packets/evals/proof under `.catalyst/core/`, and the local API exposes `/api/core/ingest`, `/api/core/extract`, `/api/core/packet`, `/api/core/evaluate`, `/api/core/feedback`, `/api/core/health`, and `/api/core/graph`.
+## Engine Contract
 
-It also includes local runtime state:
+Engines do not write state.
 
-```txt
-recall -> work -> capture -> extract -> update -> compile -> recall
+```mermaid
+sequenceDiagram
+  participant Engine
+  participant Runtime as EngineRuntime
+  participant Mutations as MutationRuntime
+  participant Store as SQLiteStore
+
+  Runtime->>Engine: EngineInput
+  Engine-->>Runtime: ProposedMutations
+  Runtime->>Mutations: validate + commit
+  Mutations->>Store: append events
+  Mutations->>Store: update read models in one transaction
+  Store-->>Runtime: committed event ids
 ```
 
-Captured events are stored under `.catalyst/`, extracted into signals, compacted into memory atoms, routed into sub-brains, compiled into a wiki-style Persona Brain, and exposed through health and graph reports. The generated user brain still lives under `outputs/<name>/`; `.catalyst/` is the local runtime state. One launcher starts the local app and opens your browser:
+The 12 engines:
+
+1. Evidence Normalization
+2. Signal Extraction
+3. Memory Formation
+4. Taste Modeling
+5. Judgment Modeling
+6. Identity Modeling
+7. Context State
+8. Consolidation
+9. Contradiction / Scope
+10. Retrieval Planning
+11. Packet Compilation
+12. Eval + Feedback Learning
+
+## Retrieval Is Not Basic RAG
+
+Retrieval combines:
 
 ```txt
-py catalyst.py
-py catalyst.py --no-open
+symbolic filters
+SQLite FTS5 / BM25
+vector adapter fallback
+graph traversal
+recency
+scope and audience match
+confidence
+source strength
+past usefulness
+negative constraints
+eval relevance
 ```
 
-The same engine runs over MCP (so your agent does the loop automatically), HTTP APIs, and a dev CLI (`py tools/catalyst_cli.py ...`). See [docs/core-mechanism.md](docs/core-mechanism.md), [docs/engines.md](docs/engines.md), [docs/memory.md](docs/memory.md), [docs/loops.md](docs/loops.md), [docs/evals.md](docs/evals.md), [docs/hybrid-brain-runtime.md](docs/hybrid-brain-runtime.md), [docs/catalyst-flow.md](docs/catalyst-flow.md), [docs/persona-runtime.md](docs/persona-runtime.md), and [docs/architecture.md](docs/architecture.md).
+Each retrieval run returns a trace: why an object was selected, which evidence supports it, which evals depend on it, and what was excluded.
 
-## Privacy model
+## Feedback Learning Loop
 
-- local-first: everything is built in files on your machine
-- you control the scan: discovery finds candidate paths, but contents are read only inside the scope you approve or pre-authorize
-- discovery is read-only and checks candidate locations only; printed local paths are path metadata
-- file contents are read only inside the authorized scope
-- secrets, tokens, private DMs, client data, vendor/build folders, binaries, and sensitive material are excluded by default
-- generated `outputs/**` are gitignored
-- review before sharing: read generated files before committing, posting, or sending them anywhere
-- no cloud upload by default: this repo itself makes no network calls; your hosted agent/model provider may receive approved context, so do not approve sensitive material unless you understand that tool’s privacy model
+Example: the user rejects output as "generic SaaS slop."
 
-Full stance: [docs/privacy.md](docs/privacy.md) and [docs/permission-model.md](docs/permission-model.md).
-
-## Optional local control panel
-
-Catalyst is usable with no UI — point any agent at `AGENTS.md`. If you want a local control surface for the brain, run the zero-dependency panel (Python standard library only, no npm, no build step):
-
-```txt
-py apps/control-panel/server.py
-python apps/control-panel/server.py
+```mermaid
+flowchart LR
+  Reject["feedback.received: generic SaaS slop"] --> Taste["taste_delta"]
+  Reject --> Judgment["judgment_atom"]
+  Taste --> Anti["anti_pattern"]
+  Judgment --> Standard["standard_atom"]
+  Anti --> Check["eval_check"]
+  Standard --> Check
+  Check --> Weight["retrieval/confidence update"]
+  Weight --> Packet["future packet includes rule"]
+  Packet --> Eval["future output eval"]
+  Eval --> Proof["proof record"]
 ```
 
-Then open `http://127.0.0.1:8765`. It binds localhost only and operates on the real markdown under `outputs/<name>/`. The local UI flow is:
+The next similar packet must include the new anti-pattern and standard. The next eval must catch the repeated failure. A proof record links before packet -> feedback -> after packet.
 
-```txt
-Promise -> Connect agent -> Source permission -> Build status -> Command center
+## Minimal Python Usage
+
+```python
+from catalyst_core import CatalystCore
+
+core = CatalystCore("core.sqlite3")
+
+before = core.compile_packet("Write Catalyst landing page copy", project="catalyst")
+
+core.receive_feedback(
+    before["packet"]["id"],
+    "Our platform helps teams unlock productivity with seamless AI workflows.",
+    "Reject this as generic SaaS slop. Show taste, judgment, retrieval, eval, and feedback learning.",
+    project="catalyst",
+)
+
+after = core.compile_packet("Write better Catalyst landing page copy", project="catalyst")
+review = core.evaluate_output(
+    after["packet"]["id"],
+    "Catalyst helps teams unlock productivity with seamless AI workflows.",
+    project="catalyst",
+)
+
+assert "generic SaaS slop" in after["packet"]["packet"]
+assert review["verdict"] in {"revise", "reject"}
 ```
 
-It deliberately connects an agent first. Catalyst needs a worker to discover approved sources, synthesize the brain, and write `outputs/<name>/BUILD-STATUS.json`; the browser only stores permission config and renders local files. Claude Code, Codex, Cursor, Hermes, and manual MCP are offered as honest instructions, not fake live OAuth. Stop the server with Ctrl+C in the terminal. See [apps/control-panel/README.md](apps/control-panel/README.md) and [docs/control-panel.md](docs/control-panel.md).
+## Verification
 
-## Hosted upgrade path
+Run:
 
-Local Catalyst is the free engine: one machine, local files, manual agent setup. Hosted Catalyst later is the paid convenience layer: synced brains, no local setup, always-on MCP/API, revision history, and multi-agent/team/client workflows.
-
-Want this synced across every agent without local setup? Join hosted Catalyst: [itscatalyst.com](https://itscatalyst.com).
-
-Want a founding install? Email [hello@itscatalyst.com](mailto:hello@itscatalyst.com).
-
-## Multi-agent access (MCP)
-
-`tools/mcp_server.py` is a dependency-free, local-only MCP scaffold (JSON-RPC over stdio) that lets agents call `catalyst_get_brain_context`, `catalyst_evaluate_output`, `catalyst_capture_feedback`, `catalyst_propose_brain_updates`, `catalyst_apply_brain_update`, `catalyst_list_brain`, and `catalyst_get_runtime_health` without raw filesystem access. Older file tools remain as compatibility wrappers. Updates are proposal-backed and never applied silently. It is an honest scaffold, not a certified MCP build. See [docs/mcp.md](docs/mcp.md).
-
-## BYOK is optional
-
-Reading and editing the brain, running the panel, exporting prompts, and using Catalyst manually with an agent all work with **no API key** (a mock provider makes no network calls). A key only powers optional AI-assisted helpers — synthesizing onboarding answers, scoring brain gaps, running a standards review on an output. Keys are read from an environment variable only and never committed. Copy [.env.example](.env.example) to `.env` to enable. See [docs/byok.md](docs/byok.md).
-
-## Run evals
-
-```txt
+```bash
+python -m pytest
 python evals/run_all.py
-py evals/run_all.py
 ```
 
-Exit code 0 means the repo structure, protocol completeness, privacy language, output consistency, and task-time improvement loop are coherent.
+The north-star acceptance test is:
+
+```txt
+test_feedback_changes_future_packet()
+```
+
+It proves feedback changes future retrieval, packet contents, eval behavior, and proof records. If that test fails, Catalyst Core has failed its own reason to exist.
+
+## Current Boundary
+
+This repo is now the foundation layer only.
+
+No UI. No consumer onboarding. No hosted backend. No MCP product flow. No markdown brain as source of truth. Those can exist later as clients, but they do not define Catalyst Core.

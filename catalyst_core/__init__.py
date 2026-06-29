@@ -1,6 +1,12 @@
-"""catalyst_core — dependency-free engine for the Catalyst loop.
+"""Catalyst Core Layer 2.
 
-scope -> route -> context (+ judgment contract) -> evaluate -> feedback -> proposal -> audit/distill.
-Stdlib only. All writes confined to outputs/. Templates never written. Core rules never silently mutated.
+Catalyst Core is a headless cognitive kernel for agents. It owns the event log,
+typed cognitive objects, graph, retrieval, evaluation, feedback learning, and
+packet compilation. Product surfaces are clients, not part of the core.
 """
-__version__ = "0.5"
+from __future__ import annotations
+
+from .api.core_api import CatalystCore
+
+__all__ = ["CatalystCore"]
+

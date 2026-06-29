@@ -1,54 +1,35 @@
-# Architecture
+# Catalyst Core Architecture
 
-Catalyst is a local-first app. A small Python server serves a prebuilt UI and a local
-API, the brain stays as markdown under `outputs/<name>/`, and one engine (`catalyst_core/`)
-powers every surface. No accounts, no cloud, no database.
+Catalyst Core is Layer 2: the cognitive kernel between evidence sources and agents.
 
-The v0.5 runtime adds local `.catalyst/` state for events, signals, memory atoms,
-persona nodes, compiled Persona Brain files, graph, traces, health, and
-proposals. `outputs/<name>/` remains the generated user brain; `.catalyst/` is
-the local engine state agents use for recall, capture, review, and health.
-
-```
-┌─ apps/web (React/Vite, built → dist/) ──────────────┐
-│  Onboarding (welcome→extract→import→review→connect)  │
-│  Workspace (brain view, activity, readiness, MCP)    │
-└───────────────▲──────────────────────────────────────┘
-                │ fetch /api/*   (localhost only)
-┌───────────────┴── apps/control-panel/server.py ──────┐
-│  serves dist/ (or the legacy panel) + auto-opens      │
-│  /api/flow/route|context|evaluate|feedback|audit      │
-│  /api/import/discover|files|extract                   │
-│  /api/onboarding, /api/brain, /api/file (existing)    │
-│  security: 127.0.0.1, allowlist, writes ⊂ outputs/    │
-└───────┬───────────────────────────────────┬──────────┘
-        │ import                              │ import
-┌───────▼── catalyst_core/ ─────┐   ┌─────────▼ tools/mcp_server.py ┐
-│ paths registry router contract│   │ route_task get_context_packet │
-│ packet evaluator feedback     │◄──┤ review_output_against_brain   │
-│ quality   (the judgment engine)│  │ append_feedback audit_brain   │
-└───────┬───────────────────────┘   │ propose_brain_update …        │
-        │ read/write                 └───────────▲───────────────────┘
-┌───────▼── outputs/<name>/ (LOCAL MARKDOWN BRAIN) ─┐    │ stdio JSON-RPC
-│ catalyst-brain/*.md  sources/  proposals/  evals/ │    │
-└───────────────────────────────────────────────────┘   └── your AI agent
+```mermaid
+flowchart TD
+  Evidence["Layer 1 evidence"] --> API["Core Python API"]
+  API --> Events["Event log"]
+  Events --> Runtime["Mutation runtime"]
+  Runtime --> Store["SQLite canonical store"]
+  Store --> Graph["Cognitive graph"]
+  Store --> Retrieval["Hybrid retrieval"]
+  Retrieval --> Packet["Agent packet"]
+  Packet --> Eval["Eval runtime"]
+  Eval --> Feedback["Feedback learner"]
+  Feedback --> Runtime
 ```
 
-## One engine, three surfaces
+The core implementation is split into:
 
-The HTTP API, the MCP server, and the dev CLI are thin layers over `catalyst_core` —
-no duplicated logic. Add a capability once in the engine and all three gain it.
+- `domain/`: typed contracts
+- `storage/`: SQLite, graph, FTS, vector fallback, artifacts
+- `kernel/`: event log, mutation runtime, retrieval, packet, eval, feedback, proof
+- `engines/`: engine contracts and concrete proposers
+- `policies/`: scoring, confidence, decay, consolidation, contradiction
+- `api/`: Python service boundary
 
-## Local-first / security boundaries (preserved)
+Design laws:
 
-- Server binds `127.0.0.1`; a non-local bind requires `CATALYST_TOKEN`.
-- No shell/exec endpoint; no arbitrary filesystem access — every path is resolved against an allowlist.
-- Writes are confined to `outputs/`; `templates/` are never written.
-- Core brain rule files are never silently mutated — feedback is append-only and edits land as review proposals.
-- BYOK keys stay server-side and are never returned to the browser.
+- SQLite is canonical local state.
+- Every state change starts as an immutable event.
+- Engines propose mutations and never write directly.
+- JSONL and markdown are exports only.
+- UI, CLI, MCP, and hosted surfaces are clients.
 
-## Why local markdown is the substrate, not the moat
-
-The brain stays human-readable markdown so it is portable and yours. The moat is the
-**judgment loop** — routing, the agent judgment contract, evaluation, and compounding —
-not the file format.
