@@ -182,6 +182,27 @@ The local HTTP equivalents are `POST /api/brain/context`, `POST /api/evaluate`, 
 
 Compatibility tools remain available, but new agent clients should use the hybrid tools first. Never silently overwrite core brain files; corrections land as proposals. See [docs/hybrid-brain-runtime.md](docs/hybrid-brain-runtime.md), [docs/catalyst-flow.md](docs/catalyst-flow.md), and [docs/mcp.md](docs/mcp.md).
 
+## Core V1 object loop
+
+When working on Catalyst itself or any task that needs compounding judgment, use the Core V1 object loop:
+
+```txt
+raw evidence -> engines -> typed memory objects -> graph -> retrieval set -> agent packet -> eval -> feedback -> proof
+```
+
+The local modules are `catalyst_core.core_engines` and `catalyst_core.core_store`. The local API exposes:
+
+- `POST /api/core/ingest`
+- `POST /api/core/extract`
+- `POST /api/core/packet`
+- `POST /api/core/evaluate`
+- `POST /api/core/feedback`
+- `GET /api/core/health`
+- `GET /api/core/graph`
+- `GET /api/core/engines`
+
+Use this path for rejected output, approved output, user edits, shipped work, and feedback. A rejection should become taste delta, judgment atom, anti-pattern, standard atom, eval check, graph links, and better future retrieval. See [docs/core-mechanism.md](docs/core-mechanism.md), [docs/engines.md](docs/engines.md), [docs/memory.md](docs/memory.md), [docs/loops.md](docs/loops.md), and [docs/evals.md](docs/evals.md).
+
 ## Backend flow (catalyst_core)
 
 The loop is also a dependency-free engine you can call directly or over MCP — use it to reproduce the loop deterministically:

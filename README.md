@@ -156,6 +156,14 @@ The proof is not a staged comparison. The proof is that the agent gets harder to
 
 The loop is runnable, not just documented. `catalyst_core/` classifies a task, routes the right brain files, builds a compact context packet **with an embedded judgment contract** (how to behave and decide), evaluates output against your standards/judgment/taste, turns feedback into structured proposals, and snapshots accepted updates.
 
+Core V1 adds the object-first mechanism:
+
+```txt
+raw evidence -> engines -> typed memory objects -> graph -> retrieval set -> agent packet -> eval -> feedback -> proof
+```
+
+The first vertical path is deterministic and local. `catalyst_core/core_engines.py` defines the 12 engines, `catalyst_core/core_store.py` stores objects/edges/packets/evals/proof under `.catalyst/core/`, and the local API exposes `/api/core/ingest`, `/api/core/extract`, `/api/core/packet`, `/api/core/evaluate`, `/api/core/feedback`, `/api/core/health`, and `/api/core/graph`.
+
 It also includes local runtime state:
 
 ```txt
@@ -169,7 +177,7 @@ py catalyst.py
 py catalyst.py --no-open
 ```
 
-The same engine runs over MCP (so your agent does the loop automatically), HTTP APIs, and a dev CLI (`py tools/catalyst_cli.py ...`). See [docs/hybrid-brain-runtime.md](docs/hybrid-brain-runtime.md), [docs/catalyst-flow.md](docs/catalyst-flow.md), [docs/persona-runtime.md](docs/persona-runtime.md), and [docs/architecture.md](docs/architecture.md).
+The same engine runs over MCP (so your agent does the loop automatically), HTTP APIs, and a dev CLI (`py tools/catalyst_cli.py ...`). See [docs/core-mechanism.md](docs/core-mechanism.md), [docs/engines.md](docs/engines.md), [docs/memory.md](docs/memory.md), [docs/loops.md](docs/loops.md), [docs/evals.md](docs/evals.md), [docs/hybrid-brain-runtime.md](docs/hybrid-brain-runtime.md), [docs/catalyst-flow.md](docs/catalyst-flow.md), [docs/persona-runtime.md](docs/persona-runtime.md), and [docs/architecture.md](docs/architecture.md).
 
 ## Privacy model
 

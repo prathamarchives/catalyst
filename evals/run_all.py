@@ -16,6 +16,7 @@ import local_first_ui_check
 import agent_native_check
 import catalyst_flow_check
 import hybrid_runtime_check
+import core_v1_check
 
 EVALS = [
     ("repo_structure_check", repo_structure_check),
@@ -32,6 +33,7 @@ EVALS = [
     ("agent_native_check", agent_native_check),
     ("catalyst_flow_check", catalyst_flow_check),
     ("hybrid_runtime_check", hybrid_runtime_check),
+    ("core_v1_check", core_v1_check),
 ]
 
 def main() -> int:

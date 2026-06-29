@@ -37,6 +37,9 @@ The advanced "Run the loop" tool is collapsed. It is for manual testing of the s
 | `/api/build/status?name=` | GET | read `outputs/<name>/BUILD-STATUS.json`, or return safe waiting defaults |
 | `/api/health` | GET | local runtime health: events, signals, memories, graph, links, warnings |
 | `/api/runtime/health` | GET | hybrid runtime health, update history, and brain section readiness |
+| `/api/core/health` | GET | Core V1 object, engine, memory, graph, packet, feedback, and proof health |
+| `/api/core/graph` | GET | Core V1 object graph with evidence, memory, packets, evals, and proof |
+| `/api/core/engines` | GET | the 12 engine specs and contracts |
 | `/api/brain/sections` | GET | structured section summary, missing sections, placeholder sections, and extracted rule counts |
 | `/api/proposals` | GET | pending or historical brain update proposals |
 | `/api/events` | GET | recent captured runtime events |
@@ -50,6 +53,11 @@ The advanced "Run the loop" tool is collapsed. It is for manual testing of the s
 | `/api/evaluate` | POST | structured evaluation with judgment, taste, rejected-pattern, specificity, and safety scores |
 | `/api/feedback` | POST | classify feedback, capture runtime signal, and create update proposals |
 | `/api/proposals/apply` | POST | apply or reject one proposal with local history snapshotting |
+| `/api/core/ingest` | POST | store raw evidence with provenance and scope |
+| `/api/core/extract` | POST | run deterministic engine extraction over evidence |
+| `/api/core/packet` | POST | retrieve objects and compile a task-specific agent packet |
+| `/api/core/evaluate` | POST | evaluate output against packet-linked checks |
+| `/api/core/feedback` | POST | capture feedback, create update objects, graph links, and proof |
 | `/api/discover` | GET | read-only source categories, no contents |
 | `/api/brain?name=` | GET | brain files grouped by Catalyst section |
 | `/api/file` | GET/POST | read/save allowed markdown under `outputs/` only |

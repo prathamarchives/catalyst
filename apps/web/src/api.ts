@@ -104,6 +104,33 @@ export type Proposal = {
   created_at?: string;
   updated_at?: string;
 };
+export type CoreHealth = {
+  project: string;
+  object_count: number;
+  edge_count: number;
+  evidence_count: number;
+  memory_count: number;
+  eval_count: number;
+  packet_count: number;
+  feedback_count: number;
+  proof_count: number;
+  engine_count: number;
+  warning_count: number;
+  unprocessed_evidence_count: number;
+  orphan_object_count: number;
+  low_confidence_count: number;
+  stale_count: number;
+  by_type: Record<string, number>;
+  by_memory_type: Record<string, number>;
+  engine_health: { id: string; name: string; status: string; last_run?: string; objects_produced: number; warning_count: number }[];
+  warnings: string[];
+  next_actions: string[];
+};
+export type CoreGraph = {
+  project: string;
+  nodes: { id: string; kind: string; label?: string; status?: string; confidence?: number; memory_type?: string }[];
+  edges: { id?: string; from_id: string; to_id: string; type: string; confidence?: number }[];
+};
 
 export type Audit = {
   name?: string;
@@ -204,6 +231,10 @@ export const api = {
   health: (): Promise<RuntimeHealth> => get("/api/health"),
   runtimeHealth: (project = "default"): Promise<RuntimeHealth> =>
     get(`/api/runtime/health?project=${encodeURIComponent(project)}`),
+  coreHealth: (project = "default"): Promise<CoreHealth> =>
+    get(`/api/core/health?project=${encodeURIComponent(project)}`),
+  coreGraph: (project = "default"): Promise<CoreGraph> =>
+    get(`/api/core/graph?project=${encodeURIComponent(project)}`),
   brainSections: (project = "default"): Promise<BrainSectionsSummary> =>
     get(`/api/brain/sections?project=${encodeURIComponent(project)}`),
   proposals: (project = "default", status = "pending"): Promise<{ proposals: Proposal[] }> =>

@@ -22,6 +22,9 @@ The legacy vanilla panel remains available at `/legacy/` as a dev fallback.
 | `/api/permissions` | GET/POST | local permission config under `.catalyst/` |
 | `/api/build/status?name=` | GET | status-file timeline from `outputs/<name>/BUILD-STATUS.json` |
 | `/api/runtime/health` | GET | hybrid runtime health, history, and brain section readiness |
+| `/api/core/health` | GET | Core V1 object, engine, memory, graph, packet, feedback, and proof health |
+| `/api/core/graph` | GET | Core V1 object graph |
+| `/api/core/engines` | GET | 12 engine specs and contracts |
 | `/api/brain/sections` | GET | structured section summary and extracted rule counts |
 | `/api/proposals` | GET | pending or historical brain update proposals |
 | `/api/discover` | GET | read-only source categories, no contents |
@@ -33,6 +36,11 @@ The legacy vanilla panel remains available at `/legacy/` as a dev fallback.
 | `/api/evaluate` | POST | structured output evaluation against the local brain |
 | `/api/feedback` | POST | classify feedback and create update proposals |
 | `/api/proposals/apply` | POST | apply or reject a proposal with history snapshotting |
+| `/api/core/ingest` | POST | store raw evidence with provenance and scope |
+| `/api/core/extract` | POST | run deterministic Core V1 extraction |
+| `/api/core/packet` | POST | compile a Core V1 agent packet |
+| `/api/core/evaluate` | POST | evaluate output against packet-linked checks |
+| `/api/core/feedback` | POST | capture feedback, update objects, and create proof |
 | `/api/export` | GET | brain path + agent prompt |
 
 No shell endpoint. No arbitrary filesystem access.

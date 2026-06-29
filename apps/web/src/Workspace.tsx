@@ -6,6 +6,8 @@ import {
   BrainContextPacket,
   BuildStatus,
   ConnectPrompts,
+  CoreGraph,
+  CoreHealth,
   HybridEvalResult,
   Proposal,
   RuntimeEvent,
@@ -21,6 +23,8 @@ export default function Workspace() {
   const [name, setName] = useState("");
   const [brain, setBrain] = useState<Brain | null>(null);
   const [audit, setAudit] = useState<Audit | null>(null);
+  const [coreHealth, setCoreHealth] = useState<CoreHealth | null>(null);
+  const [coreGraph, setCoreGraph] = useState<CoreGraph | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
@@ -33,6 +37,8 @@ export default function Workspace() {
       setName(active);
       setBuild(await api.buildStatus(active));
       api.connectPrompts().then(setConnect).catch(() => {});
+      api.coreHealth(active).then(setCoreHealth).catch(() => setCoreHealth(null));
+      api.coreGraph(active).then(setCoreGraph).catch(() => setCoreGraph(null));
       if (s.brains?.[0]?.name) {
         const realName = s.brains[0].name;
         api.brain(realName).then(setBrain).catch(() => setBrain(null));
@@ -101,6 +107,7 @@ export default function Workspace() {
         )}
 
         <RuntimeLanes status={status} connect={connect} activeBrain={activeBrain} audit={audit} />
+        <CoreMechanismPanel health={coreHealth} graph={coreGraph} />
         <BuildTimeline status={build} />
 
         {!activeBrain && <EmptyBrainPanel name={name} connect={connect} />}
@@ -187,6 +194,62 @@ function RuntimeLanes({ status, connect, activeBrain, audit }: {
           <strong>{lane.value}</strong>
         </div>
       ))}
+    </div>
+  );
+}
+
+function CoreMechanismPanel({ health, graph }: { health: CoreHealth | null; graph: CoreGraph | null }) {
+  const engineWarnings = health?.engine_health?.filter((engine) => engine.status === "warning").length || 0;
+  const topTypes = Object.entries(health?.by_type || {}).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  return (
+    <Card className="core-panel reveal">
+      <div className="row spread wrap card-head">
+        <div>
+          <p className="eyebrow">Catalyst Core V1</p>
+          <h2 className="t">Engines, memory, graph, packets, feedback.</h2>
+          <p className="muted small">
+            The core mechanism is raw evidence becoming typed objects, graph links, task packets, evals, feedback, and proof.
+          </p>
+        </div>
+        <span className={`badge ${(health?.warning_count || engineWarnings) ? "ask" : "ship"}`}>
+          <span className="dot" />
+          {health ? `${health.engine_count} engines` : "loading"}
+        </span>
+      </div>
+      <div className="core-metrics">
+        <Metric label="Evidence" value={health?.evidence_count ?? 0} />
+        <Metric label="Objects" value={health?.object_count ?? 0} />
+        <Metric label="Graph links" value={health?.edge_count ?? graph?.edges?.length ?? 0} />
+        <Metric label="Packets" value={health?.packet_count ?? 0} />
+        <Metric label="Feedback" value={health?.feedback_count ?? 0} />
+        <Metric label="Proof" value={health?.proof_count ?? 0} />
+      </div>
+      <div className="core-grid">
+        <div>
+          <div className="group-label">Object mix</div>
+          {topTypes.length === 0 ? <p className="muted small">No Core V1 objects yet. Ingest evidence to start the engine loop.</p> : (
+            <div className="chip-row">
+              {topTypes.map(([kind, count]) => <span className="chip" key={kind}>{kind}: {count}</span>)}
+            </div>
+          )}
+        </div>
+        <div>
+          <div className="group-label">Warnings and next actions</div>
+          {(health?.warnings || []).length === 0 ? <p className="muted small">No core warnings reported.</p> : (
+            <ul className="muted small">{health!.warnings.map((w) => <li key={w}>{w}</li>)}</ul>
+          )}
+          {(health?.next_actions || []).slice(0, 3).map((action) => <p className="faint small" key={action}>{action}</p>)}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="metric">
+      <strong>{value}</strong>
+      <span>{label}</span>
     </div>
   );
 }

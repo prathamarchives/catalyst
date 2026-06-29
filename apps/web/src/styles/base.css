@@ -639,6 +639,30 @@ h2.t { font-size: var(--step-2); }
   justify-content: space-between;
 }
 .runtime-lane strong { font-size: var(--step-1); line-height: 1.15; }
+.core-panel { overflow: hidden; }
+.core-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--s2);
+  margin: var(--s3) 0;
+}
+.metric {
+  min-height: 88px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--s3);
+  background: color-mix(in srgb, var(--surface-solid) 36%, transparent);
+  display: grid;
+  align-content: space-between;
+}
+.metric strong { font-size: var(--step-2); line-height: 1; color: var(--accent-strong); }
+.metric span { color: var(--ink-faint); font-size: var(--step--1); }
+.core-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--s4);
+}
+.chip-row { display: flex; flex-wrap: wrap; gap: var(--s2); }
 .command-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);

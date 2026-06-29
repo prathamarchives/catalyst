@@ -60,6 +60,7 @@ sys.path.insert(0, str(REPO_ROOT))
 from catalyst_core import (  # noqa: E402
     brain_manager,
     context_assembler,
+    core_engines,
     router as flow_router,
     packet as flow_packet,
     evaluator as flow_evaluator,
@@ -836,6 +837,14 @@ class Handler(BaseHTTPRequestHandler):
             report["history"] = versioning.list_history(limit=20)
             report["brain"] = brain_manager.brain_sections_summary(project)
             return self._json(report)
+        if path == "/api/core/health":
+            project = (q.get("project") or [""])[0] or None
+            return self._json(core_engines.health(project))
+        if path == "/api/core/graph":
+            project = (q.get("project") or [""])[0] or None
+            return self._json(core_engines.graph(project))
+        if path == "/api/core/engines":
+            return self._json({"engines": core_engines.engine_specs()})
         if path == "/api/brain/sections":
             project = (q.get("project") or [""])[0] or "default"
             return self._json(brain_manager.brain_sections_summary(project))
@@ -1060,6 +1069,57 @@ class Handler(BaseHTTPRequestHandler):
                 proposal_id,
                 project=data.get("project") or "default",
                 approve=bool(data.get("approve", True)),
+            )
+            return self._json(res, 200 if res.get("ok") else 400)
+        if path == "/api/core/ingest":
+            res = core_engines.ingest_evidence(
+                raw_content=data.get("raw_content") or data.get("content") or "",
+                evidence_type=data.get("evidence_type") or data.get("type") or "evidence_item",
+                source=data.get("source") or "api",
+                project=data.get("project") or "default",
+                task_type=data.get("task_type") or "",
+                audience=data.get("audience") or "",
+                artifact_type=data.get("artifact_type") or "",
+                outcome=data.get("outcome") or "",
+                actor=data.get("actor") or "user",
+                sensitivity=data.get("sensitivity") or "normal",
+                tags=data.get("tags") if isinstance(data.get("tags"), list) else [],
+            )
+            return self._json(res, 400 if res.get("error") else 200)
+        if path == "/api/core/extract":
+            res = core_engines.run_extraction(
+                evidence_id=data.get("evidence_id") or None,
+                project=data.get("project") or "default",
+            )
+            return self._json(res, 200 if res.get("ok") else 400)
+        if path == "/api/core/packet":
+            task = data.get("task") or ""
+            if not task:
+                return self._json({"error": "task required"}, 400)
+            return self._json(core_engines.compile_agent_packet(
+                task,
+                project=data.get("project") or "default",
+                limit=int(data.get("limit") or 12),
+            ))
+        if path == "/api/core/evaluate":
+            packet_id = data.get("packet_id") or ""
+            if not packet_id:
+                return self._json({"error": "packet_id required"}, 400)
+            return self._json(core_engines.evaluate_output(
+                packet_id,
+                data.get("output") or "",
+                project=data.get("project") or "default",
+            ))
+        if path == "/api/core/feedback":
+            packet_id = data.get("packet_id") or ""
+            feedback = data.get("feedback") or ""
+            if not packet_id or not feedback:
+                return self._json({"error": "packet_id and feedback required"}, 400)
+            res = core_engines.capture_feedback(
+                packet_id,
+                data.get("output") or "",
+                feedback,
+                project=data.get("project") or "default",
             )
             return self._json(res, 200 if res.get("ok") else 400)
         if path == "/api/recall":
